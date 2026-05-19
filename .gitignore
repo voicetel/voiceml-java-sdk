@@ -1,0 +1,17 @@
+# Maven
+target/
+pom.xml.versionsBackup
+release.properties
+
+# Gradle (if used later)
+.gradle/
+build/
+
+# Compiled
+*.class
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
+*.iml
