@@ -140,6 +140,12 @@ asynchronously in your application code if needed; a `CompletableFuture`-shaped 
 may land in a later release. For now, dispatch SDK calls onto your own executor when you
 need parallelism.
 
+## 📖 API Documentation
+
+- **Reference docs:** [voicetel.com/docs/api/v0.6/voiceml/](https://voicetel.com/docs/api/v0.6/voiceml/)
+- **Validator:** [voicetel.com/voiceml/validator/](https://voicetel.com/voiceml/validator/)
+- **SDK catalogue:** [voicetel.com/docs/voiceml-sdks/](https://voicetel.com/docs/voiceml-sdks/)
+
 ## License
 
 MIT License with Commons Clause Restriction. See `LICENSE` and
