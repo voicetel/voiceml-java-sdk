@@ -10,9 +10,16 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * {@code phoneNumber} carries the E.164 form. Tenant-scoped — only DIDs assigned to the
  * authenticated account are visible.
  *
- * <p>Fields VoiceML does not track ({@code voiceApplicationSid}, SMS, emergency, trunking) emit a
- * Twilio-compat default (empty string, {@code null}, or the documented enum default) so strict
- * Jackson deserialization in twilio-java-shape code paths does not throw.
+ * <p>The full Twilio outer field set is bound here so strict-binding code paths (Jackson against
+ * a twilio-java-shape model) deserialize without throwing. Fields VoiceML does not track
+ * ({@code voiceApplicationSid}, SMS, emergency, trunking, regulatory) come back as a Twilio-compat
+ * default — empty string, {@code null}, or the documented enum default. Customer code that reads
+ * e.g. {@code number.getCapabilities().getVoice()} therefore behaves identically against VoiceML
+ * and Twilio.
+ *
+ * <p>Enum-shaped properties are typed as {@link String} on purpose (defensive deserialization —
+ * matches the twilio-java pattern): if the server starts emitting a new enum value the SDK does
+ * not throw on bind, and {@link JsonIgnoreProperties} keeps forward-compat extras from breaking.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class IncomingPhoneNumber {
@@ -35,6 +42,15 @@ public class IncomingPhoneNumber {
     @JsonProperty("uri")
     private String uri;
 
+    @JsonProperty("origin")
+    private String origin;
+
+    @JsonProperty("beta")
+    private Boolean beta;
+
+    @JsonProperty("type")
+    private String type;
+
     @JsonProperty("voice_url")
     private String voiceUrl;
 
@@ -46,6 +62,63 @@ public class IncomingPhoneNumber {
 
     @JsonProperty("voice_fallback_method")
     private String voiceFallbackMethod;
+
+    @JsonProperty("voice_application_sid")
+    private String voiceApplicationSid;
+
+    @JsonProperty("voice_caller_id_lookup")
+    private Boolean voiceCallerIdLookup;
+
+    @JsonProperty("voice_receive_mode")
+    private String voiceReceiveMode;
+
+    @JsonProperty("sms_url")
+    private String smsUrl;
+
+    @JsonProperty("sms_method")
+    private String smsMethod;
+
+    @JsonProperty("sms_fallback_url")
+    private String smsFallbackUrl;
+
+    @JsonProperty("sms_fallback_method")
+    private String smsFallbackMethod;
+
+    @JsonProperty("sms_application_sid")
+    private String smsApplicationSid;
+
+    @JsonProperty("status_callback")
+    private String statusCallback;
+
+    @JsonProperty("status_callback_method")
+    private String statusCallbackMethod;
+
+    @JsonProperty("trunk_sid")
+    private String trunkSid;
+
+    @JsonProperty("address_sid")
+    private String addressSid;
+
+    @JsonProperty("address_requirements")
+    private String addressRequirements;
+
+    @JsonProperty("identity_sid")
+    private String identitySid;
+
+    @JsonProperty("bundle_sid")
+    private String bundleSid;
+
+    @JsonProperty("emergency_status")
+    private String emergencyStatus;
+
+    @JsonProperty("emergency_address_sid")
+    private String emergencyAddressSid;
+
+    @JsonProperty("emergency_address_status")
+    private String emergencyAddressStatus;
+
+    @JsonProperty("status")
+    private String status;
 
     @JsonProperty("date_created")
     private String dateCreated;
@@ -74,6 +147,15 @@ public class IncomingPhoneNumber {
     public String getUri() { return uri; }
     public void setUri(String uri) { this.uri = uri; }
 
+    public String getOrigin() { return origin; }
+    public void setOrigin(String origin) { this.origin = origin; }
+
+    public Boolean getBeta() { return beta; }
+    public void setBeta(Boolean beta) { this.beta = beta; }
+
+    public String getType() { return type; }
+    public void setType(String type) { this.type = type; }
+
     public String getVoiceUrl() { return voiceUrl; }
     public void setVoiceUrl(String voiceUrl) { this.voiceUrl = voiceUrl; }
 
@@ -85,6 +167,63 @@ public class IncomingPhoneNumber {
 
     public String getVoiceFallbackMethod() { return voiceFallbackMethod; }
     public void setVoiceFallbackMethod(String voiceFallbackMethod) { this.voiceFallbackMethod = voiceFallbackMethod; }
+
+    public String getVoiceApplicationSid() { return voiceApplicationSid; }
+    public void setVoiceApplicationSid(String voiceApplicationSid) { this.voiceApplicationSid = voiceApplicationSid; }
+
+    public Boolean getVoiceCallerIdLookup() { return voiceCallerIdLookup; }
+    public void setVoiceCallerIdLookup(Boolean voiceCallerIdLookup) { this.voiceCallerIdLookup = voiceCallerIdLookup; }
+
+    public String getVoiceReceiveMode() { return voiceReceiveMode; }
+    public void setVoiceReceiveMode(String voiceReceiveMode) { this.voiceReceiveMode = voiceReceiveMode; }
+
+    public String getSmsUrl() { return smsUrl; }
+    public void setSmsUrl(String smsUrl) { this.smsUrl = smsUrl; }
+
+    public String getSmsMethod() { return smsMethod; }
+    public void setSmsMethod(String smsMethod) { this.smsMethod = smsMethod; }
+
+    public String getSmsFallbackUrl() { return smsFallbackUrl; }
+    public void setSmsFallbackUrl(String smsFallbackUrl) { this.smsFallbackUrl = smsFallbackUrl; }
+
+    public String getSmsFallbackMethod() { return smsFallbackMethod; }
+    public void setSmsFallbackMethod(String smsFallbackMethod) { this.smsFallbackMethod = smsFallbackMethod; }
+
+    public String getSmsApplicationSid() { return smsApplicationSid; }
+    public void setSmsApplicationSid(String smsApplicationSid) { this.smsApplicationSid = smsApplicationSid; }
+
+    public String getStatusCallback() { return statusCallback; }
+    public void setStatusCallback(String statusCallback) { this.statusCallback = statusCallback; }
+
+    public String getStatusCallbackMethod() { return statusCallbackMethod; }
+    public void setStatusCallbackMethod(String statusCallbackMethod) { this.statusCallbackMethod = statusCallbackMethod; }
+
+    public String getTrunkSid() { return trunkSid; }
+    public void setTrunkSid(String trunkSid) { this.trunkSid = trunkSid; }
+
+    public String getAddressSid() { return addressSid; }
+    public void setAddressSid(String addressSid) { this.addressSid = addressSid; }
+
+    public String getAddressRequirements() { return addressRequirements; }
+    public void setAddressRequirements(String addressRequirements) { this.addressRequirements = addressRequirements; }
+
+    public String getIdentitySid() { return identitySid; }
+    public void setIdentitySid(String identitySid) { this.identitySid = identitySid; }
+
+    public String getBundleSid() { return bundleSid; }
+    public void setBundleSid(String bundleSid) { this.bundleSid = bundleSid; }
+
+    public String getEmergencyStatus() { return emergencyStatus; }
+    public void setEmergencyStatus(String emergencyStatus) { this.emergencyStatus = emergencyStatus; }
+
+    public String getEmergencyAddressSid() { return emergencyAddressSid; }
+    public void setEmergencyAddressSid(String emergencyAddressSid) { this.emergencyAddressSid = emergencyAddressSid; }
+
+    public String getEmergencyAddressStatus() { return emergencyAddressStatus; }
+    public void setEmergencyAddressStatus(String emergencyAddressStatus) { this.emergencyAddressStatus = emergencyAddressStatus; }
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
 
     public String getDateCreated() { return dateCreated; }
     public void setDateCreated(String dateCreated) { this.dateCreated = dateCreated; }

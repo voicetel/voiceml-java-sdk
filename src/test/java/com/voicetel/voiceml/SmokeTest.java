@@ -179,7 +179,7 @@ class SmokeTest {
         String expectedAuth =
                 "Basic " + Base64.getEncoder().encodeToString("ACtest:secret".getBytes(StandardCharsets.UTF_8));
         assertThat(r.authorization).isEqualTo(expectedAuth);
-        assertThat(r.userAgent).startsWith("voiceml-java/0.5.0");
+        assertThat(r.userAgent).startsWith("voiceml-java/0.6.0");
     }
 
     @Test
@@ -472,6 +472,66 @@ class SmokeTest {
                 CreateIncomingPhoneNumberRequest.builder().phoneNumber("+18005551234").build()))
                 .isInstanceOf(ConflictException.class)
                 .satisfies(e -> assertThat(((ApiException) e).getStatusCode()).isEqualTo(409));
+    }
+
+    // --- v0.6.0: expanded IncomingPhoneNumber Twilio-compat outer field set ---
+
+    @Test
+    void incomingPhoneNumberDeserializesFullTwilioFieldSet() {
+        String sid = "PN0123456789abcdef0123456789abcdef";
+        handle("/2010-04-01/Accounts/ACtest/IncomingPhoneNumbers/" + sid, 200,
+                "{\"sid\":\"" + sid + "\","
+                        + "\"account_sid\":\"ACtest\","
+                        + "\"phone_number\":\"+18005551234\","
+                        + "\"friendly_name\":\"\","
+                        + "\"api_version\":\"2010-04-01\","
+                        + "\"uri\":\"/2010-04-01/Accounts/ACtest/IncomingPhoneNumbers/" + sid + ".json\","
+                        + "\"origin\":\"\","
+                        + "\"beta\":false,"
+                        + "\"type\":\"local\","
+                        + "\"voice_url\":\"https://example.com/twiml\","
+                        + "\"voice_method\":\"POST\","
+                        + "\"voice_fallback_url\":\"https://example.com/fallback\","
+                        + "\"voice_fallback_method\":\"POST\","
+                        + "\"voice_application_sid\":\"\","
+                        + "\"voice_caller_id_lookup\":false,"
+                        + "\"voice_receive_mode\":\"voice\","
+                        + "\"sms_url\":\"\","
+                        + "\"sms_method\":\"\","
+                        + "\"sms_fallback_url\":\"\","
+                        + "\"sms_fallback_method\":\"\","
+                        + "\"sms_application_sid\":\"\","
+                        + "\"status_callback\":\"\","
+                        + "\"status_callback_method\":\"\","
+                        + "\"trunk_sid\":\"\","
+                        + "\"address_sid\":\"\","
+                        + "\"address_requirements\":\"none\","
+                        + "\"identity_sid\":\"\","
+                        + "\"bundle_sid\":\"\","
+                        + "\"emergency_status\":\"\","
+                        + "\"emergency_address_sid\":\"\","
+                        + "\"emergency_address_status\":\"\","
+                        + "\"status\":\"\","
+                        + "\"capabilities\":{\"voice\":true,\"sms\":false,\"mms\":false,\"fax\":false},"
+                        + "\"date_created\":\"Wed, 20 May 2026 00:00:00 +0000\","
+                        + "\"date_updated\":\"Wed, 20 May 2026 00:00:00 +0000\""
+                        + "}");
+
+        IncomingPhoneNumber ipn = client().incomingPhoneNumbers().get(sid);
+
+        // Existing core fields still bind.
+        assertThat(ipn.getSid()).isEqualTo(sid);
+        assertThat(ipn.getAccountSid()).isEqualTo("ACtest");
+        assertThat(ipn.getPhoneNumber()).isEqualTo("+18005551234");
+        assertThat(ipn.getCapabilities().getVoice()).isTrue();
+
+        // Spot-check the new Twilio-compat outer fields.
+        assertThat(ipn.getEmergencyStatus()).isEqualTo("");
+        assertThat(ipn.getVoiceCallerIdLookup()).isFalse();
+        assertThat(ipn.getAddressRequirements()).isEqualTo("none");
+        assertThat(ipn.getBeta()).isFalse();
+        assertThat(ipn.getVoiceReceiveMode()).isEqualTo("voice");
+        assertThat(ipn.getType()).isEqualTo("local");
     }
 
     // --- v0.5.0: authToken alias (CC-2) ---
