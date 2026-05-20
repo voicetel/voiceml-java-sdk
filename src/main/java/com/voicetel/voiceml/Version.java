@@ -4,7 +4,7 @@ package com.voicetel.voiceml;
 public final class Version {
 
     /** Current SDK version. Used in the default {@code User-Agent}. */
-    public static final String VERSION = "0.6.1";
+    public static final String VERSION = "0.6.2";
 
     private Version() {}
 }

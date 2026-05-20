@@ -1,5 +1,6 @@
 package com.voicetel.voiceml;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpServer;
 import com.voicetel.voiceml.exceptions.ApiException;
 import com.voicetel.voiceml.exceptions.AuthenticationException;
@@ -16,6 +17,7 @@ import com.voicetel.voiceml.models.IncomingPhoneNumber;
 import com.voicetel.voiceml.models.IncomingPhoneNumberList;
 import com.voicetel.voiceml.models.ListCallsParams;
 import com.voicetel.voiceml.models.ListIncomingPhoneNumbersParams;
+import com.voicetel.voiceml.models.Recording;
 import com.voicetel.voiceml.models.UpdateIncomingPhoneNumberRequest;
 import com.voicetel.voiceml.models.UpdateParticipantRequest;
 import org.junit.jupiter.api.AfterEach;
@@ -179,7 +181,7 @@ class SmokeTest {
         String expectedAuth =
                 "Basic " + Base64.getEncoder().encodeToString("ACtest:secret".getBytes(StandardCharsets.UTF_8));
         assertThat(r.authorization).isEqualTo(expectedAuth);
-        assertThat(r.userAgent).startsWith("voiceml-java/0.6.1");
+        assertThat(r.userAgent).startsWith("voiceml-java/0.6.2");
     }
 
     @Test
@@ -602,6 +604,60 @@ class SmokeTest {
         assertThatThrownBy(() -> client().calls().get("CAmissing"))
                 .isInstanceOf(NotFoundException.class)
                 .satisfies(e -> assertThat(((ApiException) e).getMoreInfo()).isNull());
+    }
+
+    // --- v0.6.2: Recording.media_url (D5) ---
+
+    @Test
+    void recordingDeserializesMediaUrlWhenPresent() throws Exception {
+        String json = "{\"sid\":\"RE0123456789abcdef0123456789abcdef\","
+                + "\"account_sid\":\"ACtest\","
+                + "\"call_sid\":\"CA0123456789abcdef0123456789abcdef\","
+                + "\"status\":\"completed\","
+                + "\"duration\":\"7\","
+                + "\"api_version\":\"2010-04-01\","
+                + "\"uri\":\"/2010-04-01/Accounts/ACtest/Recordings/RE0123456789abcdef0123456789abcdef.json\","
+                + "\"media_url\":\"https://voiceml.voicetel.com/2010-04-01/Accounts/ACtest/Recordings/RE0123456789abcdef0123456789abcdef.mp3\""
+                + "}";
+
+        Recording rec = new ObjectMapper().readValue(json, Recording.class);
+
+        assertThat(rec.getSid()).isEqualTo("RE0123456789abcdef0123456789abcdef");
+        assertThat(rec.getMediaUrl())
+                .isEqualTo("https://voiceml.voicetel.com/2010-04-01/Accounts/ACtest/Recordings/RE0123456789abcdef0123456789abcdef.mp3");
+    }
+
+    @Test
+    void recordingDeserializesWithoutMediaUrl() throws Exception {
+        String json = "{\"sid\":\"RE0123456789abcdef0123456789abcdef\","
+                + "\"account_sid\":\"ACtest\","
+                + "\"status\":\"completed\","
+                + "\"api_version\":\"2010-04-01\","
+                + "\"uri\":\"/x\""
+                + "}";
+
+        Recording rec = new ObjectMapper().readValue(json, Recording.class);
+
+        assertThat(rec.getSid()).isEqualTo("RE0123456789abcdef0123456789abcdef");
+        assertThat(rec.getMediaUrl()).isNull();
+    }
+
+    // --- v0.6.2: IncomingPhoneNumber.type (D6) confirmation ---
+
+    @Test
+    void incomingPhoneNumberTypeFieldDeserializes() throws Exception {
+        String json = "{\"sid\":\"PN0123456789abcdef0123456789abcdef\","
+                + "\"account_sid\":\"ACtest\","
+                + "\"phone_number\":\"+18005551234\","
+                + "\"api_version\":\"2010-04-01\","
+                + "\"uri\":\"/x\","
+                + "\"type\":\"toll-free\","
+                + "\"capabilities\":{\"voice\":true,\"sms\":false,\"mms\":false,\"fax\":false}"
+                + "}";
+
+        IncomingPhoneNumber ipn = new ObjectMapper().readValue(json, IncomingPhoneNumber.class);
+
+        assertThat(ipn.getType()).isEqualTo("toll-free");
     }
 
     /** Recorded data class for tests. Plain POJO so we don't need records on Java 11. */

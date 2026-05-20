@@ -39,6 +39,9 @@ public class Recording {
     @JsonProperty("uri")
     private String uri;
 
+    @JsonProperty("media_url")
+    private String mediaUrl;
+
     @JsonProperty("date_created")
     private String dateCreated;
 
@@ -80,6 +83,8 @@ public class Recording {
     public void setApiVersion(String apiVersion) { this.apiVersion = apiVersion; }
     public String getUri() { return uri; }
     public void setUri(String uri) { this.uri = uri; }
+    public String getMediaUrl() { return mediaUrl; }
+    public void setMediaUrl(String mediaUrl) { this.mediaUrl = mediaUrl; }
     public String getDateCreated() { return dateCreated; }
     public void setDateCreated(String dateCreated) { this.dateCreated = dateCreated; }
     public String getDateUpdated() { return dateUpdated; }
