@@ -1,6 +1,6 @@
 # VoiceML Java SDK
 
-Official Java SDK for the [VoiceML REST API](https://voiceml.voicetel.com). VoiceML is
+Official Java SDK for the [VoiceML REST API](https://voicetel.com/docs/api/v0.6/voiceml/). VoiceML is
 VoiceTel's outbound voice + AMD service with a **Twilio-shaped REST surface** — the wire
 shape, auth model, error codes, and pagination envelope all match Twilio's documented
 behaviour, so existing Twilio client patterns map across.
@@ -18,14 +18,14 @@ Maven:
 <dependency>
   <groupId>com.voicetel</groupId>
   <artifactId>voiceml</artifactId>
-  <version>0.4.0</version>
+  <version>0.6.1</version>
 </dependency>
 ```
 
 Gradle:
 
 ```groovy
-implementation 'com.voicetel:voiceml:0.4.0'
+implementation 'com.voicetel:voiceml:0.6.1'
 ```
 
 ## Quickstart
