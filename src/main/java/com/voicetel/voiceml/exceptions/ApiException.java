@@ -15,6 +15,7 @@ public class ApiException extends VoiceMLException {
     private final int statusCode;
     private final Integer code;
     private final String body;
+    private String moreInfo;
 
     public ApiException(String message, int statusCode, Integer code, String body) {
         super(message);
@@ -43,6 +44,20 @@ public class ApiException extends VoiceMLException {
     /** The raw response body (already decoded to a string), or {@code null} when no body was returned. */
     public String getBody() {
         return body;
+    }
+
+    /**
+     * The {@code more_info} URL parsed from the Twilio-shape error envelope, or {@code null} when
+     * the response did not include one. Matches the twilio-java {@code ApiException.getMoreInfo()}
+     * accessor so error-handling code can be ported directly.
+     */
+    public String getMoreInfo() {
+        return moreInfo;
+    }
+
+    /** Package-private setter used by {@link com.voicetel.voiceml.Transport#mapError}. */
+    public void setMoreInfo(String moreInfo) {
+        this.moreInfo = moreInfo;
     }
 
     @Override

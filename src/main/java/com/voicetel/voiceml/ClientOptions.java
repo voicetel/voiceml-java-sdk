@@ -35,14 +35,20 @@ public final class ClientOptions {
         if (b.accountSid == null || b.accountSid.isEmpty()) {
             throw new ConfigurationException("accountSid is required");
         }
-        if (b.apiKey == null || b.apiKey.isEmpty()) {
+        if (b.apiKey != null && !b.apiKey.isEmpty()
+                && b.authToken != null && !b.authToken.isEmpty()) {
+            throw new IllegalStateException(
+                    "set either apiKey or authToken, not both — they are aliases");
+        }
+        String resolvedKey = (b.apiKey != null && !b.apiKey.isEmpty()) ? b.apiKey : b.authToken;
+        if (resolvedKey == null || resolvedKey.isEmpty()) {
             throw new ConfigurationException("apiKey is required");
         }
         if (b.maxRetries < 0) {
             throw new ConfigurationException("maxRetries must be >= 0");
         }
         this.accountSid = b.accountSid;
-        this.apiKey = b.apiKey;
+        this.apiKey = resolvedKey;
         this.baseUrl = stripTrailingSlash(b.baseUrl != null ? b.baseUrl : DEFAULT_BASE_URL);
         this.timeout = Objects.requireNonNullElse(b.timeout, DEFAULT_TIMEOUT);
         this.maxRetries = b.maxRetries;
@@ -94,6 +100,7 @@ public final class ClientOptions {
     public static final class Builder {
         private String accountSid;
         private String apiKey;
+        private String authToken;
         private String baseUrl;
         private Duration timeout;
         private int maxRetries = DEFAULT_MAX_RETRIES;
@@ -109,6 +116,17 @@ public final class ClientOptions {
         /** Per-tenant API key. Sent as the HTTP Basic password. */
         public Builder apiKey(String apiKey) {
             this.apiKey = apiKey;
+            return this;
+        }
+
+        /**
+         * Twilio-named alias for {@link #apiKey(String)} — set the HTTP Basic password under the
+         * name twilio-java users expect. Setting both {@code apiKey(...)} and
+         * {@code authToken(...)} on the same builder is rejected at {@link #build()} time with
+         * {@link IllegalStateException}.
+         */
+        public Builder authToken(String authToken) {
+            this.authToken = authToken;
             return this;
         }
 

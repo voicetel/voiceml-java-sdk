@@ -4,13 +4,19 @@ import com.sun.net.httpserver.HttpServer;
 import com.voicetel.voiceml.exceptions.ApiException;
 import com.voicetel.voiceml.exceptions.AuthenticationException;
 import com.voicetel.voiceml.exceptions.ConfigurationException;
+import com.voicetel.voiceml.exceptions.ConflictException;
 import com.voicetel.voiceml.exceptions.NotFoundException;
 import com.voicetel.voiceml.exceptions.NotImplementedException;
 import com.voicetel.voiceml.exceptions.RateLimitException;
 import com.voicetel.voiceml.models.Call;
 import com.voicetel.voiceml.models.CallList;
 import com.voicetel.voiceml.models.CreateCallRequest;
+import com.voicetel.voiceml.models.CreateIncomingPhoneNumberRequest;
+import com.voicetel.voiceml.models.IncomingPhoneNumber;
+import com.voicetel.voiceml.models.IncomingPhoneNumberList;
 import com.voicetel.voiceml.models.ListCallsParams;
+import com.voicetel.voiceml.models.ListIncomingPhoneNumbersParams;
+import com.voicetel.voiceml.models.UpdateIncomingPhoneNumberRequest;
 import com.voicetel.voiceml.models.UpdateParticipantRequest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -162,7 +168,7 @@ class SmokeTest {
 
         RecordedRequest r = recorded.removeFirst();
         assertThat(r.method).isEqualTo("POST");
-        assertThat(r.path).isEqualTo("/2010-04-01/Accounts/ACtest/Calls");
+        assertThat(r.path).isEqualTo("/2010-04-01/Accounts/ACtest/Calls.json");
         assertThat(r.contentType).isEqualTo("application/x-www-form-urlencoded");
         assertThat(r.body)
                 .contains("To=%2B18005551234")
@@ -173,7 +179,7 @@ class SmokeTest {
         String expectedAuth =
                 "Basic " + Base64.getEncoder().encodeToString("ACtest:secret".getBytes(StandardCharsets.UTF_8));
         assertThat(r.authorization).isEqualTo(expectedAuth);
-        assertThat(r.userAgent).startsWith("voiceml-java/0.4.0");
+        assertThat(r.userAgent).startsWith("voiceml-java/0.5.0");
     }
 
     @Test
@@ -309,6 +315,233 @@ class SmokeTest {
         client().calls().delete("CA1");
         RecordedRequest r = recorded.removeFirst();
         assertThat(r.method).isEqualTo("DELETE");
+    }
+
+    // --- v0.5.0: .json URL suffix ---
+
+    @Test
+    void requestPathsCarryJsonSuffix() {
+        handle("/2010-04-01/Accounts/ACtest/Calls/CA1", 200,
+                "{\"sid\":\"CA1\",\"account_sid\":\"ACtest\",\"api_version\":\"2010-04-01\","
+                        + "\"status\":\"completed\",\"direction\":\"outbound-api\"}");
+
+        client().calls().get("CA1");
+
+        RecordedRequest r = recorded.removeFirst();
+        assertThat(r.path).isEqualTo("/2010-04-01/Accounts/ACtest/Calls/CA1.json");
+    }
+
+    // --- v0.5.0: IncomingPhoneNumbers ---
+
+    @Test
+    void incomingPhoneNumbersListSendsJsonPathAndDecodesEnvelope() {
+        handle("/2010-04-01/Accounts/ACtest/IncomingPhoneNumbers", 200,
+                "{\"incoming_phone_numbers\":[{"
+                        + "\"sid\":\"PN" + "0123456789abcdef0123456789abcdef\","
+                        + "\"account_sid\":\"ACtest\","
+                        + "\"phone_number\":\"+18005551234\","
+                        + "\"friendly_name\":null,"
+                        + "\"api_version\":\"2010-04-01\","
+                        + "\"uri\":\"/2010-04-01/Accounts/ACtest/IncomingPhoneNumbers/PN"
+                        + "0123456789abcdef0123456789abcdef.json\","
+                        + "\"voice_url\":\"https://example.com/twiml\","
+                        + "\"voice_method\":\"POST\","
+                        + "\"capabilities\":{\"voice\":true,\"sms\":false,\"mms\":false,\"fax\":false},"
+                        + "\"date_created\":\"Wed, 20 May 2026 00:00:00 +0000\","
+                        + "\"date_updated\":\"Wed, 20 May 2026 00:00:00 +0000\""
+                        + "}],\"page\":0,\"page_size\":50,\"total\":1,"
+                        + "\"first_page_uri\":\"/x\",\"next_page_uri\":null}");
+
+        IncomingPhoneNumberList list = client().incomingPhoneNumbers().list(
+                ListIncomingPhoneNumbersParams.builder()
+                        .phoneNumber("+18005551234")
+                        .pageSize(50)
+                        .build());
+
+        assertThat(list.getIncomingPhoneNumbers()).hasSize(1);
+        IncomingPhoneNumber ipn = list.getIncomingPhoneNumbers().get(0);
+        assertThat(ipn.getSid()).startsWith("PN");
+        assertThat(ipn.getSid()).hasSize(34);
+        assertThat(ipn.getPhoneNumber()).isEqualTo("+18005551234");
+        assertThat(ipn.getCapabilities()).isNotNull();
+        assertThat(ipn.getCapabilities().getVoice()).isTrue();
+        assertThat(list.getTotal()).isEqualTo(1);
+        assertThat(list.getNextPageUri()).isNull();
+
+        RecordedRequest r = recorded.removeFirst();
+        assertThat(r.method).isEqualTo("GET");
+        assertThat(r.path).isEqualTo("/2010-04-01/Accounts/ACtest/IncomingPhoneNumbers.json");
+        assertThat(r.query)
+                .contains("PhoneNumber=%2B18005551234")
+                .contains("PageSize=50");
+    }
+
+    @Test
+    void incomingPhoneNumbersCreatePostsForm() {
+        handle("/2010-04-01/Accounts/ACtest/IncomingPhoneNumbers", 201,
+                "{\"sid\":\"PN" + "00000000000000000000000000000001\","
+                        + "\"account_sid\":\"ACtest\","
+                        + "\"phone_number\":\"+18005551234\","
+                        + "\"api_version\":\"2010-04-01\","
+                        + "\"uri\":\"/x\","
+                        + "\"capabilities\":{\"voice\":true,\"sms\":false,\"mms\":false,\"fax\":false}}");
+
+        IncomingPhoneNumber ipn = client().incomingPhoneNumbers().create(
+                CreateIncomingPhoneNumberRequest.builder()
+                        .phoneNumber("+18005551234")
+                        .voiceUrl("https://example.com/twiml")
+                        .voiceMethod("POST")
+                        .build());
+
+        assertThat(ipn.getSid()).matches("PN[a-f0-9]{32}");
+
+        RecordedRequest r = recorded.removeFirst();
+        assertThat(r.method).isEqualTo("POST");
+        assertThat(r.path).isEqualTo("/2010-04-01/Accounts/ACtest/IncomingPhoneNumbers.json");
+        assertThat(r.contentType).isEqualTo("application/x-www-form-urlencoded");
+        assertThat(r.body)
+                .contains("PhoneNumber=%2B18005551234")
+                .contains("VoiceUrl=https%3A%2F%2Fexample.com%2Ftwiml")
+                .contains("VoiceMethod=POST");
+    }
+
+    @Test
+    void incomingPhoneNumbersGetByPnSidUsesJsonPath() {
+        String sid = "PN0123456789abcdef0123456789abcdef";
+        handle("/2010-04-01/Accounts/ACtest/IncomingPhoneNumbers/" + sid, 200,
+                "{\"sid\":\"" + sid + "\",\"account_sid\":\"ACtest\","
+                        + "\"phone_number\":\"+18005551234\",\"api_version\":\"2010-04-01\","
+                        + "\"uri\":\"/x\","
+                        + "\"capabilities\":{\"voice\":true,\"sms\":false,\"mms\":false,\"fax\":false}}");
+
+        IncomingPhoneNumber ipn = client().incomingPhoneNumbers().get(sid);
+
+        assertThat(ipn.getSid()).isEqualTo(sid);
+        RecordedRequest r = recorded.removeFirst();
+        assertThat(r.path)
+                .isEqualTo("/2010-04-01/Accounts/ACtest/IncomingPhoneNumbers/" + sid + ".json");
+    }
+
+    @Test
+    void incomingPhoneNumbersUpdatePostsForm() {
+        String sid = "PN0123456789abcdef0123456789abcdef";
+        handle("/2010-04-01/Accounts/ACtest/IncomingPhoneNumbers/" + sid, 200,
+                "{\"sid\":\"" + sid + "\",\"account_sid\":\"ACtest\","
+                        + "\"phone_number\":\"+18005551234\",\"api_version\":\"2010-04-01\","
+                        + "\"uri\":\"/x\","
+                        + "\"voice_url\":\"https://example.com/new\","
+                        + "\"capabilities\":{\"voice\":true,\"sms\":false,\"mms\":false,\"fax\":false}}");
+
+        IncomingPhoneNumber ipn = client().incomingPhoneNumbers().update(
+                sid,
+                UpdateIncomingPhoneNumberRequest.builder()
+                        .voiceUrl("https://example.com/new")
+                        .voiceMethod("POST")
+                        .build());
+
+        assertThat(ipn.getVoiceUrl()).isEqualTo("https://example.com/new");
+
+        RecordedRequest r = recorded.removeFirst();
+        assertThat(r.method).isEqualTo("POST");
+        assertThat(r.path)
+                .isEqualTo("/2010-04-01/Accounts/ACtest/IncomingPhoneNumbers/" + sid + ".json");
+        assertThat(r.body)
+                .contains("VoiceUrl=https%3A%2F%2Fexample.com%2Fnew")
+                .contains("VoiceMethod=POST");
+    }
+
+    @Test
+    void incomingPhoneNumbersDeleteIsIdempotent204() {
+        String sid = "PN0123456789abcdef0123456789abcdef";
+        handle("/2010-04-01/Accounts/ACtest/IncomingPhoneNumbers/" + sid, 204, null);
+
+        client().incomingPhoneNumbers().delete(sid);
+
+        RecordedRequest r = recorded.removeFirst();
+        assertThat(r.method).isEqualTo("DELETE");
+        assertThat(r.path)
+                .isEqualTo("/2010-04-01/Accounts/ACtest/IncomingPhoneNumbers/" + sid + ".json");
+    }
+
+    @Test
+    void incomingPhoneNumbersCreate409MapsToConflictException() {
+        handle("/2010-04-01/Accounts/ACtest/IncomingPhoneNumbers", 409,
+                "{\"code\":20409,\"message\":\"PhoneNumber already assigned to another account\"}");
+
+        assertThatThrownBy(() -> client().incomingPhoneNumbers().create(
+                CreateIncomingPhoneNumberRequest.builder().phoneNumber("+18005551234").build()))
+                .isInstanceOf(ConflictException.class)
+                .satisfies(e -> assertThat(((ApiException) e).getStatusCode()).isEqualTo(409));
+    }
+
+    // --- v0.5.0: authToken alias (CC-2) ---
+
+    @Test
+    void authTokenAliasWorksLikeApiKey() {
+        VoicemlClient c = VoicemlClient.builder()
+                .accountSid("ACtest")
+                .authToken("aliased-secret")
+                .baseUrl("http://127.0.0.1:" + port)
+                .maxRetries(0)
+                .build();
+
+        handle("/2010-04-01/Accounts/ACtest/Calls", 200,
+                "{\"calls\":[],\"page\":0,\"page_size\":50}");
+
+        c.calls().list();
+
+        RecordedRequest r = recorded.removeFirst();
+        String expectedAuth = "Basic " + Base64.getEncoder()
+                .encodeToString("ACtest:aliased-secret".getBytes(StandardCharsets.UTF_8));
+        assertThat(r.authorization).isEqualTo(expectedAuth);
+    }
+
+    @Test
+    void apiKeyAndAuthTokenSetSimultaneouslyThrowsIllegalState() {
+        assertThatThrownBy(() -> VoicemlClient.builder()
+                .accountSid("ACtest")
+                .apiKey("one")
+                .authToken("two")
+                .build())
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("apiKey")
+                .hasMessageContaining("authToken");
+    }
+
+    @Test
+    void authTokenAloneSatisfiesApiKeyRequirement() {
+        VoicemlClient c = VoicemlClient.builder()
+                .accountSid("ACtest")
+                .authToken("only-set-here")
+                .build();
+        assertThat(c.accountSid()).isEqualTo("ACtest");
+    }
+
+    // --- v0.5.0: ApiException.getMoreInfo (CC-6) ---
+
+    @Test
+    void apiExceptionExposesMoreInfoFromErrorBody() {
+        handle("/2010-04-01/Accounts/ACtest/Calls/CAmissing", 404,
+                "{\"code\":20404,\"message\":\"Not Found\","
+                        + "\"more_info\":\"https://voicetel.com/docs/errors/20404\"}");
+
+        assertThatThrownBy(() -> client().calls().get("CAmissing"))
+                .isInstanceOf(NotFoundException.class)
+                .satisfies(e -> {
+                    ApiException api = (ApiException) e;
+                    assertThat(api.getMoreInfo())
+                            .isEqualTo("https://voicetel.com/docs/errors/20404");
+                });
+    }
+
+    @Test
+    void apiExceptionMoreInfoIsNullWhenAbsent() {
+        handle("/2010-04-01/Accounts/ACtest/Calls/CAmissing", 404,
+                "{\"code\":20404,\"message\":\"Not Found\"}");
+
+        assertThatThrownBy(() -> client().calls().get("CAmissing"))
+                .isInstanceOf(NotFoundException.class)
+                .satisfies(e -> assertThat(((ApiException) e).getMoreInfo()).isNull());
     }
 
     /** Recorded data class for tests. Plain POJO so we don't need records on Java 11. */

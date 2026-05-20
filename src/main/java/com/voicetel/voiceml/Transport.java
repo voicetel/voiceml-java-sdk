@@ -171,7 +171,7 @@ public final class Transport {
 
     private HttpRequest buildRequest(String method, String path,
                                      Map<String, Object> query, Map<String, Object> form) {
-        String url = baseUrl() + path + buildQuery(query);
+        String url = baseUrl() + withJsonSuffix(path) + buildQuery(query);
         HttpRequest.Builder b = HttpRequest.newBuilder()
                 .uri(URI.create(url))
                 .timeout(options.getTimeout())
@@ -205,6 +205,35 @@ public final class Transport {
                 b.method(method.toUpperCase(), publisher);
         }
         return b.build();
+    }
+
+    /**
+     * Append the {@code .json} extension that the {@code /2010-04-01/} Twilio-shape resources
+     * expect on JSON requests.
+     *
+     * <p>Skipped for paths that already carry a recognised extension ({@code .json}, {@code .wav},
+     * {@code .yaml}, {@code .yml}) and for the diagnostic root paths ({@code /health},
+     * {@code /openapi.*}). The .wav path is constructed directly by
+     * {@code fetchBytes}, but we still guard here so this helper is safe to call from any future
+     * code path.
+     */
+    static String withJsonSuffix(String path) {
+        if (path == null || path.isEmpty()) {
+            return path;
+        }
+        if (path.equals("/health") || path.startsWith("/openapi.")) {
+            return path;
+        }
+        int lastSlash = path.lastIndexOf('/');
+        String tail = lastSlash >= 0 ? path.substring(lastSlash + 1) : path;
+        int dot = tail.lastIndexOf('.');
+        if (dot >= 0) {
+            String ext = tail.substring(dot + 1).toLowerCase();
+            if (ext.equals("json") || ext.equals("wav") || ext.equals("yaml") || ext.equals("yml")) {
+                return path;
+            }
+        }
+        return path + ".json";
     }
 
     private String basicAuth() {
@@ -359,6 +388,7 @@ public final class Transport {
     public static ApiException mapError(int status, String body) {
         Integer code = null;
         String message = "HTTP " + status;
+        String moreInfo = null;
         if (body != null && !body.isEmpty()) {
             try {
                 JsonNode node = MAPPER.readTree(body);
@@ -377,34 +407,50 @@ public final class Transport {
                     if (msgNode != null && msgNode.isTextual()) {
                         message = msgNode.asText();
                     }
+                    JsonNode moreInfoNode = node.get("more_info");
+                    if (moreInfoNode != null && moreInfoNode.isTextual()) {
+                        moreInfo = moreInfoNode.asText();
+                    }
                 }
             } catch (JsonProcessingException ignored) {
                 // body wasn't JSON — keep the default message
             }
         }
+        ApiException ex;
         switch (status) {
             case 400:
-                return new BadRequestException(message, status, code, body);
+                ex = new BadRequestException(message, status, code, body);
+                break;
             case 401:
-                return new AuthenticationException(message, status, code, body);
+                ex = new AuthenticationException(message, status, code, body);
+                break;
             case 403:
-                return new PermissionDeniedException(message, status, code, body);
+                ex = new PermissionDeniedException(message, status, code, body);
+                break;
             case 404:
-                return new NotFoundException(message, status, code, body);
+                ex = new NotFoundException(message, status, code, body);
+                break;
             case 409:
-                return new ConflictException(message, status, code, body);
+                ex = new ConflictException(message, status, code, body);
+                break;
             case 410:
-                return new GoneException(message, status, code, body);
+                ex = new GoneException(message, status, code, body);
+                break;
             case 429:
-                return new RateLimitException(message, status, code, body);
+                ex = new RateLimitException(message, status, code, body);
+                break;
             case 501:
-                return new NotImplementedException(message, status, code, body);
+                ex = new NotImplementedException(message, status, code, body);
+                break;
             default:
                 if (status >= 500 && status < 600) {
-                    return new ServerException(message, status, code, body);
+                    ex = new ServerException(message, status, code, body);
+                } else {
+                    ex = new ApiException(message, status, code, body);
                 }
-                return new ApiException(message, status, code, body);
         }
+        ex.setMoreInfo(moreInfo);
+        return ex;
     }
 
     /** Holder for binary responses (recording audio). */

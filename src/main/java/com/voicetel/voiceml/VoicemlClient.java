@@ -4,6 +4,7 @@ import com.voicetel.voiceml.resources.ApplicationsResource;
 import com.voicetel.voiceml.resources.CallsResource;
 import com.voicetel.voiceml.resources.ConferencesResource;
 import com.voicetel.voiceml.resources.DiagnosticsResource;
+import com.voicetel.voiceml.resources.IncomingPhoneNumbersResource;
 import com.voicetel.voiceml.resources.QueuesResource;
 import com.voicetel.voiceml.resources.RecordingsResource;
 
@@ -42,6 +43,7 @@ public final class VoicemlClient {
     private final QueuesResource queues;
     private final ApplicationsResource applications;
     private final RecordingsResource recordings;
+    private final IncomingPhoneNumbersResource incomingPhoneNumbers;
     private final DiagnosticsResource diagnostics;
 
     private VoicemlClient(ClientOptions options) {
@@ -51,6 +53,7 @@ public final class VoicemlClient {
         this.queues = new QueuesResource(transport);
         this.applications = new ApplicationsResource(transport);
         this.recordings = new RecordingsResource(transport);
+        this.incomingPhoneNumbers = new IncomingPhoneNumbersResource(transport);
         this.diagnostics = new DiagnosticsResource(transport);
     }
 
@@ -72,6 +75,10 @@ public final class VoicemlClient {
 
     public RecordingsResource recordings() {
         return recordings;
+    }
+
+    public IncomingPhoneNumbersResource incomingPhoneNumbers() {
+        return incomingPhoneNumbers;
     }
 
     public DiagnosticsResource diagnostics() {
@@ -109,6 +116,15 @@ public final class VoicemlClient {
 
         public Builder apiKey(String apiKey) {
             opts.apiKey(apiKey);
+            return this;
+        }
+
+        /**
+         * Twilio-named alias for {@link #apiKey(String)}. Setting both raises
+         * {@link IllegalStateException} at {@link #build()} time.
+         */
+        public Builder authToken(String authToken) {
+            opts.authToken(authToken);
             return this;
         }
 
