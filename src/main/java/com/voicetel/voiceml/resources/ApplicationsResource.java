@@ -4,6 +4,9 @@ import com.voicetel.voiceml.Transport;
 import com.voicetel.voiceml.models.Application;
 import com.voicetel.voiceml.models.ApplicationBody;
 import com.voicetel.voiceml.models.ApplicationList;
+import com.voicetel.voiceml.models.ListApplicationsParams;
+
+import java.util.Map;
 
 /** {@code /Applications} resource. */
 public final class ApplicationsResource extends BaseResource {
@@ -18,10 +21,15 @@ public final class ApplicationsResource extends BaseResource {
                 Application.class);
     }
 
-    public ApplicationList list() {
+    public ApplicationList list(ListApplicationsParams params) {
+        Map<String, Object> q = params != null ? params.toQuery() : null;
         return decode(
-                transport.request("GET", accountPath("Applications"), null, null),
+                transport.request("GET", accountPath("Applications"), q, null),
                 ApplicationList.class);
+    }
+
+    public ApplicationList list() {
+        return list(null);
     }
 
     public Application get(String applicationSid) {

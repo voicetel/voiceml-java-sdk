@@ -6,7 +6,9 @@ import com.voicetel.voiceml.models.CallList;
 import com.voicetel.voiceml.models.CallTranscription;
 import com.voicetel.voiceml.models.CreateCallRequest;
 import com.voicetel.voiceml.models.EventsList;
+import com.voicetel.voiceml.models.ListCallRecordingsParams;
 import com.voicetel.voiceml.models.ListCallsParams;
+import com.voicetel.voiceml.models.ListPageParams;
 import com.voicetel.voiceml.models.NotificationsList;
 import com.voicetel.voiceml.models.Recording;
 import com.voicetel.voiceml.models.RecordingList;
@@ -76,10 +78,15 @@ public final class CallsResource extends BaseResource {
 
     // --- Recordings (call-scoped) ---
 
-    public RecordingList listRecordings(String callSid) {
+    public RecordingList listRecordings(String callSid, ListCallRecordingsParams params) {
+        Map<String, Object> q = params != null ? params.toQuery() : null;
         return decode(
-                transport.request("GET", accountPath("Calls", callSid, "Recordings"), null, null),
+                transport.request("GET", accountPath("Calls", callSid, "Recordings"), q, null),
                 RecordingList.class);
+    }
+
+    public RecordingList listRecordings(String callSid) {
+        return listRecordings(callSid, null);
     }
 
     public Recording startRecording(String callSid, StartRecordingRequest body) {
@@ -237,17 +244,27 @@ public final class CallsResource extends BaseResource {
 
     // --- Notifications / Events (compat stubs) ---
 
-    public NotificationsList listNotifications(String callSid) {
+    public NotificationsList listNotifications(String callSid, ListPageParams params) {
+        Map<String, Object> q = params != null ? params.toQuery() : null;
         return decode(
                 transport.request(
-                        "GET", accountPath("Calls", callSid, "Notifications"), null, null),
+                        "GET", accountPath("Calls", callSid, "Notifications"), q, null),
                 NotificationsList.class);
     }
 
-    public EventsList listEvents(String callSid) {
+    public NotificationsList listNotifications(String callSid) {
+        return listNotifications(callSid, null);
+    }
+
+    public EventsList listEvents(String callSid, ListPageParams params) {
+        Map<String, Object> q = params != null ? params.toQuery() : null;
         return decode(
-                transport.request("GET", accountPath("Calls", callSid, "Events"), null, null),
+                transport.request("GET", accountPath("Calls", callSid, "Events"), q, null),
                 EventsList.class);
+    }
+
+    public EventsList listEvents(String callSid) {
+        return listEvents(callSid, null);
     }
 
     // --- UserDefinedMessages — server returns 501. Kept for API completeness. ---

@@ -42,6 +42,9 @@ public class Recording {
     @JsonProperty("media_url")
     private String mediaUrl;
 
+    @JsonProperty("error_code")
+    private Integer errorCode;
+
     @JsonProperty("date_created")
     private String dateCreated;
 
@@ -85,6 +88,8 @@ public class Recording {
     public void setUri(String uri) { this.uri = uri; }
     public String getMediaUrl() { return mediaUrl; }
     public void setMediaUrl(String mediaUrl) { this.mediaUrl = mediaUrl; }
+    public Integer getErrorCode() { return errorCode; }
+    public void setErrorCode(Integer errorCode) { this.errorCode = errorCode; }
     public String getDateCreated() { return dateCreated; }
     public void setDateCreated(String dateCreated) { this.dateCreated = dateCreated; }
     public String getDateUpdated() { return dateUpdated; }

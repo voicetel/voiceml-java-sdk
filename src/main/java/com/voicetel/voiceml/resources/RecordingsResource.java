@@ -1,11 +1,11 @@
 package com.voicetel.voiceml.resources;
 
 import com.voicetel.voiceml.Transport;
+import com.voicetel.voiceml.models.ListRecordingsParams;
 import com.voicetel.voiceml.models.Recording;
 import com.voicetel.voiceml.models.RecordingAudio;
 import com.voicetel.voiceml.models.RecordingList;
 
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -21,16 +21,18 @@ public final class RecordingsResource extends BaseResource {
     }
 
     /** List recordings for the account. */
-    public RecordingList list(Integer page, Integer pageSize) {
-        Map<String, Object> q = new LinkedHashMap<>();
-        if (page != null) q.put("Page", page);
-        if (pageSize != null) q.put("PageSize", pageSize);
+    public RecordingList list(ListRecordingsParams params) {
+        Map<String, Object> q = params != null ? params.toQuery() : null;
         return decode(
                 transport.request("GET", accountPath("Recordings"), q, null), RecordingList.class);
     }
 
+    public RecordingList list(Integer page, Integer pageSize) {
+        return list(ListRecordingsParams.builder().page(page).pageSize(pageSize).build());
+    }
+
     public RecordingList list() {
-        return list(null, null);
+        return list((ListRecordingsParams) null);
     }
 
     /** Fetch the metadata JSON for a recording. */

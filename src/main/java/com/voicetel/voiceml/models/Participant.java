@@ -22,6 +22,15 @@ public class Participant {
     @JsonProperty("hold")
     private Boolean hold;
 
+    @JsonProperty("coaching")
+    private Boolean coaching;
+
+    @JsonProperty("call_sid_to_coach")
+    private String callSidToCoach;
+
+    @JsonProperty("queue_time")
+    private String queueTime;
+
     @JsonProperty("start_conference_on_enter")
     private Boolean startConferenceOnEnter;
 
@@ -56,6 +65,12 @@ public class Participant {
     public void setMuted(Boolean muted) { this.muted = muted; }
     public Boolean getHold() { return hold; }
     public void setHold(Boolean hold) { this.hold = hold; }
+    public Boolean getCoaching() { return coaching; }
+    public void setCoaching(Boolean coaching) { this.coaching = coaching; }
+    public String getCallSidToCoach() { return callSidToCoach; }
+    public void setCallSidToCoach(String callSidToCoach) { this.callSidToCoach = callSidToCoach; }
+    public String getQueueTime() { return queueTime; }
+    public void setQueueTime(String queueTime) { this.queueTime = queueTime; }
     public Boolean getStartConferenceOnEnter() { return startConferenceOnEnter; }
     public void setStartConferenceOnEnter(Boolean startConferenceOnEnter) { this.startConferenceOnEnter = startConferenceOnEnter; }
     public Boolean getEndConferenceOnExit() { return endConferenceOnExit; }

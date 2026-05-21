@@ -17,6 +17,8 @@ import com.voicetel.voiceml.models.IncomingPhoneNumber;
 import com.voicetel.voiceml.models.IncomingPhoneNumberList;
 import com.voicetel.voiceml.models.ListCallsParams;
 import com.voicetel.voiceml.models.ListIncomingPhoneNumbersParams;
+import com.voicetel.voiceml.models.ListRecordingsParams;
+import com.voicetel.voiceml.models.Participant;
 import com.voicetel.voiceml.models.Recording;
 import com.voicetel.voiceml.models.UpdateIncomingPhoneNumberRequest;
 import com.voicetel.voiceml.models.UpdateParticipantRequest;
@@ -181,7 +183,7 @@ class SmokeTest {
         String expectedAuth =
                 "Basic " + Base64.getEncoder().encodeToString("ACtest:secret".getBytes(StandardCharsets.UTF_8));
         assertThat(r.authorization).isEqualTo(expectedAuth);
-        assertThat(r.userAgent).startsWith("voiceml-java/0.6.2");
+        assertThat(r.userAgent).startsWith("voiceml-java/0.6.3");
     }
 
     @Test
@@ -658,6 +660,89 @@ class SmokeTest {
         IncomingPhoneNumber ipn = new ObjectMapper().readValue(json, IncomingPhoneNumber.class);
 
         assertThat(ipn.getType()).isEqualTo("toll-free");
+    }
+
+    // --- v0.6.3: Participant coaching, Recording.error_code, list filter params ---
+
+    @Test
+    void participantCoachingFieldsDeserialize() throws Exception {
+        String json = "{\"call_sid\":\"CA0123456789abcdef0123456789abcdef\","
+                + "\"conference_sid\":\"CF0123456789abcdef0123456789abcdef\","
+                + "\"account_sid\":\"ACtest\","
+                + "\"muted\":false,\"hold\":false,"
+                + "\"coaching\":true,"
+                + "\"call_sid_to_coach\":\"CAfedcba9876543210fedcba9876543210\","
+                + "\"queue_time\":\"12\","
+                + "\"start_conference_on_enter\":true,"
+                + "\"end_conference_on_exit\":false,"
+                + "\"status\":\"connected\","
+                + "\"api_version\":\"2010-04-01\",\"uri\":\"/x\"}";
+
+        Participant p = new ObjectMapper().readValue(json, Participant.class);
+
+        assertThat(p.getCoaching()).isTrue();
+        assertThat(p.getCallSidToCoach()).isEqualTo("CAfedcba9876543210fedcba9876543210");
+        assertThat(p.getQueueTime()).isEqualTo("12");
+    }
+
+    @Test
+    void recordingErrorCodeAndSourceDeserialize() throws Exception {
+        String json = "{\"sid\":\"RE0123456789abcdef0123456789abcdef\","
+                + "\"account_sid\":\"ACtest\","
+                + "\"call_sid\":\"CA0123456789abcdef0123456789abcdef\","
+                + "\"status\":\"completed\","
+                + "\"source\":\"StartConferenceRecordingAPI\","
+                + "\"error_code\":null,"
+                + "\"api_version\":\"2010-04-01\",\"uri\":\"/x\"}";
+
+        Recording rec = new ObjectMapper().readValue(json, Recording.class);
+
+        assertThat(rec.getSource()).isEqualTo("StartConferenceRecordingAPI");
+        assertThat(rec.getErrorCode()).isNull();
+    }
+
+    @Test
+    void listCallsTranslatesStartTimeEndTimeTripleOperators() {
+        handle("/2010-04-01/Accounts/ACtest/Calls", 200,
+                "{\"calls\":[],\"page\":0,\"page_size\":50}");
+
+        client().calls().list(
+                ListCallsParams.builder()
+                        .startTime("2026-05-01")
+                        .startTimeLt("2026-05-02")
+                        .startTimeGt("2026-04-30")
+                        .endTime("2026-05-21")
+                        .endTimeLt("2026-05-22")
+                        .endTimeGt("2026-05-20")
+                        .build());
+
+        RecordedRequest r = recorded.removeFirst();
+        assertThat(r.query).contains("StartTime=2026-05-01");
+        assertThat(r.query).contains("StartTime%3C=2026-05-02");
+        assertThat(r.query).contains("StartTime%3E=2026-04-30");
+        assertThat(r.query).contains("EndTime=2026-05-21");
+        assertThat(r.query).contains("EndTime%3C=2026-05-22");
+        assertThat(r.query).contains("EndTime%3E=2026-05-20");
+    }
+
+    @Test
+    void listRecordingsTranslatesDateCreatedFilters() {
+        handle("/2010-04-01/Accounts/ACtest/Recordings", 200,
+                "{\"recordings\":[],\"page\":0,\"page_size\":50}");
+
+        client().recordings().list(
+                ListRecordingsParams.builder()
+                        .dateCreated("2026-05-01")
+                        .dateCreatedLt("2026-05-02")
+                        .dateCreatedGt("2026-04-30")
+                        .callSid("CA0123456789abcdef0123456789abcdef")
+                        .build());
+
+        RecordedRequest r = recorded.removeFirst();
+        assertThat(r.query).contains("DateCreated=2026-05-01");
+        assertThat(r.query).contains("DateCreated%3C=2026-05-02");
+        assertThat(r.query).contains("DateCreated%3E=2026-04-30");
+        assertThat(r.query).contains("CallSid=CA0123456789abcdef0123456789abcdef");
     }
 
     /** Recorded data class for tests. Plain POJO so we don't need records on Java 11. */

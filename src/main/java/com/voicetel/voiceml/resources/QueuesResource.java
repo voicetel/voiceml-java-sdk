@@ -3,11 +3,14 @@ package com.voicetel.voiceml.resources;
 import com.voicetel.voiceml.Transport;
 import com.voicetel.voiceml.models.CreateQueueRequest;
 import com.voicetel.voiceml.models.DequeueRequest;
+import com.voicetel.voiceml.models.ListPageParams;
 import com.voicetel.voiceml.models.Queue;
 import com.voicetel.voiceml.models.QueueList;
 import com.voicetel.voiceml.models.QueueMember;
 import com.voicetel.voiceml.models.QueueMemberList;
 import com.voicetel.voiceml.models.UpdateQueueRequest;
+
+import java.util.Map;
 
 /** {@code /Queues} and {@code /Queues/{sid}/Members}. */
 public final class QueuesResource extends BaseResource {
@@ -46,10 +49,15 @@ public final class QueuesResource extends BaseResource {
 
     // --- Members ---
 
-    public QueueMemberList listMembers(String queueSid) {
+    public QueueMemberList listMembers(String queueSid, ListPageParams params) {
+        Map<String, Object> q = params != null ? params.toQuery() : null;
         return decode(
-                transport.request("GET", accountPath("Queues", queueSid, "Members"), null, null),
+                transport.request("GET", accountPath("Queues", queueSid, "Members"), q, null),
                 QueueMemberList.class);
+    }
+
+    public QueueMemberList listMembers(String queueSid) {
+        return listMembers(queueSid, null);
     }
 
     public QueueMember peekFront(String queueSid) {

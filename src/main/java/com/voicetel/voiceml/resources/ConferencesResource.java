@@ -4,10 +4,14 @@ import com.voicetel.voiceml.Transport;
 import com.voicetel.voiceml.models.Conference;
 import com.voicetel.voiceml.models.ConferenceList;
 import com.voicetel.voiceml.models.EndConferenceRequest;
+import com.voicetel.voiceml.models.ListConferencesParams;
+import com.voicetel.voiceml.models.ListParticipantsParams;
 import com.voicetel.voiceml.models.Participant;
 import com.voicetel.voiceml.models.ParticipantList;
 import com.voicetel.voiceml.models.RecordingList;
 import com.voicetel.voiceml.models.UpdateParticipantRequest;
+
+import java.util.Map;
 
 /** {@code /Conferences}, {@code /Conferences/{sid}/Participants}, {@code .../Recordings}. */
 public final class ConferencesResource extends BaseResource {
@@ -16,10 +20,15 @@ public final class ConferencesResource extends BaseResource {
         super(transport);
     }
 
-    public ConferenceList list() {
+    public ConferenceList list(ListConferencesParams params) {
+        Map<String, Object> q = params != null ? params.toQuery() : null;
         return decode(
-                transport.request("GET", accountPath("Conferences"), null, null),
+                transport.request("GET", accountPath("Conferences"), q, null),
                 ConferenceList.class);
+    }
+
+    public ConferenceList list() {
+        return list(null);
     }
 
     public Conference get(String conferenceSid) {
@@ -43,14 +52,19 @@ public final class ConferencesResource extends BaseResource {
 
     // --- Participants ---
 
-    public ParticipantList listParticipants(String conferenceSid) {
+    public ParticipantList listParticipants(String conferenceSid, ListParticipantsParams params) {
+        Map<String, Object> q = params != null ? params.toQuery() : null;
         return decode(
                 transport.request(
                         "GET",
                         accountPath("Conferences", conferenceSid, "Participants"),
-                        null,
+                        q,
                         null),
                 ParticipantList.class);
+    }
+
+    public ParticipantList listParticipants(String conferenceSid) {
+        return listParticipants(conferenceSid, null);
     }
 
     public Participant getParticipant(String conferenceSid, String callSid) {
