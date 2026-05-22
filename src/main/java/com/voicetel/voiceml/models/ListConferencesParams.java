@@ -10,12 +10,14 @@ public final class ListConferencesParams {
     private final String status;
     private final Integer page;
     private final Integer pageSize;
+    private final String pageToken;
 
     private ListConferencesParams(Builder b) {
         this.friendlyName = b.friendlyName;
         this.status = b.status;
         this.page = b.page;
         this.pageSize = b.pageSize;
+        this.pageToken = b.pageToken;
     }
 
     public Map<String, Object> toQuery() {
@@ -24,6 +26,7 @@ public final class ListConferencesParams {
         if (status != null) q.put("Status", status);
         if (page != null) q.put("Page", page);
         if (pageSize != null) q.put("PageSize", pageSize);
+        if (pageToken != null) q.put("PageToken", pageToken);
         return q;
     }
 
@@ -36,11 +39,13 @@ public final class ListConferencesParams {
         private String status;
         private Integer page;
         private Integer pageSize;
+        private String pageToken;
 
         public Builder friendlyName(String s) { this.friendlyName = s; return this; }
         public Builder status(String s) { this.status = s; return this; }
         public Builder page(Integer v) { this.page = v; return this; }
         public Builder pageSize(Integer v) { this.pageSize = v; return this; }
+        public Builder pageToken(String s) { this.pageToken = s; return this; }
 
         public ListConferencesParams build() {
             return new ListConferencesParams(this);

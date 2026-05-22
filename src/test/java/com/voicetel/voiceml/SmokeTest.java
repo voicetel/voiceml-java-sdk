@@ -183,7 +183,7 @@ class SmokeTest {
         String expectedAuth =
                 "Basic " + Base64.getEncoder().encodeToString("ACtest:secret".getBytes(StandardCharsets.UTF_8));
         assertThat(r.authorization).isEqualTo(expectedAuth);
-        assertThat(r.userAgent).startsWith("voiceml-java/0.6.3");
+        assertThat(r.userAgent).startsWith("voiceml-java/0.6.4");
     }
 
     @Test
@@ -723,6 +723,25 @@ class SmokeTest {
         assertThat(r.query).contains("EndTime=2026-05-21");
         assertThat(r.query).contains("EndTime%3C=2026-05-22");
         assertThat(r.query).contains("EndTime%3E=2026-05-20");
+    }
+
+    @Test
+    void listCallsSendsPageToken() {
+        handle("/2010-04-01/Accounts/ACtest/Calls", 200,
+                "{\"calls\":[],\"page\":0,\"page_size\":50}");
+
+        client().calls().list(
+                ListCallsParams.builder()
+                        .pageToken("cursor-abc123")
+                        .build());
+
+        RecordedRequest r = recorded.removeFirst();
+        assertThat(r.query).contains("PageToken=cursor-abc123");
+    }
+
+    @Test
+    void versionIs064() {
+        assertThat(com.voicetel.voiceml.Version.VERSION).isEqualTo("0.6.4");
     }
 
     @Test

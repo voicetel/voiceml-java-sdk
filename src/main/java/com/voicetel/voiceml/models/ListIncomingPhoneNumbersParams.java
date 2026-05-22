@@ -15,11 +15,13 @@ public final class ListIncomingPhoneNumbersParams {
     private final String phoneNumber;
     private final Integer page;
     private final Integer pageSize;
+    private final String pageToken;
 
     private ListIncomingPhoneNumbersParams(Builder b) {
         this.phoneNumber = b.phoneNumber;
         this.page = b.page;
         this.pageSize = b.pageSize;
+        this.pageToken = b.pageToken;
     }
 
     public Map<String, Object> toQuery() {
@@ -27,6 +29,7 @@ public final class ListIncomingPhoneNumbersParams {
         if (phoneNumber != null) q.put("PhoneNumber", phoneNumber);
         if (page != null) q.put("Page", page);
         if (pageSize != null) q.put("PageSize", pageSize);
+        if (pageToken != null) q.put("PageToken", pageToken);
         return q;
     }
 
@@ -38,10 +41,12 @@ public final class ListIncomingPhoneNumbersParams {
         private String phoneNumber;
         private Integer page;
         private Integer pageSize;
+        private String pageToken;
 
         public Builder phoneNumber(String s) { this.phoneNumber = s; return this; }
         public Builder page(Integer v) { this.page = v; return this; }
         public Builder pageSize(Integer v) { this.pageSize = v; return this; }
+        public Builder pageToken(String s) { this.pageToken = s; return this; }
 
         public ListIncomingPhoneNumbersParams build() {
             return new ListIncomingPhoneNumbersParams(this);

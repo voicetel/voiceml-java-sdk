@@ -11,6 +11,7 @@ public final class ListCallRecordingsParams {
     private final String dateCreatedGt;
     private final Integer page;
     private final Integer pageSize;
+    private final String pageToken;
 
     private ListCallRecordingsParams(Builder b) {
         this.dateCreated = b.dateCreated;
@@ -18,6 +19,7 @@ public final class ListCallRecordingsParams {
         this.dateCreatedGt = b.dateCreatedGt;
         this.page = b.page;
         this.pageSize = b.pageSize;
+        this.pageToken = b.pageToken;
     }
 
     public Map<String, Object> toQuery() {
@@ -27,6 +29,7 @@ public final class ListCallRecordingsParams {
         if (dateCreatedGt != null) q.put("DateCreated>", dateCreatedGt);
         if (page != null) q.put("Page", page);
         if (pageSize != null) q.put("PageSize", pageSize);
+        if (pageToken != null) q.put("PageToken", pageToken);
         return q;
     }
 
@@ -40,12 +43,14 @@ public final class ListCallRecordingsParams {
         private String dateCreatedGt;
         private Integer page;
         private Integer pageSize;
+        private String pageToken;
 
         public Builder dateCreated(String s) { this.dateCreated = s; return this; }
         public Builder dateCreatedLt(String s) { this.dateCreatedLt = s; return this; }
         public Builder dateCreatedGt(String s) { this.dateCreatedGt = s; return this; }
         public Builder page(Integer v) { this.page = v; return this; }
         public Builder pageSize(Integer v) { this.pageSize = v; return this; }
+        public Builder pageToken(String s) { this.pageToken = s; return this; }
 
         public ListCallRecordingsParams build() {
             return new ListCallRecordingsParams(this);

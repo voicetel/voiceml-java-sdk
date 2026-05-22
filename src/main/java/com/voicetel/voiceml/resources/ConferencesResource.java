@@ -4,6 +4,7 @@ import com.voicetel.voiceml.Transport;
 import com.voicetel.voiceml.models.Conference;
 import com.voicetel.voiceml.models.ConferenceList;
 import com.voicetel.voiceml.models.EndConferenceRequest;
+import com.voicetel.voiceml.models.ListCallRecordingsParams;
 import com.voicetel.voiceml.models.ListConferencesParams;
 import com.voicetel.voiceml.models.ListParticipantsParams;
 import com.voicetel.voiceml.models.Participant;
@@ -98,13 +99,18 @@ public final class ConferencesResource extends BaseResource {
 
     // --- Recordings ---
 
-    public RecordingList listRecordings(String conferenceSid) {
+    public RecordingList listRecordings(String conferenceSid, ListCallRecordingsParams params) {
+        Map<String, Object> q = params != null ? params.toQuery() : null;
         return decode(
                 transport.request(
                         "GET",
                         accountPath("Conferences", conferenceSid, "Recordings"),
-                        null,
+                        q,
                         null),
                 RecordingList.class);
+    }
+
+    public RecordingList listRecordings(String conferenceSid) {
+        return listRecordings(conferenceSid, null);
     }
 }

@@ -27,6 +27,7 @@ public final class ListCallsParams {
     private final String startTimeLte;
     private final Integer page;
     private final Integer pageSize;
+    private final String pageToken;
 
     private ListCallsParams(Builder b) {
         this.to = b.to;
@@ -43,6 +44,7 @@ public final class ListCallsParams {
         this.startTimeLte = b.startTimeLte;
         this.page = b.page;
         this.pageSize = b.pageSize;
+        this.pageToken = b.pageToken;
     }
 
     public Map<String, Object> toQuery() {
@@ -61,6 +63,7 @@ public final class ListCallsParams {
         if (startTimeLte != null) q.put("StartTime<=", startTimeLte);
         if (page != null) q.put("Page", page);
         if (pageSize != null) q.put("PageSize", pageSize);
+        if (pageToken != null) q.put("PageToken", pageToken);
         return q;
     }
 
@@ -83,6 +86,7 @@ public final class ListCallsParams {
         private String startTimeLte;
         private Integer page;
         private Integer pageSize;
+        private String pageToken;
 
         public Builder to(String s) { this.to = s; return this; }
         public Builder from(String s) { this.from = s; return this; }
@@ -100,6 +104,7 @@ public final class ListCallsParams {
         public Builder startTimeLte(String s) { this.startTimeLte = s; return this; }
         public Builder page(Integer v) { this.page = v; return this; }
         public Builder pageSize(Integer v) { this.pageSize = v; return this; }
+        public Builder pageToken(String s) { this.pageToken = s; return this; }
 
         public ListCallsParams build() {
             return new ListCallsParams(this);

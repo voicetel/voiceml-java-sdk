@@ -25,9 +25,14 @@ public final class QueuesResource extends BaseResource {
                 Queue.class);
     }
 
-    public QueueList list() {
+    public QueueList list(ListPageParams params) {
+        Map<String, Object> q = params != null ? params.toQuery() : null;
         return decode(
-                transport.request("GET", accountPath("Queues"), null, null), QueueList.class);
+                transport.request("GET", accountPath("Queues"), q, null), QueueList.class);
+    }
+
+    public QueueList list() {
+        return list(null);
     }
 
     public Queue get(String queueSid) {

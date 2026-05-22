@@ -11,6 +11,7 @@ public final class ListParticipantsParams {
     private final Boolean coaching;
     private final Integer page;
     private final Integer pageSize;
+    private final String pageToken;
 
     private ListParticipantsParams(Builder b) {
         this.muted = b.muted;
@@ -18,6 +19,7 @@ public final class ListParticipantsParams {
         this.coaching = b.coaching;
         this.page = b.page;
         this.pageSize = b.pageSize;
+        this.pageToken = b.pageToken;
     }
 
     public Map<String, Object> toQuery() {
@@ -27,6 +29,7 @@ public final class ListParticipantsParams {
         if (coaching != null) q.put("Coaching", coaching);
         if (page != null) q.put("Page", page);
         if (pageSize != null) q.put("PageSize", pageSize);
+        if (pageToken != null) q.put("PageToken", pageToken);
         return q;
     }
 
@@ -40,12 +43,14 @@ public final class ListParticipantsParams {
         private Boolean coaching;
         private Integer page;
         private Integer pageSize;
+        private String pageToken;
 
         public Builder muted(Boolean v) { this.muted = v; return this; }
         public Builder hold(Boolean v) { this.hold = v; return this; }
         public Builder coaching(Boolean v) { this.coaching = v; return this; }
         public Builder page(Integer v) { this.page = v; return this; }
         public Builder pageSize(Integer v) { this.pageSize = v; return this; }
+        public Builder pageToken(String s) { this.pageToken = s; return this; }
 
         public ListParticipantsParams build() {
             return new ListParticipantsParams(this);
