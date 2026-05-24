@@ -5,6 +5,7 @@ import com.voicetel.voiceml.models.CreateIncomingPhoneNumberRequest;
 import com.voicetel.voiceml.models.IncomingPhoneNumber;
 import com.voicetel.voiceml.models.IncomingPhoneNumberList;
 import com.voicetel.voiceml.models.ListIncomingPhoneNumbersParams;
+import com.voicetel.voiceml.models.ListTypedIncomingPhoneNumbersParams;
 import com.voicetel.voiceml.models.UpdateIncomingPhoneNumberRequest;
 
 import java.util.Map;
@@ -12,7 +13,7 @@ import java.util.Map;
 /**
  * {@code /IncomingPhoneNumbers} — tenant-self-serve DID assignment.
  *
- * <p>Twilio-shape: {@code list / create / get / update / delete} on
+ * <p>Twilio-compatible: {@code list / create / get / update / delete} on
  * {@code /2010-04-01/Accounts/{AccountSid}/IncomingPhoneNumbers[/{PhoneNumberSid}]}. The
  * canonical {@code PN}-prefixed sid is the only accepted identifier on
  * fetch/update/delete; use {@link #list} with a {@code phoneNumber} filter to translate from
@@ -62,5 +63,55 @@ public final class IncomingPhoneNumbersResource extends BaseResource {
     /** Release a DID from the authenticated tenant. Idempotent — 204 even when already gone. */
     public void delete(String sid) {
         transport.request("DELETE", accountPath("IncomingPhoneNumbers", sid), null, null);
+    }
+
+    public IncomingPhoneNumberList listLocal(ListTypedIncomingPhoneNumbersParams params) {
+        return listTyped("Local", params);
+    }
+
+    public IncomingPhoneNumberList listLocal() {
+        return listLocal(null);
+    }
+
+    public IncomingPhoneNumber createLocal(CreateIncomingPhoneNumberRequest req) {
+        return createTyped("Local", req);
+    }
+
+    public IncomingPhoneNumberList listMobile(ListTypedIncomingPhoneNumbersParams params) {
+        return listTyped("Mobile", params);
+    }
+
+    public IncomingPhoneNumberList listMobile() {
+        return listMobile(null);
+    }
+
+    public IncomingPhoneNumber createMobile(CreateIncomingPhoneNumberRequest req) {
+        return createTyped("Mobile", req);
+    }
+
+    public IncomingPhoneNumberList listTollFree(ListTypedIncomingPhoneNumbersParams params) {
+        return listTyped("TollFree", params);
+    }
+
+    public IncomingPhoneNumberList listTollFree() {
+        return listTollFree(null);
+    }
+
+    public IncomingPhoneNumber createTollFree(CreateIncomingPhoneNumberRequest req) {
+        return createTyped("TollFree", req);
+    }
+
+    private IncomingPhoneNumberList listTyped(String kind, ListTypedIncomingPhoneNumbersParams params) {
+        Map<String, Object> q = params != null ? params.toQuery() : null;
+        return decode(
+                transport.request("GET", accountPath("IncomingPhoneNumbers", kind), q, null),
+                IncomingPhoneNumberList.class);
+    }
+
+    private IncomingPhoneNumber createTyped(String kind, CreateIncomingPhoneNumberRequest req) {
+        return decode(
+                transport.request(
+                        "POST", accountPath("IncomingPhoneNumbers", kind), null, req.toForm()),
+                IncomingPhoneNumber.class);
     }
 }

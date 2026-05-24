@@ -5,6 +5,7 @@ import com.voicetel.voiceml.resources.CallsResource;
 import com.voicetel.voiceml.resources.ConferencesResource;
 import com.voicetel.voiceml.resources.DiagnosticsResource;
 import com.voicetel.voiceml.resources.IncomingPhoneNumbersResource;
+import com.voicetel.voiceml.resources.NotificationsResource;
 import com.voicetel.voiceml.resources.QueuesResource;
 import com.voicetel.voiceml.resources.RecordingsResource;
 
@@ -44,6 +45,7 @@ public final class VoicemlClient {
     private final ApplicationsResource applications;
     private final RecordingsResource recordings;
     private final IncomingPhoneNumbersResource incomingPhoneNumbers;
+    private final NotificationsResource notifications;
     private final DiagnosticsResource diagnostics;
 
     private VoicemlClient(ClientOptions options) {
@@ -54,6 +56,7 @@ public final class VoicemlClient {
         this.applications = new ApplicationsResource(transport);
         this.recordings = new RecordingsResource(transport);
         this.incomingPhoneNumbers = new IncomingPhoneNumbersResource(transport);
+        this.notifications = new NotificationsResource(transport);
         this.diagnostics = new DiagnosticsResource(transport);
     }
 
@@ -79,6 +82,10 @@ public final class VoicemlClient {
 
     public IncomingPhoneNumbersResource incomingPhoneNumbers() {
         return incomingPhoneNumbers;
+    }
+
+    public NotificationsResource notifications() {
+        return notifications;
     }
 
     public DiagnosticsResource diagnostics() {

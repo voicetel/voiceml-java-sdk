@@ -15,8 +15,10 @@ import com.voicetel.voiceml.models.CreateCallRequest;
 import com.voicetel.voiceml.models.CreateIncomingPhoneNumberRequest;
 import com.voicetel.voiceml.models.IncomingPhoneNumber;
 import com.voicetel.voiceml.models.IncomingPhoneNumberList;
+import com.voicetel.voiceml.models.CreateParticipantRequest;
 import com.voicetel.voiceml.models.ListCallsParams;
 import com.voicetel.voiceml.models.ListIncomingPhoneNumbersParams;
+import com.voicetel.voiceml.models.ListNotificationsParams;
 import com.voicetel.voiceml.models.ListRecordingsParams;
 import com.voicetel.voiceml.models.Participant;
 import com.voicetel.voiceml.models.Recording;
@@ -183,7 +185,7 @@ class SmokeTest {
         String expectedAuth =
                 "Basic " + Base64.getEncoder().encodeToString("ACtest:secret".getBytes(StandardCharsets.UTF_8));
         assertThat(r.authorization).isEqualTo(expectedAuth);
-        assertThat(r.userAgent).startsWith("voiceml-java/0.6.4");
+        assertThat(r.userAgent).startsWith("voiceml-java/0.6.6");
     }
 
     @Test
@@ -740,8 +742,51 @@ class SmokeTest {
     }
 
     @Test
-    void versionIs064() {
-        assertThat(com.voicetel.voiceml.Version.VERSION).isEqualTo("0.6.4");
+    void versionIs066() {
+        assertThat(com.voicetel.voiceml.Version.VERSION).isEqualTo("0.6.6");
+    }
+
+    @Test
+    void createParticipantSendsFromAndTo() {
+        String confSid = "CF0123456789abcdef0123456789abcdef";
+        handle("/2010-04-01/Accounts/ACtest/Conferences/" + confSid + "/Participants", 201,
+                "{\"call_sid\":\"CA0123456789abcdef0123456789abcdef\","
+                        + "\"conference_sid\":\"" + confSid + "\","
+                        + "\"account_sid\":\"ACtest\",\"status\":\"queued\","
+                        + "\"api_version\":\"2010-04-01\",\"uri\":\"/x\"}");
+
+        client().conferences().createParticipant(confSid,
+                CreateParticipantRequest.builder()
+                        .from("+18005550000")
+                        .to("+18005551234")
+                        .build());
+
+        RecordedRequest r = recorded.removeFirst();
+        assertThat(r.method).isEqualTo("POST");
+        assertThat(r.body)
+                .contains("From=%2B18005550000")
+                .contains("To=%2B18005551234");
+    }
+
+    @Test
+    void listCallNotificationsSendsLogAndMessageDateFilters() {
+        String callSid = "CA0123456789abcdef0123456789abcdef";
+        handle("/2010-04-01/Accounts/ACtest/Calls/" + callSid + "/Notifications", 200,
+                "{\"notifications\":[],\"page\":0,\"page_size\":50,\"total\":0}");
+
+        client().calls().listNotifications(callSid,
+                ListNotificationsParams.builder()
+                        .log(1)
+                        .messageDate("2026-05-01")
+                        .messageDateLt("2026-05-02")
+                        .messageDateGt("2026-04-30")
+                        .build());
+
+        RecordedRequest r = recorded.removeFirst();
+        assertThat(r.query).contains("Log=1");
+        assertThat(r.query).contains("MessageDate=2026-05-01");
+        assertThat(r.query).contains("MessageDate%3C=2026-05-02");
+        assertThat(r.query).contains("MessageDate%3E=2026-04-30");
     }
 
     @Test

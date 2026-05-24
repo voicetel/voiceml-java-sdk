@@ -208,7 +208,7 @@ public final class Transport {
     }
 
     /**
-     * Append the {@code .json} extension that the {@code /2010-04-01/} Twilio-shape resources
+     * Append the {@code .json} extension that the {@code /2010-04-01/} Twilio-compatible resources
      * expect on JSON requests.
      *
      * <p>Skipped for paths that already carry a recognised extension ({@code .json}, {@code .wav},
@@ -383,7 +383,7 @@ public final class Transport {
 
     /**
      * Map an HTTP status + body to the most specific {@link ApiException} subclass.
-     * Parses the Twilio-shape error envelope when present.
+     * Parses the Twilio-compatible error envelope when present.
      */
     public static ApiException mapError(int status, String body) {
         Integer code = null;

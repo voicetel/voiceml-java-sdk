@@ -3,7 +3,7 @@ package com.voicetel.voiceml.models;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-/** A Twilio-shape Queue resource. */
+/** A Twilio-compatible Queue resource. */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Queue {
 

@@ -1,6 +1,7 @@
 package com.voicetel.voiceml.resources;
 
 import com.voicetel.voiceml.Transport;
+import com.voicetel.voiceml.models.GetRecordingParams;
 import com.voicetel.voiceml.models.ListRecordingsParams;
 import com.voicetel.voiceml.models.Recording;
 import com.voicetel.voiceml.models.RecordingAudio;
@@ -37,8 +38,14 @@ public final class RecordingsResource extends BaseResource {
 
     /** Fetch the metadata JSON for a recording. */
     public Recording get(String recordingSid) {
+        return get(recordingSid, null);
+    }
+
+    /** Fetch the metadata JSON for a recording with optional query params. */
+    public Recording get(String recordingSid, GetRecordingParams params) {
+        Map<String, Object> q = params != null ? params.toQuery() : null;
         return decode(
-                transport.request("GET", accountPath("Recordings", recordingSid), null, null),
+                transport.request("GET", accountPath("Recordings", recordingSid), q, null),
                 Recording.class);
     }
 

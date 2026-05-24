@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Map;
 
-/** A Twilio-shape Call resource. Returned by the {@code /Calls} endpoints. */
+/** A Twilio-compatible Call resource. Returned by the {@code /Calls} endpoints. */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Call {
 

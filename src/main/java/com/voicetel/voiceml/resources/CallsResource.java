@@ -8,6 +8,7 @@ import com.voicetel.voiceml.models.CreateCallRequest;
 import com.voicetel.voiceml.models.EventsList;
 import com.voicetel.voiceml.models.ListCallRecordingsParams;
 import com.voicetel.voiceml.models.ListCallsParams;
+import com.voicetel.voiceml.models.ListNotificationsParams;
 import com.voicetel.voiceml.models.ListPageParams;
 import com.voicetel.voiceml.models.NotificationsList;
 import com.voicetel.voiceml.models.Recording;
@@ -244,7 +245,7 @@ public final class CallsResource extends BaseResource {
 
     // --- Notifications / Events (compat stubs) ---
 
-    public NotificationsList listNotifications(String callSid, ListPageParams params) {
+    public NotificationsList listNotifications(String callSid, ListNotificationsParams params) {
         Map<String, Object> q = params != null ? params.toQuery() : null;
         return decode(
                 transport.request(
@@ -254,6 +255,16 @@ public final class CallsResource extends BaseResource {
 
     public NotificationsList listNotifications(String callSid) {
         return listNotifications(callSid, null);
+    }
+
+    public Map<String, Object> getNotification(String callSid, String notificationSid) {
+        return decode(
+                transport.request(
+                        "GET",
+                        accountPath("Calls", callSid, "Notifications", notificationSid),
+                        null,
+                        null),
+                new com.fasterxml.jackson.core.type.TypeReference<Map<String, Object>>() {});
     }
 
     public EventsList listEvents(String callSid, ListPageParams params) {

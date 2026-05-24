@@ -3,14 +3,17 @@ package com.voicetel.voiceml.resources;
 import com.voicetel.voiceml.Transport;
 import com.voicetel.voiceml.models.Conference;
 import com.voicetel.voiceml.models.ConferenceList;
+import com.voicetel.voiceml.models.CreateParticipantRequest;
 import com.voicetel.voiceml.models.EndConferenceRequest;
 import com.voicetel.voiceml.models.ListCallRecordingsParams;
 import com.voicetel.voiceml.models.ListConferencesParams;
 import com.voicetel.voiceml.models.ListParticipantsParams;
 import com.voicetel.voiceml.models.Participant;
 import com.voicetel.voiceml.models.ParticipantList;
+import com.voicetel.voiceml.models.Recording;
 import com.voicetel.voiceml.models.RecordingList;
 import com.voicetel.voiceml.models.UpdateParticipantRequest;
+import com.voicetel.voiceml.models.UpdateRecordingRequest;
 
 import java.util.Map;
 
@@ -97,6 +100,17 @@ public final class ConferencesResource extends BaseResource {
                 null);
     }
 
+    /** Dial a leg into a conference. {@code POST /Conferences/{sid}/Participants}. */
+    public Participant createParticipant(String conferenceSid, CreateParticipantRequest body) {
+        return decode(
+                transport.request(
+                        "POST",
+                        accountPath("Conferences", conferenceSid, "Participants"),
+                        null,
+                        body.toForm()),
+                Participant.class);
+    }
+
     // --- Recordings ---
 
     public RecordingList listRecordings(String conferenceSid, ListCallRecordingsParams params) {
@@ -112,5 +126,34 @@ public final class ConferencesResource extends BaseResource {
 
     public RecordingList listRecordings(String conferenceSid) {
         return listRecordings(conferenceSid, null);
+    }
+
+    public Recording getRecording(String conferenceSid, String recordingSid) {
+        return decode(
+                transport.request(
+                        "GET",
+                        accountPath("Conferences", conferenceSid, "Recordings", recordingSid),
+                        null,
+                        null),
+                Recording.class);
+    }
+
+    public Recording updateRecording(
+            String conferenceSid, String recordingSid, UpdateRecordingRequest body) {
+        return decode(
+                transport.request(
+                        "POST",
+                        accountPath("Conferences", conferenceSid, "Recordings", recordingSid),
+                        null,
+                        body.toForm()),
+                Recording.class);
+    }
+
+    public void deleteRecording(String conferenceSid, String recordingSid) {
+        transport.request(
+                "DELETE",
+                accountPath("Conferences", conferenceSid, "Recordings", recordingSid),
+                null,
+                null);
     }
 }

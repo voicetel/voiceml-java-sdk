@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * Tenant-self-serve view of an assigned DID.
  *
- * <p>Twilio-shape: {@code sid} is the canonical {@code PN}-prefixed opaque identifier (34 chars);
+ * <p>Twilio-compatible: {@code sid} is the canonical {@code PN}-prefixed opaque identifier (34 chars);
  * {@code phoneNumber} carries the E.164 form. Tenant-scoped — only DIDs assigned to the
  * authenticated account are visible.
  *

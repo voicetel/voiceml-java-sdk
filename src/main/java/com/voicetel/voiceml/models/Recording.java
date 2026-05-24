@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Map;
 
-/** A Twilio-shape Recording resource. */
+/** A Twilio-compatible Recording resource. */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Recording {
 

@@ -4,7 +4,7 @@ package com.voicetel.voiceml.exceptions;
  * Raised when the VoiceML API returns a non-2xx response.
  *
  * <p>Subclasses cover specific status families; catch {@link ApiException} to handle them all.
- * The Twilio-shape error body ({@code {code, message, more_info, status}}) is parsed into
+ * The Twilio-compatible error body ({@code {code, message, more_info, status}}) is parsed into
  * {@link #getCode()} / {@link #getMessage()} when present, with the raw payload exposed on
  * {@link #getBody()}.
  */
@@ -47,7 +47,7 @@ public class ApiException extends VoiceMLException {
     }
 
     /**
-     * The {@code more_info} URL parsed from the Twilio-shape error envelope, or {@code null} when
+     * The {@code more_info} URL parsed from the Twilio-compatible error envelope, or {@code null} when
      * the response did not include one. Matches the twilio-java {@code ApiException.getMoreInfo()}
      * accessor so error-handling code can be ported directly.
      */

@@ -1,7 +1,7 @@
 # VoiceML Java SDK
 
 Official Java SDK for the [VoiceML REST API](https://voicetel.com/docs/api/v0.6/voiceml/). VoiceML is
-VoiceTel's outbound voice + AMD service with a **Twilio-shaped REST surface** — the wire
+VoiceTel's outbound voice + AMD service with a **Twilio-compatible REST surface** — the wire
 shape, auth model, error codes, and pagination envelope all match Twilio's documented
 behaviour, so existing Twilio client patterns map across.
 

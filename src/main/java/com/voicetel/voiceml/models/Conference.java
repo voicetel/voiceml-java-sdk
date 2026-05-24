@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Map;
 
-/** A Twilio-shape Conference resource. */
+/** A Twilio-compatible Conference resource. */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Conference {
 

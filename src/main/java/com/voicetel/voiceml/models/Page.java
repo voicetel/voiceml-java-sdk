@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * Twilio-shape pagination envelope.
+ * Twilio-compatible pagination envelope.
  *
  * <p>Subclasses bind a concrete list field with the resource-specific name
  * ({@code calls}, {@code conferences}, {@code recordings}, ...) — this base only carries the

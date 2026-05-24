@@ -8,7 +8,7 @@ import java.util.List;
 /**
  * Recordings list response.
  *
- * <p>The account-scoped endpoint ({@code GET /Recordings}) returns the canonical Twilio
+ * <p>The account-scoped endpoint ({@code GET /Recordings}) returns the full Twilio-compatible
  * pagination envelope. The per-call ({@code GET /Calls/{sid}/Recordings}) and per-conference
  * ({@code GET /Conferences/{sid}/Recordings}) endpoints currently return only the
  * {@code recordings} array — the inherited pagination fields will be {@code null}.
