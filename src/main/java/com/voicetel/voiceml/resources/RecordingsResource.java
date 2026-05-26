@@ -7,6 +7,9 @@ import com.voicetel.voiceml.models.Recording;
 import com.voicetel.voiceml.models.RecordingAudio;
 import com.voicetel.voiceml.models.RecordingList;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -34,6 +37,33 @@ public final class RecordingsResource extends BaseResource {
 
     public RecordingList list() {
         return list((ListRecordingsParams) null);
+    }
+
+    /**
+     * Auto-paginate through all pages of {@code GET /Recordings}, collecting every
+     * {@link Recording} into a single list.
+     */
+    public List<Recording> iterate(ListRecordingsParams params) {
+        List<Recording> out = new ArrayList<>();
+        Map<String, Object> q = params != null ? params.toQuery() : new LinkedHashMap<>();
+        int page = q.containsKey("Page") ? ((Number) q.get("Page")).intValue() : 0;
+        while (true) {
+            q.put("Page", page);
+            RecordingList chunk = decode(
+                    transport.request("GET", accountPath("Recordings"), q, null),
+                    RecordingList.class);
+            out.addAll(chunk.getRecordings());
+            if (chunk.getNextPageUri() == null || chunk.getNextPageUri().isEmpty()
+                    || chunk.getRecordings().isEmpty()) {
+                return out;
+            }
+            page++;
+        }
+    }
+
+    /** Auto-paginate all recordings (no filters). */
+    public List<Recording> iterate() {
+        return iterate(null);
     }
 
     /** Fetch the metadata JSON for a recording. */

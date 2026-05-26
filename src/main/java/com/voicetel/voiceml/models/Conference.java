@@ -19,7 +19,7 @@ public class Conference {
     private String friendlyName;
 
     @JsonProperty("status")
-    private String status;
+    private ConferenceStatus status;
 
     @JsonProperty("region")
     private String region;
@@ -54,8 +54,8 @@ public class Conference {
     public void setAccountSid(String accountSid) { this.accountSid = accountSid; }
     public String getFriendlyName() { return friendlyName; }
     public void setFriendlyName(String friendlyName) { this.friendlyName = friendlyName; }
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
+    public ConferenceStatus getStatus() { return status; }
+    public void setStatus(ConferenceStatus status) { this.status = status; }
     public String getRegion() { return region; }
     public void setRegion(String region) { this.region = region; }
     public String getApiVersion() { return apiVersion; }

@@ -11,6 +11,9 @@ import com.voicetel.voiceml.exceptions.NotImplementedException;
 import com.voicetel.voiceml.exceptions.RateLimitException;
 import com.voicetel.voiceml.models.Call;
 import com.voicetel.voiceml.models.CallList;
+import com.voicetel.voiceml.models.CallStatus;
+import com.voicetel.voiceml.models.Conference;
+import com.voicetel.voiceml.models.ConferenceList;
 import com.voicetel.voiceml.models.CreateCallRequest;
 import com.voicetel.voiceml.models.CreateIncomingPhoneNumberRequest;
 import com.voicetel.voiceml.models.IncomingPhoneNumber;
@@ -21,7 +24,12 @@ import com.voicetel.voiceml.models.ListIncomingPhoneNumbersParams;
 import com.voicetel.voiceml.models.ListNotificationsParams;
 import com.voicetel.voiceml.models.ListRecordingsParams;
 import com.voicetel.voiceml.models.Participant;
+import com.voicetel.voiceml.models.Queue;
+import com.voicetel.voiceml.models.QueueList;
 import com.voicetel.voiceml.models.Recording;
+import com.voicetel.voiceml.models.RecordingList;
+import com.voicetel.voiceml.models.RecordingSource;
+import com.voicetel.voiceml.models.RecordingStatus;
 import com.voicetel.voiceml.models.UpdateIncomingPhoneNumberRequest;
 import com.voicetel.voiceml.models.UpdateParticipantRequest;
 import org.junit.jupiter.api.AfterEach;
@@ -37,6 +45,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayDeque;
 import java.util.Base64;
 import java.util.Deque;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -170,7 +179,7 @@ class SmokeTest {
                         .build());
 
         assertThat(call.getSid()).isEqualTo("CA1");
-        assertThat(call.getStatus()).isEqualTo("queued");
+        assertThat(call.getStatus()).isEqualTo(CallStatus.QUEUED);
 
         RecordedRequest r = recorded.removeFirst();
         assertThat(r.method).isEqualTo("POST");
@@ -699,7 +708,7 @@ class SmokeTest {
 
         Recording rec = new ObjectMapper().readValue(json, Recording.class);
 
-        assertThat(rec.getSource()).isEqualTo("StartConferenceRecordingAPI");
+        assertThat(rec.getSource()).isEqualTo(RecordingSource.START_CONFERENCE_RECORDING_API);
         assertThat(rec.getErrorCode()).isNull();
     }
 
@@ -807,6 +816,140 @@ class SmokeTest {
         assertThat(r.query).contains("DateCreated%3C=2026-05-02");
         assertThat(r.query).contains("DateCreated%3E=2026-04-30");
         assertThat(r.query).contains("CallSid=CA0123456789abcdef0123456789abcdef");
+    }
+
+    // --- Pagination: iterate() auto-pagination tests ---
+
+    @Test
+    void iterateCallsCollectsAllPagesAndStopsAtNullNextPageUri() {
+        handleSequence(
+                "/2010-04-01/Accounts/ACtest/Calls",
+                new int[] {200, 200},
+                new String[] {
+                        "{\"calls\":["
+                                + "{\"sid\":\"CA01\",\"account_sid\":\"ACtest\",\"api_version\":\"2010-04-01\","
+                                + "\"status\":\"completed\",\"direction\":\"outbound-api\"},"
+                                + "{\"sid\":\"CA02\",\"account_sid\":\"ACtest\",\"api_version\":\"2010-04-01\","
+                                + "\"status\":\"completed\",\"direction\":\"outbound-api\"}"
+                                + "],\"page\":0,\"page_size\":2,"
+                                + "\"next_page_uri\":\"/2010-04-01/Accounts/ACtest/Calls?Page=1&PageSize=2\"}",
+                        "{\"calls\":["
+                                + "{\"sid\":\"CA03\",\"account_sid\":\"ACtest\",\"api_version\":\"2010-04-01\","
+                                + "\"status\":\"completed\",\"direction\":\"outbound-api\"}"
+                                + "],\"page\":1,\"page_size\":2,"
+                                + "\"next_page_uri\":null}"
+                });
+
+        List<Call> all = client().calls().iterate();
+
+        assertThat(all).hasSize(3);
+        assertThat(all.get(0).getSid()).isEqualTo("CA01");
+        assertThat(all.get(1).getSid()).isEqualTo("CA02");
+        assertThat(all.get(2).getSid()).isEqualTo("CA03");
+        assertThat(recorded).hasSize(2);
+    }
+
+    @Test
+    void iterateConferencesCollectsAllPages() {
+        handleSequence(
+                "/2010-04-01/Accounts/ACtest/Conferences",
+                new int[] {200, 200},
+                new String[] {
+                        "{\"conferences\":["
+                                + "{\"sid\":\"CF01\",\"account_sid\":\"ACtest\",\"status\":\"in-progress\","
+                                + "\"api_version\":\"2010-04-01\",\"uri\":\"/x\"},"
+                                + "{\"sid\":\"CF02\",\"account_sid\":\"ACtest\",\"status\":\"completed\","
+                                + "\"api_version\":\"2010-04-01\",\"uri\":\"/x\"}"
+                                + "],\"page\":0,\"page_size\":2,"
+                                + "\"next_page_uri\":\"/2010-04-01/Accounts/ACtest/Conferences?Page=1&PageSize=2\"}",
+                        "{\"conferences\":["
+                                + "{\"sid\":\"CF03\",\"account_sid\":\"ACtest\",\"status\":\"completed\","
+                                + "\"api_version\":\"2010-04-01\",\"uri\":\"/x\"}"
+                                + "],\"page\":1,\"page_size\":2,"
+                                + "\"next_page_uri\":null}"
+                });
+
+        List<Conference> all = client().conferences().iterate();
+
+        assertThat(all).hasSize(3);
+        assertThat(all.get(0).getSid()).isEqualTo("CF01");
+        assertThat(all.get(1).getSid()).isEqualTo("CF02");
+        assertThat(all.get(2).getSid()).isEqualTo("CF03");
+        assertThat(recorded).hasSize(2);
+    }
+
+    @Test
+    void iterateRecordingsCollectsAllPages() {
+        handleSequence(
+                "/2010-04-01/Accounts/ACtest/Recordings",
+                new int[] {200, 200},
+                new String[] {
+                        "{\"recordings\":["
+                                + "{\"sid\":\"RE01\",\"account_sid\":\"ACtest\","
+                                + "\"status\":\"completed\",\"api_version\":\"2010-04-01\",\"uri\":\"/x\"},"
+                                + "{\"sid\":\"RE02\",\"account_sid\":\"ACtest\","
+                                + "\"status\":\"completed\",\"api_version\":\"2010-04-01\",\"uri\":\"/x\"}"
+                                + "],\"page\":0,\"page_size\":2,"
+                                + "\"next_page_uri\":\"/2010-04-01/Accounts/ACtest/Recordings?Page=1&PageSize=2\"}",
+                        "{\"recordings\":["
+                                + "{\"sid\":\"RE03\",\"account_sid\":\"ACtest\","
+                                + "\"status\":\"completed\",\"api_version\":\"2010-04-01\",\"uri\":\"/x\"}"
+                                + "],\"page\":1,\"page_size\":2,"
+                                + "\"next_page_uri\":null}"
+                });
+
+        List<Recording> all = client().recordings().iterate();
+
+        assertThat(all).hasSize(3);
+        assertThat(all.get(0).getSid()).isEqualTo("RE01");
+        assertThat(all.get(1).getSid()).isEqualTo("RE02");
+        assertThat(all.get(2).getSid()).isEqualTo("RE03");
+        assertThat(recorded).hasSize(2);
+    }
+
+    @Test
+    void iterateQueuesCollectsAllPages() {
+        handleSequence(
+                "/2010-04-01/Accounts/ACtest/Queues",
+                new int[] {200, 200},
+                new String[] {
+                        "{\"queues\":["
+                                + "{\"sid\":\"QU01\",\"account_sid\":\"ACtest\","
+                                + "\"friendly_name\":\"support\",\"uri\":\"/x\"},"
+                                + "{\"sid\":\"QU02\",\"account_sid\":\"ACtest\","
+                                + "\"friendly_name\":\"sales\",\"uri\":\"/x\"}"
+                                + "],\"page\":0,\"page_size\":2,"
+                                + "\"next_page_uri\":\"/2010-04-01/Accounts/ACtest/Queues?Page=1&PageSize=2\"}",
+                        "{\"queues\":["
+                                + "{\"sid\":\"QU03\",\"account_sid\":\"ACtest\","
+                                + "\"friendly_name\":\"billing\",\"uri\":\"/x\"}"
+                                + "],\"page\":1,\"page_size\":2,"
+                                + "\"next_page_uri\":null}"
+                });
+
+        List<Queue> all = client().queues().iterate();
+
+        assertThat(all).hasSize(3);
+        assertThat(all.get(0).getSid()).isEqualTo("QU01");
+        assertThat(all.get(1).getSid()).isEqualTo("QU02");
+        assertThat(all.get(2).getSid()).isEqualTo("QU03");
+        assertThat(recorded).hasSize(2);
+    }
+
+    @Test
+    void iterateCallsSinglePageReturnsImmediately() {
+        handle("/2010-04-01/Accounts/ACtest/Calls", 200,
+                "{\"calls\":["
+                        + "{\"sid\":\"CA99\",\"account_sid\":\"ACtest\",\"api_version\":\"2010-04-01\","
+                        + "\"status\":\"completed\",\"direction\":\"outbound-api\"}"
+                        + "],\"page\":0,\"page_size\":50,"
+                        + "\"next_page_uri\":null}");
+
+        List<Call> all = client().calls().iterate();
+
+        assertThat(all).hasSize(1);
+        assertThat(all.get(0).getSid()).isEqualTo("CA99");
+        assertThat(recorded).hasSize(1);
     }
 
     /** Recorded data class for tests. Plain POJO so we don't need records on Java 11. */

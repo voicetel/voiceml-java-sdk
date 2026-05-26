@@ -38,7 +38,7 @@ public class Participant {
     private Boolean endConferenceOnExit;
 
     @JsonProperty("status")
-    private String status;
+    private ParticipantStatus status;
 
     @JsonProperty("label")
     private String label;
@@ -75,8 +75,8 @@ public class Participant {
     public void setStartConferenceOnEnter(Boolean startConferenceOnEnter) { this.startConferenceOnEnter = startConferenceOnEnter; }
     public Boolean getEndConferenceOnExit() { return endConferenceOnExit; }
     public void setEndConferenceOnExit(Boolean endConferenceOnExit) { this.endConferenceOnExit = endConferenceOnExit; }
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
+    public ParticipantStatus getStatus() { return status; }
+    public void setStatus(ParticipantStatus status) { this.status = status; }
     public String getLabel() { return label; }
     public void setLabel(String label) { this.label = label; }
     public String getApiVersion() { return apiVersion; }

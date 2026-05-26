@@ -22,10 +22,10 @@ public class Recording {
     private String conferenceSid;
 
     @JsonProperty("status")
-    private String status;
+    private RecordingStatus status;
 
     @JsonProperty("source")
-    private String source;
+    private RecordingSource source;
 
     @JsonProperty("channels")
     private Integer channels;
@@ -74,10 +74,10 @@ public class Recording {
     public void setCallSid(String callSid) { this.callSid = callSid; }
     public String getConferenceSid() { return conferenceSid; }
     public void setConferenceSid(String conferenceSid) { this.conferenceSid = conferenceSid; }
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
-    public String getSource() { return source; }
-    public void setSource(String source) { this.source = source; }
+    public RecordingStatus getStatus() { return status; }
+    public void setStatus(RecordingStatus status) { this.status = status; }
+    public RecordingSource getSource() { return source; }
+    public void setSource(RecordingSource source) { this.source = source; }
     public Integer getChannels() { return channels; }
     public void setChannels(Integer channels) { this.channels = channels; }
     public String getDuration() { return duration; }

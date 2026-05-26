@@ -98,9 +98,9 @@ public final class ListCallsParams {
         public Builder endTime(String s) { this.endTime = s; return this; }
         public Builder endTimeLt(String s) { this.endTimeLt = s; return this; }
         public Builder endTimeGt(String s) { this.endTimeGt = s; return this; }
-        /** @deprecated Prefer {@link #startTimeGt(String)} — legacy inclusive lower bound. */
+        /** Inclusive lower bound — wire name {@code StartTime>=}. */
         public Builder startTimeGte(String s) { this.startTimeGte = s; return this; }
-        /** @deprecated Prefer {@link #startTimeLt(String)} — legacy inclusive upper bound. */
+        /** Inclusive upper bound — wire name {@code StartTime<=}. */
         public Builder startTimeLte(String s) { this.startTimeLte = s; return this; }
         public Builder page(Integer v) { this.page = v; return this; }
         public Builder pageSize(Integer v) { this.pageSize = v; return this; }

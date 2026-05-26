@@ -8,6 +8,9 @@ import com.voicetel.voiceml.models.ListIncomingPhoneNumbersParams;
 import com.voicetel.voiceml.models.ListTypedIncomingPhoneNumbersParams;
 import com.voicetel.voiceml.models.UpdateIncomingPhoneNumberRequest;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -36,6 +39,33 @@ public final class IncomingPhoneNumbersResource extends BaseResource {
     /** List all assigned DIDs (no filters). */
     public IncomingPhoneNumberList list() {
         return list(null);
+    }
+
+    /**
+     * Auto-paginate through all pages of {@code GET /IncomingPhoneNumbers}, collecting every
+     * {@link IncomingPhoneNumber} into a single list.
+     */
+    public List<IncomingPhoneNumber> iterate(ListIncomingPhoneNumbersParams params) {
+        List<IncomingPhoneNumber> out = new ArrayList<>();
+        Map<String, Object> q = params != null ? params.toQuery() : new LinkedHashMap<>();
+        int page = q.containsKey("Page") ? ((Number) q.get("Page")).intValue() : 0;
+        while (true) {
+            q.put("Page", page);
+            IncomingPhoneNumberList chunk = decode(
+                    transport.request("GET", accountPath("IncomingPhoneNumbers"), q, null),
+                    IncomingPhoneNumberList.class);
+            out.addAll(chunk.getIncomingPhoneNumbers());
+            if (chunk.getNextPageUri() == null || chunk.getNextPageUri().isEmpty()
+                    || chunk.getIncomingPhoneNumbers().isEmpty()) {
+                return out;
+            }
+            page++;
+        }
+    }
+
+    /** Auto-paginate all assigned DIDs (no filters). */
+    public List<IncomingPhoneNumber> iterate() {
+        return iterate(null);
     }
 
     /** Assign a DID to the authenticated tenant (idempotent on the same tenant). */
@@ -73,6 +103,16 @@ public final class IncomingPhoneNumbersResource extends BaseResource {
         return listLocal(null);
     }
 
+    /** Auto-paginate through all Local DIDs. */
+    public List<IncomingPhoneNumber> iterateLocal(ListTypedIncomingPhoneNumbersParams params) {
+        return iterateTyped("Local", params);
+    }
+
+    /** Auto-paginate all Local DIDs (no filters). */
+    public List<IncomingPhoneNumber> iterateLocal() {
+        return iterateLocal(null);
+    }
+
     public IncomingPhoneNumber createLocal(CreateIncomingPhoneNumberRequest req) {
         return createTyped("Local", req);
     }
@@ -85,6 +125,16 @@ public final class IncomingPhoneNumbersResource extends BaseResource {
         return listMobile(null);
     }
 
+    /** Auto-paginate through all Mobile DIDs. */
+    public List<IncomingPhoneNumber> iterateMobile(ListTypedIncomingPhoneNumbersParams params) {
+        return iterateTyped("Mobile", params);
+    }
+
+    /** Auto-paginate all Mobile DIDs (no filters). */
+    public List<IncomingPhoneNumber> iterateMobile() {
+        return iterateMobile(null);
+    }
+
     public IncomingPhoneNumber createMobile(CreateIncomingPhoneNumberRequest req) {
         return createTyped("Mobile", req);
     }
@@ -95,6 +145,16 @@ public final class IncomingPhoneNumbersResource extends BaseResource {
 
     public IncomingPhoneNumberList listTollFree() {
         return listTollFree(null);
+    }
+
+    /** Auto-paginate through all TollFree DIDs. */
+    public List<IncomingPhoneNumber> iterateTollFree(ListTypedIncomingPhoneNumbersParams params) {
+        return iterateTyped("TollFree", params);
+    }
+
+    /** Auto-paginate all TollFree DIDs (no filters). */
+    public List<IncomingPhoneNumber> iterateTollFree() {
+        return iterateTollFree(null);
     }
 
     public IncomingPhoneNumber createTollFree(CreateIncomingPhoneNumberRequest req) {
@@ -113,5 +173,25 @@ public final class IncomingPhoneNumbersResource extends BaseResource {
                 transport.request(
                         "POST", accountPath("IncomingPhoneNumbers", kind), null, req.toForm()),
                 IncomingPhoneNumber.class);
+    }
+
+    private List<IncomingPhoneNumber> iterateTyped(
+            String kind, ListTypedIncomingPhoneNumbersParams params) {
+        List<IncomingPhoneNumber> out = new ArrayList<>();
+        Map<String, Object> q = params != null ? params.toQuery() : new LinkedHashMap<>();
+        int page = q.containsKey("Page") ? ((Number) q.get("Page")).intValue() : 0;
+        while (true) {
+            q.put("Page", page);
+            IncomingPhoneNumberList chunk = decode(
+                    transport.request(
+                            "GET", accountPath("IncomingPhoneNumbers", kind), q, null),
+                    IncomingPhoneNumberList.class);
+            out.addAll(chunk.getIncomingPhoneNumbers());
+            if (chunk.getNextPageUri() == null || chunk.getNextPageUri().isEmpty()
+                    || chunk.getIncomingPhoneNumbers().isEmpty()) {
+                return out;
+            }
+            page++;
+        }
     }
 }

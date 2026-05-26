@@ -40,13 +40,13 @@ public class Call {
     private String forwardedFrom;
 
     @JsonProperty("status")
-    private String status;
+    private CallStatus status;
 
     @JsonProperty("direction")
-    private String direction;
+    private CallDirection direction;
 
     @JsonProperty("answered_by")
-    private String answeredBy;
+    private AnsweredBy answeredBy;
 
     @JsonProperty("start_time")
     private String startTime;
@@ -110,12 +110,12 @@ public class Call {
     public void setCallerName(String callerName) { this.callerName = callerName; }
     public String getForwardedFrom() { return forwardedFrom; }
     public void setForwardedFrom(String forwardedFrom) { this.forwardedFrom = forwardedFrom; }
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
-    public String getDirection() { return direction; }
-    public void setDirection(String direction) { this.direction = direction; }
-    public String getAnsweredBy() { return answeredBy; }
-    public void setAnsweredBy(String answeredBy) { this.answeredBy = answeredBy; }
+    public CallStatus getStatus() { return status; }
+    public void setStatus(CallStatus status) { this.status = status; }
+    public CallDirection getDirection() { return direction; }
+    public void setDirection(CallDirection direction) { this.direction = direction; }
+    public AnsweredBy getAnsweredBy() { return answeredBy; }
+    public void setAnsweredBy(AnsweredBy answeredBy) { this.answeredBy = answeredBy; }
     public String getStartTime() { return startTime; }
     public void setStartTime(String startTime) { this.startTime = startTime; }
     public String getEndTime() { return endTime; }

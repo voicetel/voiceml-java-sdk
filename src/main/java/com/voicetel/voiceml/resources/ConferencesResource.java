@@ -15,6 +15,9 @@ import com.voicetel.voiceml.models.RecordingList;
 import com.voicetel.voiceml.models.UpdateParticipantRequest;
 import com.voicetel.voiceml.models.UpdateRecordingRequest;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /** {@code /Conferences}, {@code /Conferences/{sid}/Participants}, {@code .../Recordings}. */
@@ -33,6 +36,33 @@ public final class ConferencesResource extends BaseResource {
 
     public ConferenceList list() {
         return list(null);
+    }
+
+    /**
+     * Auto-paginate through all pages of {@code GET /Conferences}, collecting every
+     * {@link Conference} into a single list.
+     */
+    public List<Conference> iterate(ListConferencesParams params) {
+        List<Conference> out = new ArrayList<>();
+        Map<String, Object> q = params != null ? params.toQuery() : new LinkedHashMap<>();
+        int page = q.containsKey("Page") ? ((Number) q.get("Page")).intValue() : 0;
+        while (true) {
+            q.put("Page", page);
+            ConferenceList chunk = decode(
+                    transport.request("GET", accountPath("Conferences"), q, null),
+                    ConferenceList.class);
+            out.addAll(chunk.getConferences());
+            if (chunk.getNextPageUri() == null || chunk.getNextPageUri().isEmpty()
+                    || chunk.getConferences().isEmpty()) {
+                return out;
+            }
+            page++;
+        }
+    }
+
+    /** Auto-paginate all conferences (no filters). */
+    public List<Conference> iterate() {
+        return iterate(null);
     }
 
     public Conference get(String conferenceSid) {
@@ -69,6 +99,34 @@ public final class ConferencesResource extends BaseResource {
 
     public ParticipantList listParticipants(String conferenceSid) {
         return listParticipants(conferenceSid, null);
+    }
+
+    /** Auto-paginate through all conference participants. */
+    public List<Participant> iterateParticipants(String conferenceSid, ListParticipantsParams params) {
+        List<Participant> out = new ArrayList<>();
+        Map<String, Object> q = params != null ? params.toQuery() : new LinkedHashMap<>();
+        int page = q.containsKey("Page") ? ((Number) q.get("Page")).intValue() : 0;
+        while (true) {
+            q.put("Page", page);
+            ParticipantList chunk = decode(
+                    transport.request(
+                            "GET",
+                            accountPath("Conferences", conferenceSid, "Participants"),
+                            q,
+                            null),
+                    ParticipantList.class);
+            out.addAll(chunk.getParticipants());
+            if (chunk.getNextPageUri() == null || chunk.getNextPageUri().isEmpty()
+                    || chunk.getParticipants().isEmpty()) {
+                return out;
+            }
+            page++;
+        }
+    }
+
+    /** Auto-paginate all conference participants (no filters). */
+    public List<Participant> iterateParticipants(String conferenceSid) {
+        return iterateParticipants(conferenceSid, null);
     }
 
     public Participant getParticipant(String conferenceSid, String callSid) {
@@ -126,6 +184,34 @@ public final class ConferencesResource extends BaseResource {
 
     public RecordingList listRecordings(String conferenceSid) {
         return listRecordings(conferenceSid, null);
+    }
+
+    /** Auto-paginate through all conference-scoped recordings. */
+    public List<Recording> iterateRecordings(String conferenceSid, ListCallRecordingsParams params) {
+        List<Recording> out = new ArrayList<>();
+        Map<String, Object> q = params != null ? params.toQuery() : new LinkedHashMap<>();
+        int page = q.containsKey("Page") ? ((Number) q.get("Page")).intValue() : 0;
+        while (true) {
+            q.put("Page", page);
+            RecordingList chunk = decode(
+                    transport.request(
+                            "GET",
+                            accountPath("Conferences", conferenceSid, "Recordings"),
+                            q,
+                            null),
+                    RecordingList.class);
+            out.addAll(chunk.getRecordings());
+            if (chunk.getNextPageUri() == null || chunk.getNextPageUri().isEmpty()
+                    || chunk.getRecordings().isEmpty()) {
+                return out;
+            }
+            page++;
+        }
+    }
+
+    /** Auto-paginate all conference recordings (no filters). */
+    public List<Recording> iterateRecordings(String conferenceSid) {
+        return iterateRecordings(conferenceSid, null);
     }
 
     public Recording getRecording(String conferenceSid, String recordingSid) {

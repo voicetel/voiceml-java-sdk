@@ -28,6 +28,9 @@ import com.voicetel.voiceml.models.TranscriptionList;
 import com.voicetel.voiceml.models.UpdateCallRequest;
 import com.voicetel.voiceml.models.UpdateRecordingRequest;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -51,6 +54,33 @@ public final class CallsResource extends BaseResource {
     /** List all calls (no filters). */
     public CallList list() {
         return list(null);
+    }
+
+    /**
+     * Auto-paginate through all pages of {@code GET /Calls}, collecting every {@link Call} into a
+     * single list. Starts at page 0 (or the page specified in {@code params}) and follows
+     * {@code next_page_uri} until exhausted.
+     */
+    public List<Call> iterate(ListCallsParams params) {
+        List<Call> out = new ArrayList<>();
+        Map<String, Object> q = params != null ? params.toQuery() : new LinkedHashMap<>();
+        int page = q.containsKey("Page") ? ((Number) q.get("Page")).intValue() : 0;
+        while (true) {
+            q.put("Page", page);
+            CallList chunk = decode(
+                    transport.request("GET", accountPath("Calls"), q, null), CallList.class);
+            out.addAll(chunk.getCalls());
+            if (chunk.getNextPageUri() == null || chunk.getNextPageUri().isEmpty()
+                    || chunk.getCalls().isEmpty()) {
+                return out;
+            }
+            page++;
+        }
+    }
+
+    /** Auto-paginate all calls (no filters). */
+    public List<Call> iterate() {
+        return iterate(null);
     }
 
     /** Create a new outbound call. */
@@ -88,6 +118,30 @@ public final class CallsResource extends BaseResource {
 
     public RecordingList listRecordings(String callSid) {
         return listRecordings(callSid, null);
+    }
+
+    /** Auto-paginate through all call-scoped recordings. */
+    public List<Recording> iterateRecordings(String callSid, ListCallRecordingsParams params) {
+        List<Recording> out = new ArrayList<>();
+        Map<String, Object> q = params != null ? params.toQuery() : new LinkedHashMap<>();
+        int page = q.containsKey("Page") ? ((Number) q.get("Page")).intValue() : 0;
+        while (true) {
+            q.put("Page", page);
+            RecordingList chunk = decode(
+                    transport.request("GET", accountPath("Calls", callSid, "Recordings"), q, null),
+                    RecordingList.class);
+            out.addAll(chunk.getRecordings());
+            if (chunk.getNextPageUri() == null || chunk.getNextPageUri().isEmpty()
+                    || chunk.getRecordings().isEmpty()) {
+                return out;
+            }
+            page++;
+        }
+    }
+
+    /** Auto-paginate through all call-scoped recordings (no filters). */
+    public List<Recording> iterateRecordings(String callSid) {
+        return iterateRecordings(callSid, null);
     }
 
     public Recording startRecording(String callSid, StartRecordingRequest body) {
@@ -130,6 +184,25 @@ public final class CallsResource extends BaseResource {
                 StreamList.class);
     }
 
+    /** Auto-paginate through all call-scoped streams. */
+    public List<Stream> iterateStreams(String callSid) {
+        List<Stream> out = new ArrayList<>();
+        Map<String, Object> q = new LinkedHashMap<>();
+        int page = 0;
+        while (true) {
+            q.put("Page", page);
+            StreamList chunk = decode(
+                    transport.request("GET", accountPath("Calls", callSid, "Streams"), q, null),
+                    StreamList.class);
+            out.addAll(chunk.getStreams());
+            if (chunk.getNextPageUri() == null || chunk.getNextPageUri().isEmpty()
+                    || chunk.getStreams().isEmpty()) {
+                return out;
+            }
+            page++;
+        }
+    }
+
     public Stream startStream(String callSid, StartStreamRequest body) {
         return decode(
                 transport.request("POST", accountPath("Calls", callSid, "Streams"), null, body.toForm()),
@@ -163,6 +236,25 @@ public final class CallsResource extends BaseResource {
         return decode(
                 transport.request("GET", accountPath("Calls", callSid, "Siprec"), null, null),
                 SiprecList.class);
+    }
+
+    /** Auto-paginate through all call-scoped SIPREC sessions. */
+    public List<SiprecSession> iterateSiprec(String callSid) {
+        List<SiprecSession> out = new ArrayList<>();
+        Map<String, Object> q = new LinkedHashMap<>();
+        int page = 0;
+        while (true) {
+            q.put("Page", page);
+            SiprecList chunk = decode(
+                    transport.request("GET", accountPath("Calls", callSid, "Siprec"), q, null),
+                    SiprecList.class);
+            out.addAll(chunk.getSiprec());
+            if (chunk.getNextPageUri() == null || chunk.getNextPageUri().isEmpty()
+                    || chunk.getSiprec().isEmpty()) {
+                return out;
+            }
+            page++;
+        }
     }
 
     public SiprecSession startSiprec(String callSid, StartSiprecRequest body) {
@@ -203,6 +295,26 @@ public final class CallsResource extends BaseResource {
         return decode(
                 transport.request("GET", accountPath("Calls", callSid, "Transcriptions"), null, null),
                 TranscriptionList.class);
+    }
+
+    /** Auto-paginate through all call-scoped transcriptions. */
+    public List<CallTranscription> iterateTranscriptions(String callSid) {
+        List<CallTranscription> out = new ArrayList<>();
+        Map<String, Object> q = new LinkedHashMap<>();
+        int page = 0;
+        while (true) {
+            q.put("Page", page);
+            TranscriptionList chunk = decode(
+                    transport.request(
+                            "GET", accountPath("Calls", callSid, "Transcriptions"), q, null),
+                    TranscriptionList.class);
+            out.addAll(chunk.getTranscriptions());
+            if (chunk.getNextPageUri() == null || chunk.getNextPageUri().isEmpty()
+                    || chunk.getTranscriptions().isEmpty()) {
+                return out;
+            }
+            page++;
+        }
     }
 
     public CallTranscription startTranscription(String callSid, StartTranscriptionRequest body) {
