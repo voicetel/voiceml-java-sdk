@@ -11,6 +11,8 @@ import com.voicetel.voiceml.models.Conference;
 import com.voicetel.voiceml.models.ConferenceList;
 import com.voicetel.voiceml.models.IncomingPhoneNumber;
 import com.voicetel.voiceml.models.IncomingPhoneNumberList;
+import com.voicetel.voiceml.models.Message;
+import com.voicetel.voiceml.models.MessageList;
 import com.voicetel.voiceml.models.NotificationsList;
 import com.voicetel.voiceml.models.Participant;
 import com.voicetel.voiceml.models.ParticipantList;
@@ -63,9 +65,8 @@ class ConformanceTest {
 
     /**
      * Unmodelled operation IDs — same skip set as the Go/Python/TS harnesses.
-     * These operations either have no SDK model (Messages gap), or are compat
-     * stubs that decode permissively elsewhere (Notifications/Events/
-     * UserDefinedMessage).
+     * These operations are compat stubs that decode permissively elsewhere
+     * (Notifications/Events/UserDefinedMessage).
      */
     private static final Set<String> SKIP_OPS = new HashSet<>(Arrays.asList(
             "ListCallEvent",
@@ -73,11 +74,7 @@ class ConformanceTest {
             "FetchCallNotification",
             "ListNotification",
             "FetchNotification",
-            "CreateUserDefinedMessage",
-            "CreateMessage",
-            "FetchMessage",
-            "ListMessage",
-            "UpdateMessage"
+            "CreateUserDefinedMessage"
     ));
 
     @TestFactory
@@ -244,6 +241,19 @@ class ConformanceTest {
                 assertThat(v.getSid()).as("SiprecSession.sid").isNotEmpty();
                 assertThat(v.getAccountSid()).as("SiprecSession.account_sid").isNotEmpty();
                 assertThat(v.getCallSid()).as("SiprecSession.call_sid").isNotEmpty();
+                break;
+            }
+            case "CreateMessage":
+            case "FetchMessage":
+            case "UpdateMessage": {
+                Message v = MAPPER.readValue(body, Message.class);
+                assertThat(v.getSid()).as("Message.sid").isNotEmpty();
+                assertThat(v.getAccountSid()).as("Message.account_sid").isNotEmpty();
+                break;
+            }
+            case "ListMessage": {
+                MessageList v = MAPPER.readValue(body, MessageList.class);
+                assertThat(v.getUri()).as("MessageList.uri").isNotEmpty();
                 break;
             }
             case "CreateRealtimeTranscription":

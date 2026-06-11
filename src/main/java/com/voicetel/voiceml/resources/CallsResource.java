@@ -3,6 +3,7 @@ package com.voicetel.voiceml.resources;
 import com.voicetel.voiceml.Transport;
 import com.voicetel.voiceml.models.Call;
 import com.voicetel.voiceml.models.CallList;
+import com.voicetel.voiceml.models.CallPayment;
 import com.voicetel.voiceml.models.CallTranscription;
 import com.voicetel.voiceml.models.CreateCallRequest;
 import com.voicetel.voiceml.models.EventsList;
@@ -15,6 +16,7 @@ import com.voicetel.voiceml.models.Recording;
 import com.voicetel.voiceml.models.RecordingList;
 import com.voicetel.voiceml.models.SiprecList;
 import com.voicetel.voiceml.models.SiprecSession;
+import com.voicetel.voiceml.models.StartPaymentRequest;
 import com.voicetel.voiceml.models.StartRecordingRequest;
 import com.voicetel.voiceml.models.StartSiprecRequest;
 import com.voicetel.voiceml.models.StartStreamRequest;
@@ -26,6 +28,7 @@ import com.voicetel.voiceml.models.Stream;
 import com.voicetel.voiceml.models.StreamList;
 import com.voicetel.voiceml.models.TranscriptionList;
 import com.voicetel.voiceml.models.UpdateCallRequest;
+import com.voicetel.voiceml.models.UpdatePaymentRequest;
 import com.voicetel.voiceml.models.UpdateRecordingRequest;
 
 import java.util.ArrayList;
@@ -388,6 +391,36 @@ public final class CallsResource extends BaseResource {
 
     public EventsList listEvents(String callSid) {
         return listEvents(callSid, null);
+    }
+
+    // --- Payments (call-scoped <Pay> REST companion) ---
+
+    /**
+     * Start a {@code <Pay>} session on a live call. Returns 201 with the freshly-minted
+     * {@link CallPayment}. The server returns 403 when the tenant is not pay_enabled or has no
+     * stripe_secret_key configured.
+     */
+    public CallPayment startPayment(String callSid, StartPaymentRequest body) {
+        Map<String, Object> form = body != null ? body.toForm() : null;
+        return decode(
+                transport.request("POST", accountPath("Calls", callSid, "Payments"), null, form),
+                CallPayment.class);
+    }
+
+    /**
+     * Advance or terminate an existing Pay session. {@code Status=complete} captures the collected
+     * fields; {@code Status=cancel} aborts the session. {@code Capture=...} tells the runtime which
+     * input the user is about to type next.
+     */
+    public CallPayment updatePayment(String callSid, String paymentSid, UpdatePaymentRequest body) {
+        Map<String, Object> form = body != null ? body.toForm() : null;
+        return decode(
+                transport.request(
+                        "POST",
+                        accountPath("Calls", callSid, "Payments", paymentSid),
+                        null,
+                        form),
+                CallPayment.class);
     }
 
     // --- UserDefinedMessages — server returns 501. Kept for API completeness. ---

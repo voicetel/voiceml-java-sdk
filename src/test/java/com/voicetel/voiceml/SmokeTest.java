@@ -11,27 +11,40 @@ import com.voicetel.voiceml.exceptions.NotImplementedException;
 import com.voicetel.voiceml.exceptions.RateLimitException;
 import com.voicetel.voiceml.models.Call;
 import com.voicetel.voiceml.models.CallList;
+import com.voicetel.voiceml.models.CallPayment;
 import com.voicetel.voiceml.models.CallStatus;
 import com.voicetel.voiceml.models.Conference;
 import com.voicetel.voiceml.models.ConferenceList;
 import com.voicetel.voiceml.models.CreateCallRequest;
 import com.voicetel.voiceml.models.CreateIncomingPhoneNumberRequest;
+import com.voicetel.voiceml.models.CreateMessageRequest;
 import com.voicetel.voiceml.models.IncomingPhoneNumber;
 import com.voicetel.voiceml.models.IncomingPhoneNumberList;
 import com.voicetel.voiceml.models.CreateParticipantRequest;
 import com.voicetel.voiceml.models.ListCallsParams;
 import com.voicetel.voiceml.models.ListIncomingPhoneNumbersParams;
+import com.voicetel.voiceml.models.ListMessagesParams;
 import com.voicetel.voiceml.models.ListNotificationsParams;
 import com.voicetel.voiceml.models.ListRecordingsParams;
+import com.voicetel.voiceml.models.Message;
+import com.voicetel.voiceml.models.MessageList;
+import com.voicetel.voiceml.models.MessageStatus;
 import com.voicetel.voiceml.models.Participant;
+import com.voicetel.voiceml.models.PaymentCapture;
+import com.voicetel.voiceml.models.PaymentMethod;
+import com.voicetel.voiceml.models.PaymentSessionStatus;
+import com.voicetel.voiceml.models.PaymentTokenType;
 import com.voicetel.voiceml.models.Queue;
 import com.voicetel.voiceml.models.QueueList;
 import com.voicetel.voiceml.models.Recording;
 import com.voicetel.voiceml.models.RecordingList;
 import com.voicetel.voiceml.models.RecordingSource;
 import com.voicetel.voiceml.models.RecordingStatus;
+import com.voicetel.voiceml.models.StartPaymentRequest;
 import com.voicetel.voiceml.models.UpdateIncomingPhoneNumberRequest;
+import com.voicetel.voiceml.models.UpdateMessageRequest;
 import com.voicetel.voiceml.models.UpdateParticipantRequest;
+import com.voicetel.voiceml.models.UpdatePaymentRequest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -194,7 +207,7 @@ class SmokeTest {
         String expectedAuth =
                 "Basic " + Base64.getEncoder().encodeToString("ACtest:secret".getBytes(StandardCharsets.UTF_8));
         assertThat(r.authorization).isEqualTo(expectedAuth);
-        assertThat(r.userAgent).startsWith("voiceml-java/0.6.6");
+        assertThat(r.userAgent).startsWith("voiceml-java/0.7.0");
     }
 
     @Test
@@ -751,8 +764,8 @@ class SmokeTest {
     }
 
     @Test
-    void versionIs066() {
-        assertThat(com.voicetel.voiceml.Version.VERSION).isEqualTo("0.6.6");
+    void versionIs070() {
+        assertThat(com.voicetel.voiceml.Version.VERSION).isEqualTo("0.7.0");
     }
 
     @Test
@@ -950,6 +963,233 @@ class SmokeTest {
         assertThat(all).hasSize(1);
         assertThat(all.get(0).getSid()).isEqualTo("CA99");
         assertThat(recorded).hasSize(1);
+    }
+
+    // --- v0.7.0: Messages resource ---
+
+    @Test
+    void createMessageSendsFormBodyAndDecodesResponse() {
+        handle("/2010-04-01/Accounts/ACtest/Messages", 201,
+                "{\"sid\":\"SM0123456789abcdef0123456789abcdef\","
+                        + "\"account_sid\":\"ACtest\","
+                        + "\"api_version\":\"2010-04-01\","
+                        + "\"to\":\"+18005551234\","
+                        + "\"from\":\"+18005550000\","
+                        + "\"body\":\"hi\","
+                        + "\"status\":\"sent\","
+                        + "\"num_segments\":\"1\","
+                        + "\"num_media\":\"0\","
+                        + "\"direction\":\"outbound-api\","
+                        + "\"price\":null,\"price_unit\":null,"
+                        + "\"error_code\":null,\"error_message\":null,"
+                        + "\"messaging_service_sid\":null,"
+                        + "\"date_created\":\"Wed, 20 May 2026 00:00:00 +0000\","
+                        + "\"date_updated\":\"Wed, 20 May 2026 00:00:00 +0000\","
+                        + "\"date_sent\":null,"
+                        + "\"uri\":\"/x\"}");
+
+        Message msg = client().messages().create(
+                CreateMessageRequest.builder()
+                        .to("+18005551234")
+                        .from("+18005550000")
+                        .body("hi")
+                        .statusCallback("https://example.com/sms-status")
+                        .build());
+
+        assertThat(msg.getSid()).isEqualTo("SM0123456789abcdef0123456789abcdef");
+        assertThat(msg.getStatus()).isEqualTo(MessageStatus.SENT);
+        assertThat(msg.getNumSegments()).isEqualTo("1");
+        assertThat(msg.getNumMedia()).isEqualTo("0");
+        assertThat(msg.getErrorCode()).isNull();
+
+        RecordedRequest r = recorded.removeFirst();
+        assertThat(r.method).isEqualTo("POST");
+        assertThat(r.path).isEqualTo("/2010-04-01/Accounts/ACtest/Messages.json");
+        assertThat(r.contentType).isEqualTo("application/x-www-form-urlencoded");
+        assertThat(r.body)
+                .contains("To=%2B18005551234")
+                .contains("From=%2B18005550000")
+                .contains("Body=hi")
+                .contains("StatusCallback=https%3A%2F%2Fexample.com%2Fsms-status");
+    }
+
+    @Test
+    void fetchMessageGetsJsonPath() {
+        String sid = "SM0123456789abcdef0123456789abcdef";
+        handle("/2010-04-01/Accounts/ACtest/Messages/" + sid, 200,
+                "{\"sid\":\"" + sid + "\","
+                        + "\"account_sid\":\"ACtest\","
+                        + "\"api_version\":\"2010-04-01\","
+                        + "\"to\":\"+18005551234\",\"from\":\"+18005550000\","
+                        + "\"body\":\"hi\",\"status\":\"delivered\","
+                        + "\"num_segments\":\"1\",\"num_media\":\"0\","
+                        + "\"direction\":\"outbound-api\","
+                        + "\"date_created\":\"Wed, 20 May 2026 00:00:00 +0000\","
+                        + "\"date_updated\":\"Wed, 20 May 2026 00:00:00 +0000\","
+                        + "\"uri\":\"/x\"}");
+
+        Message msg = client().messages().fetch(sid);
+        assertThat(msg.getSid()).isEqualTo(sid);
+        assertThat(msg.getStatus()).isEqualTo(MessageStatus.DELIVERED);
+
+        RecordedRequest r = recorded.removeFirst();
+        assertThat(r.method).isEqualTo("GET");
+        assertThat(r.path).isEqualTo("/2010-04-01/Accounts/ACtest/Messages/" + sid + ".json");
+    }
+
+    @Test
+    void listMessagesTranslatesDateSentFiltersAndPagination() {
+        handle("/2010-04-01/Accounts/ACtest/Messages", 200,
+                "{\"messages\":[],\"page\":0,\"page_size\":25,\"total\":0,"
+                        + "\"uri\":\"/2010-04-01/Accounts/ACtest/Messages.json\","
+                        + "\"first_page_uri\":\"/x\",\"next_page_uri\":null}");
+
+        MessageList list = client().messages().list(
+                ListMessagesParams.builder()
+                        .to("+18005551234")
+                        .from("+18005550000")
+                        .dateSent("2026-05-01")
+                        .dateSentLt("2026-05-02")
+                        .dateSentGt("2026-04-30")
+                        .pageSize(25)
+                        .pageToken("cursor-msg")
+                        .build());
+
+        assertThat(list.getMessages()).isEmpty();
+        assertThat(list.getTotal()).isEqualTo(0);
+
+        RecordedRequest r = recorded.removeFirst();
+        assertThat(r.method).isEqualTo("GET");
+        assertThat(r.path).isEqualTo("/2010-04-01/Accounts/ACtest/Messages.json");
+        assertThat(r.query)
+                .contains("To=%2B18005551234")
+                .contains("From=%2B18005550000")
+                .contains("DateSent=2026-05-01")
+                .contains("DateSent%3C=2026-05-02")
+                .contains("DateSent%3E=2026-04-30")
+                .contains("PageSize=25")
+                .contains("PageToken=cursor-msg");
+    }
+
+    @Test
+    void updateMessageSendsBodyRedaction() {
+        String sid = "SM0123456789abcdef0123456789abcdef";
+        handle("/2010-04-01/Accounts/ACtest/Messages/" + sid, 200,
+                "{\"sid\":\"" + sid + "\","
+                        + "\"account_sid\":\"ACtest\","
+                        + "\"api_version\":\"2010-04-01\","
+                        + "\"to\":\"+18005551234\",\"from\":\"+18005550000\","
+                        + "\"body\":\"\",\"status\":\"sent\","
+                        + "\"num_segments\":\"1\",\"num_media\":\"0\","
+                        + "\"direction\":\"outbound-api\","
+                        + "\"date_created\":\"Wed, 20 May 2026 00:00:00 +0000\","
+                        + "\"date_updated\":\"Wed, 20 May 2026 00:00:00 +0000\","
+                        + "\"uri\":\"/x\"}");
+
+        Message msg = client().messages().update(sid,
+                UpdateMessageRequest.builder().body("").build());
+
+        assertThat(msg.getBody()).isEqualTo("");
+
+        RecordedRequest r = recorded.removeFirst();
+        assertThat(r.method).isEqualTo("POST");
+        assertThat(r.path).isEqualTo("/2010-04-01/Accounts/ACtest/Messages/" + sid + ".json");
+        assertThat(r.body).contains("Body=");
+    }
+
+    @Test
+    void deleteMessageSendsDelete204() {
+        String sid = "SM0123456789abcdef0123456789abcdef";
+        handle("/2010-04-01/Accounts/ACtest/Messages/" + sid, 204, null);
+        client().messages().delete(sid);
+
+        RecordedRequest r = recorded.removeFirst();
+        assertThat(r.method).isEqualTo("DELETE");
+        assertThat(r.path).isEqualTo("/2010-04-01/Accounts/ACtest/Messages/" + sid + ".json");
+    }
+
+    // --- v0.7.0: Payments (call-scoped) ---
+
+    @Test
+    void startPaymentPostsFormBodyAndDecodesCallPayment() {
+        String callSid = "CA0123456789abcdef0123456789abcdef";
+        String paySid = "PY0123456789abcdef0123456789abcdef";
+        handle("/2010-04-01/Accounts/ACtest/Calls/" + callSid + "/Payments", 201,
+                "{\"sid\":\"" + paySid + "\","
+                        + "\"account_sid\":\"ACtest\","
+                        + "\"call_sid\":\"" + callSid + "\","
+                        + "\"api_version\":\"2010-04-01\","
+                        + "\"date_created\":\"Wed, 20 May 2026 00:00:00 +0000\","
+                        + "\"date_updated\":\"Wed, 20 May 2026 00:00:00 +0000\","
+                        + "\"uri\":\"/x\"}");
+
+        CallPayment pay = client().calls().startPayment(callSid,
+                StartPaymentRequest.builder()
+                        .idempotencyKey("idem-1")
+                        .statusCallback("https://example.com/pay-status")
+                        .chargeAmount("19.99")
+                        .currency("USD")
+                        .description("subscription")
+                        .paymentMethod(PaymentMethod.CREDIT_CARD)
+                        .tokenType(PaymentTokenType.ONE_TIME)
+                        .timeout(7)
+                        .postalCode(true)
+                        .securityCode(true)
+                        .confirmation(false)
+                        .validCardTypes("visa mastercard amex")
+                        .build());
+
+        assertThat(pay.getSid()).isEqualTo(paySid);
+        assertThat(pay.getCallSid()).isEqualTo(callSid);
+
+        RecordedRequest r = recorded.removeFirst();
+        assertThat(r.method).isEqualTo("POST");
+        assertThat(r.path)
+                .isEqualTo("/2010-04-01/Accounts/ACtest/Calls/" + callSid + "/Payments.json");
+        assertThat(r.contentType).isEqualTo("application/x-www-form-urlencoded");
+        assertThat(r.body)
+                .contains("IdempotencyKey=idem-1")
+                .contains("StatusCallback=https%3A%2F%2Fexample.com%2Fpay-status")
+                .contains("ChargeAmount=19.99")
+                .contains("Currency=USD")
+                .contains("Description=subscription")
+                .contains("PaymentMethod=credit-card")
+                .contains("TokenType=one-time")
+                .contains("Timeout=7")
+                .contains("PostalCode=true")
+                .contains("SecurityCode=true")
+                .contains("Confirmation=false")
+                .contains("ValidCardTypes=visa+mastercard+amex");
+    }
+
+    @Test
+    void updatePaymentSendsCaptureAndStatusEnums() {
+        String callSid = "CA0123456789abcdef0123456789abcdef";
+        String paySid = "PY0123456789abcdef0123456789abcdef";
+        handle("/2010-04-01/Accounts/ACtest/Calls/" + callSid + "/Payments/" + paySid, 202,
+                "{\"sid\":\"" + paySid + "\","
+                        + "\"account_sid\":\"ACtest\","
+                        + "\"call_sid\":\"" + callSid + "\","
+                        + "\"api_version\":\"2010-04-01\","
+                        + "\"date_created\":\"Wed, 20 May 2026 00:00:00 +0000\","
+                        + "\"date_updated\":\"Wed, 20 May 2026 00:00:00 +0000\","
+                        + "\"uri\":\"/x\"}");
+
+        CallPayment pay = client().calls().updatePayment(callSid, paySid,
+                UpdatePaymentRequest.builder()
+                        .capture(PaymentCapture.SECURITY_CODE)
+                        .status(PaymentSessionStatus.COMPLETE)
+                        .build());
+
+        assertThat(pay.getSid()).isEqualTo(paySid);
+
+        RecordedRequest r = recorded.removeFirst();
+        assertThat(r.method).isEqualTo("POST");
+        assertThat(r.path).isEqualTo(
+                "/2010-04-01/Accounts/ACtest/Calls/" + callSid + "/Payments/" + paySid + ".json");
+        assertThat(r.body)
+                .contains("Capture=security-code")
+                .contains("Status=complete");
     }
 
     /** Recorded data class for tests. Plain POJO so we don't need records on Java 11. */
