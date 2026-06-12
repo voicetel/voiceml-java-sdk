@@ -1,113 +1,245 @@
-# VoiceML Java SDK
+# 📞 VoiceML Java SDK
 
-Official Java SDK for the [VoiceML REST API](https://voicetel.com/docs/api/v0.6/voiceml/). VoiceML is
-VoiceTel's outbound voice + AMD service with a **Twilio-compatible REST surface** — the wire
-shape, auth model, error codes, and pagination envelope all match Twilio's documented
-behaviour, so existing Twilio client patterns map across.
+The official Java client for the [VoiceML REST API](https://voicetel.com/docs/api/v0.6/voiceml/) — Twilio-compatible outbound voice and answering-machine-detection from VoiceTel, with strongly-typed Jackson models on the modern `java.net.http` transport.
 
-- Server: `https://voiceml.voicetel.com`
-- Auth: HTTP Basic — `AccountSid` is the username, the per-tenant API key is the password
-- Pure JDK + Jackson — no OkHttp, Apache HttpClient, Lombok, or Spring dependencies
-- Java 11 baseline (compiled with `--release 11`)
+![Version](https://img.shields.io/badge/version-0.7.0-blue)
+![Java](https://img.shields.io/badge/java-11%2B-blue)
+![License](https://img.shields.io/badge/license-MIT%20%2B%20Commons%20Clause-green)
+![Tests](https://img.shields.io/badge/tests-51%20unit-brightgreen)
+![Typed](https://img.shields.io/badge/typed-jackson-blue)
 
-## Install
+## 📚 Table of Contents
 
-Maven:
+- [Features](#-features)
+- [Installation](#-installation)
+- [Quickstart](#-quickstart)
+- [Authentication](#-authentication)
+- [Resource Reference](#-resource-reference)
+- [Error Handling](#-error-handling)
+- [Async Support](#-async-support)
+- [Pagination](#-pagination)
+- [Migration from twilio-java](#-migration-from-twilio-java)
+- [Rate Limits](#-rate-limits)
+- [Development](#-development)
+- [API Documentation](#-api-documentation)
+- [Contributors](#-contributors)
+- [Sponsors](#-sponsors)
+- [License](#-license)
+
+## ✨ Features
+
+### 🛡️ Strongly Typed End-to-End
+- **Jackson-databind models** for every one of the 81 API operations across 9 resource families — request builders, response payloads, and entity types.
+- **Autocomplete everywhere.** Your IDE knows the shape of every field — `Call.getSid()`, `Recording.getDuration()`, `Queue.getCurrentSize()` are all typed.
+- **Twilio-compatible wire shapes** — `AccountSid`, `From`, `To`, status callbacks, pagination envelopes — match what Twilio's Programmable Voice API documents.
+
+### ⚡ Modern Runtime
+- Built on the standard **`java.net.http.HttpClient`** (Java 11+). No OkHttp, Apache HttpClient, Lombok, or Spring on the classpath.
+- **Single non-test dependency:** `jackson-databind`. Slim transitive footprint for downstream apps.
+- Compatible with **Java 11 LTS through 21+**.
+
+### 🔁 Production-Grade Transport
+- **Automatic retry** with exponential backoff on 429 / 5xx — honors `Retry-After` headers.
+- **Configurable timeout** via the builder, per-client.
+- **HTTP Basic auth** with `AccountSid:ApiKey` — exactly what the Twilio SDK uses, so existing credentials work unchanged.
+- **Structured exception hierarchy** — `RateLimitException`, `AuthenticationException`, `NotFoundException`, etc. all subclasses of `ApiException` you can catch broadly or narrowly. `ApiException` itself extends `VoiceMLException`.
+
+### 📞 Complete API Coverage
+- **Calls** — originate, fetch, terminate, update + per-call recordings, streams, siprec, transcriptions, notifications, events, user-defined messages, and the `/Calls/{sid}/Payments` lifecycle (Pay TwiML companion).
+- **Conferences** — list, fetch, end conferences, plus participants (mute / hold / kick) and conference-scoped recordings.
+- **Queues** — create, list, update, delete, peek, dequeue (front or specific member).
+- **Applications** — CRUD on stored TwiML + callback bundles.
+- **Recordings** — account-wide list, metadata fetch, audio fetch (follows S3 redirect), delete.
+- **Messages** — create, fetch, list (To/From/DateSent filters + pagination), update (Body redaction; Status=canceled), delete.
+- **IncomingPhoneNumbers** — list, fetch, update.
+- **Notifications** — fetch, list.
+- **Diagnostics** — `/health` deep probe, OpenAPI spec.
+
+### 🧪 Tested
+- **51 unit tests** covering transport, retry, error mapping, pagination envelope parsing, and request/response serialization.
+- JUnit 5 + AssertJ; runs as part of `mvn test`.
+
+### 📦 Clean Distribution
+- Zero codegen footprint — every byte hand-written.
+- Published as jar + sources + javadoc.
+
+## 🚀 Installation
+
+### Maven
 
 ```xml
 <dependency>
   <groupId>com.voicetel</groupId>
   <artifactId>voiceml</artifactId>
-  <version>0.6.1</version>
+  <version>0.7.0</version>
 </dependency>
 ```
 
-Gradle:
+### Gradle (Groovy DSL)
 
 ```groovy
-implementation 'com.voicetel:voiceml:0.6.1'
+implementation 'com.voicetel:voiceml:0.7.0'
 ```
 
-## Quickstart
+### Gradle (Kotlin DSL)
+
+```kotlin
+implementation("com.voicetel:voiceml:0.7.0")
+```
+
+Requires Java 11 or later.
+
+## 🏁 Quickstart
 
 ```java
 import com.voicetel.voiceml.VoicemlClient;
 import com.voicetel.voiceml.models.Call;
 import com.voicetel.voiceml.models.CreateCallRequest;
+import com.voicetel.voiceml.models.Queue;
 
+public class Example {
+    public static void main(String[] args) {
+        VoicemlClient client = VoicemlClient.builder()
+                .accountSid("AC...")
+                .apiKey("...")
+                .build();
+
+        Call call = client.calls().create(
+                CreateCallRequest.builder()
+                        .to("+18005551234")
+                        .from("+18005550000")
+                        .url("https://example.com/twiml")
+                        .machineDetection("DetectMessageEnd")
+                        .build());
+
+        System.out.println(call.getSid() + " " + call.getStatus());
+
+        for (Queue q : client.queues().list().getQueues()) {
+            System.out.println(q.getFriendlyName() + " " + q.getCurrentSize());
+        }
+    }
+}
+```
+
+## 🔑 Authentication
+
+Every endpoint uses **HTTP Basic** with your `AccountSid` as the username and your per-tenant API key as the password — identical to Twilio's auth shape, so credentials issued for Twilio code work here unchanged.
+
+```java
 VoicemlClient client = VoicemlClient.builder()
         .accountSid("AC...")
         .apiKey("...")
         .build();
 
-Call call = client.calls().create(
-        CreateCallRequest.builder()
+// Uses your AccountSid + key on every call.
+var health = client.diagnostics().health();
+```
+
+> Don't have credentials yet? See **[voicetel.com/docs/api/v0.6/voiceml/](https://voicetel.com/docs/api/v0.6/voiceml/)** for issuance and rotation.
+
+## 🗺️ Resource Reference
+
+| Resource | Accessor | Covers |
+|---|---|---|
+| Calls | `client.calls()` | originate, fetch, list, terminate, update + per-call recordings, streams, siprec, transcriptions, notifications, events, user-defined messages, payments |
+| Conferences | `client.conferences()` | list, fetch, end; participants (mute / hold / kick); conference-scoped recordings |
+| Queues | `client.queues()` | create, list, update, delete; peek, dequeue (front or specific member) |
+| Applications | `client.applications()` | CRUD on TwiML + callback bundles |
+| Recordings | `client.recordings()` | account-wide list, metadata, audio fetch, delete (follows S3 redirect for audio) |
+| Messages | `client.messages()` | create, fetch, list, update, delete (To/From/DateSent filters; Body redaction; Status=canceled) |
+| IncomingPhoneNumbers | `client.incomingPhoneNumbers()` | list, fetch, update |
+| Notifications | `client.notifications()` | fetch, list |
+| Diagnostics | `client.diagnostics()` | `/health`, OpenAPI spec |
+
+Every method that takes a request body accepts a typed builder from `com.voicetel.voiceml.models`:
+
+```java
+import com.voicetel.voiceml.models.CreateCallRequest;
+import com.voicetel.voiceml.models.StartPaymentRequest;
+
+Call call = client.calls().create(CreateCallRequest.builder()
+        .to("+18005551234")
+        .from("+18005550000")
+        .url("https://example.com/twiml")
+        .build());
+
+// On a live call, open a Pay session:
+var session = client.calls().startPayment(call.getSid(),
+        StartPaymentRequest.builder()
+                .idempotencyKey("order-482917")
+                .statusCallback("https://example.com/pay-status")
+                .build());
+
+System.out.println(session.getSid() + " " + session.getStatus());
+```
+
+## 🚨 Error Handling
+
+All HTTP errors throw subclasses of `com.voicetel.voiceml.exceptions.ApiException` (itself a subclass of `VoiceMLException`). Catch broadly or narrowly:
+
+| Status | Exception |
+|--------|-----------|
+| 400 | `BadRequestException` |
+| 401 | `AuthenticationException` |
+| 403 | `PermissionDeniedException` |
+| 404 | `NotFoundException` |
+| 409 | `ConflictException` |
+| 410 | `GoneException` |
+| 429 | `RateLimitException` |
+| 501 | `NotImplementedException` |
+| 5xx | `ServerException` |
+| other | `ApiException` |
+
+```java
+import com.voicetel.voiceml.exceptions.NotFoundException;
+import com.voicetel.voiceml.exceptions.RateLimitException;
+
+try {
+    Call call = client.calls().get("CA0000000000000000000000000000aaaa");
+} catch (NotFoundException e) {
+    System.out.println("That call isn't on your account.");
+} catch (RateLimitException e) {
+    System.out.println("Slow down — backoff and retry.");
+}
+```
+
+The Twilio-compatible error body (`code`, `message`, `more_info`, `status`) is exposed on `ApiException.getCode()` (numeric Twilio-style code) and `ApiException.getBody()` (raw payload).
+
+## ⚡ Async Support
+
+This release ships only the synchronous surface. The underlying `java.net.http.HttpClient` is async-capable, and a `CompletableFuture`-shaped SDK surface may land in a later release. For now, dispatch SDK calls onto your own executor when you need parallelism:
+
+```java
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
+
+var pool = Executors.newFixedThreadPool(8);
+
+CompletableFuture<Call> future = CompletableFuture.supplyAsync(
+        () -> client.calls().create(CreateCallRequest.builder()
                 .to("+18005551234")
                 .from("+18005550000")
                 .url("https://example.com/twiml")
-                .machineDetection("DetectMessageEnd")
-                .build());
-
-System.out.println(call.getSid() + " " + call.getStatus());
+                .build()),
+        pool);
 ```
 
-## Resource map
+## 📄 Pagination
 
-| Resource                          | Accessor                              | Notes                                                                                  |
-|-----------------------------------|---------------------------------------|----------------------------------------------------------------------------------------|
-| Calls + sub-resources             | `client.calls()`                      | Recordings, Streams, Siprec, Transcriptions, Notifications, Events, UserDefinedMessages |
-| Conferences + participants        | `client.conferences()`                | List/end/update participants; list per-conference recordings                            |
-| Queues + members                  | `client.queues()`                     | Create, list, dequeue front/by-sid                                                      |
-| Applications                      | `client.applications()`               | Persistent TwiML + callback bundles                                                     |
-| Account-scoped recordings         | `client.recordings()`                 | Account-wide list, metadata, audio download (follows S3 redirect), delete               |
-| Health + OpenAPI                  | `client.diagnostics()`                | Unauthenticated probes                                                                  |
-
-## Error mapping
-
-All SDK exceptions extend `VoiceMLException`. The API-side hierarchy:
-
-| HTTP status | Exception                  | Typical cause                                            |
-|-------------|----------------------------|----------------------------------------------------------|
-| 400         | `BadRequestException`      | Malformed body or validation failure                     |
-| 401         | `AuthenticationException`  | Bad/missing credentials or source-IP not allowed         |
-| 403         | `PermissionDeniedException`| Authenticated, not authorized                            |
-| 404         | `NotFoundException`        | SID does not exist (or belongs to a different tenant)    |
-| 409         | `ConflictException`        | Conflicting state (e.g. deleting a non-empty queue)      |
-| 410         | `GoneException`            | Recording audio no longer available                       |
-| 429         | `RateLimitException`       | Per-account rate limit hit                                |
-| 501         | `NotImplementedException`  | Stubbed endpoint (e.g. `UserDefinedMessages`)            |
-| 5xx         | `ServerException`          | Server-side error; transport retries by default          |
-| other       | `ApiException`             | Catch-all; carries `statusCode`, `code`, `body`          |
-
-`ApiException.getCode()` returns the numeric Twilio-style error code from the response body
-when present. `ApiException.getBody()` carries the raw payload for inspection.
-
-## Twilio drop-in
-
-The SDK is wire-compatible with Twilio: same Basic auth, same form body, same response envelope.
-A migration from `com.twilio:twilio` typically looks like:
+List endpoints return models extending `Page`, which exposes `getPage()`, `getPageSize()`, `getTotal()`, `getNextPageUri()`, and `getPreviousPageUri()` — the Twilio-compatible pagination envelope. Walk pages manually using the literal `Page` / `PageSize` query params on the corresponding `…Params` builder:
 
 ```java
-// Twilio:
-//   Twilio.init(accountSid, apiKey);
-//   Call call = Call.creator(...).create();
-//
-// VoiceML:
-VoicemlClient client = VoicemlClient.builder().accountSid(accountSid).apiKey(apiKey).build();
-Call call = client.calls().create(CreateCallRequest.builder()....build());
+import com.voicetel.voiceml.models.ListCallsParams;
+
+var page1 = client.calls().list(
+        ListCallsParams.builder()
+                .status("completed")
+                .pageSize(200)
+                .page(0)
+                .build());
 ```
 
-## Pagination
-
-List endpoints inherit from `Page`, which exposes `getNextPageUri()`, `getPage()`,
-`getPageSize()`, `getTotal()`, etc. Walk pages manually using the literal `Page` /
-`PageSize` query params (see `ListCallsParams.builder().page(...).pageSize(...).build()`).
-
-## Filtering calls by start time
-
-The Twilio wire names `StartTime>=` and `StartTime<=` aren't valid Java identifiers; in the
-SDK they're modelled as `startTimeGte` / `startTimeLte` on `ListCallsParams`, then translated
-back to the wire names when the query string is built.
+The Twilio wire names `StartTime>=` and `StartTime<=` aren't valid Java identifiers; in the SDK they're modeled as `startTimeGte` / `startTimeLte` on `ListCallsParams`, then translated back to the wire names when the query string is built:
 
 ```java
 client.calls().list(
@@ -118,35 +250,80 @@ client.calls().list(
                 .build());
 ```
 
-## Retries
+## 🔁 Migration from twilio-java
 
-Transient failures (HTTP 429, 5xx, transport errors) are retried up to `maxRetries` times
-(default 2) with exponential backoff. A `Retry-After` header on a 429 or 503 overrides the
-backoff schedule.
+The `AccountSid` + API key pair Twilio's SDK initializes with works unchanged here:
 
 ```java
-VoicemlClient.builder()
-        .accountSid("...")
+// Before — Twilio
+// Twilio.init(accountSid, apiKey);
+// Call call = Call.creator(...).create();
+
+// After — VoiceML (Twilio-compatible)
+VoicemlClient client = VoicemlClient.builder()
+        .accountSid(accountSid)
+        .apiKey(apiKey)
+        .build();
+
+Call call = client.calls().create(CreateCallRequest.builder()
+        .to("+18005551234")
+        .from("+18005550000")
+        .url("https://example.com/twiml")
+        .build());
+```
+
+Method names follow the resource map above (`client.calls().create(...)`, `client.queues().list()`, …) rather than Twilio's `Twilio.init(...)` + static-creator chain — flatter, fewer keystrokes, same wire format on the way out.
+
+## ⏱️ Rate Limits
+
+VoiceML applies per-tenant rate limits at the edge. The SDK automatically retries 429 responses with `Retry-After` honored, up to `maxRetries` (default 2). To bump it:
+
+```java
+import java.time.Duration;
+
+VoicemlClient client = VoicemlClient.builder()
+        .accountSid("AC...")
         .apiKey("...")
-        .maxRetries(5)
-        .timeout(java.time.Duration.ofSeconds(60))
+        .maxRetries(4)
+        .timeout(Duration.ofSeconds(60))
         .build();
 ```
 
-## Async
+## 🛠️ Development
 
-This v1 ships only the synchronous surface. The underlying JDK `HttpClient` can be used
-asynchronously in your application code if needed; a `CompletableFuture`-shaped SDK surface
-may land in a later release. For now, dispatch SDK calls onto your own executor when you
-need parallelism.
+```bash
+git clone https://github.com/voicetel/voiceml-java-sdk
+cd voiceml-java-sdk
+
+# Unit tests (fast, no network)
+mvn test
+
+# Full verify: compile + tests + package
+mvn verify
+
+# Build jar (also produces sources + javadoc jars)
+mvn package
+```
 
 ## 📖 API Documentation
 
 - **Reference docs:** [voicetel.com/docs/api/v0.6/voiceml/](https://voicetel.com/docs/api/v0.6/voiceml/)
 - **Validator:** [voicetel.com/voiceml/validator/](https://voicetel.com/voiceml/validator/)
 - **SDK catalogue:** [voicetel.com/docs/voiceml-sdks/](https://voicetel.com/docs/voiceml-sdks/)
+- **Type definitions:** see the `com.voicetel.voiceml.models` package — every wire shape has a Jackson model.
 
-## License
+## 🙌 Contributors
 
-MIT License with Commons Clause Restriction. See `LICENSE` and
-[voicetel.com/legal](https://voicetel.com/legal/).
+- [Michael Mavroudis](https://github.com/mavroudis) — Lead Developer
+
+Contributions welcome. Open an issue describing the change you want to make, or send a pull request against `main`.
+
+## 💖 Sponsors
+
+| Sponsor | Contribution |
+|---------|--------------|
+| [VoiceTel Communications](https://voicetel.com) | Primary development and production hosting |
+
+## 📄 License
+
+MIT with the Commons Clause restriction. See [LICENSE](LICENSE) and [voicetel.com/legal/](https://voicetel.com/legal/).
