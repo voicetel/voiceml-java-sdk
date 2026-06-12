@@ -2,7 +2,7 @@
 
 The official Java client for the [VoiceML REST API](https://voicetel.com/docs/api/v0.6/voiceml/) — Twilio-compatible outbound voice and answering-machine-detection from VoiceTel, with strongly-typed Jackson models on the modern `java.net.http` transport.
 
-![Version](https://img.shields.io/badge/version-0.7.0-blue)
+![Version](https://img.shields.io/badge/version-0.7.1-blue)
 ![Java](https://img.shields.io/badge/java-11%2B-blue)
 ![License](https://img.shields.io/badge/license-MIT%20%2B%20Commons%20Clause-green)
 ![Tests](https://img.shields.io/badge/tests-51%20unit-brightgreen)
@@ -71,20 +71,20 @@ The official Java client for the [VoiceML REST API](https://voicetel.com/docs/ap
 <dependency>
   <groupId>com.voicetel</groupId>
   <artifactId>voiceml</artifactId>
-  <version>0.7.0</version>
+  <version>0.7.1</version>
 </dependency>
 ```
 
 ### Gradle (Groovy DSL)
 
 ```groovy
-implementation 'com.voicetel:voiceml:0.7.0'
+implementation 'com.voicetel:voiceml:0.7.1'
 ```
 
 ### Gradle (Kotlin DSL)
 
 ```kotlin
-implementation("com.voicetel:voiceml:0.7.0")
+implementation("com.voicetel:voiceml:0.7.1")
 ```
 
 Requires Java 11 or later.
