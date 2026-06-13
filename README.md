@@ -1,6 +1,6 @@
 # 📞 VoiceML Java SDK
 
-The official Java client for the [VoiceML REST API](https://voicetel.com/docs/api/v0.6/voiceml/) — Twilio-compatible outbound voice and answering-machine-detection from VoiceTel, with strongly-typed Jackson models on the modern `java.net.http` transport.
+The official Java client for the [VoiceML REST API](https://voicetel.com/docs/api/v0.7/voiceml/) — Twilio-compatible outbound voice and answering-machine-detection from VoiceTel, with strongly-typed Jackson models on the modern `java.net.http` transport.
 
 ![Version](https://img.shields.io/badge/version-0.7.1-blue)
 ![Java](https://img.shields.io/badge/java-11%2B-blue)
@@ -135,7 +135,7 @@ VoicemlClient client = VoicemlClient.builder()
 var health = client.diagnostics().health();
 ```
 
-> Don't have credentials yet? See **[voicetel.com/docs/api/v0.6/voiceml/](https://voicetel.com/docs/api/v0.6/voiceml/)** for issuance and rotation.
+> Don't have credentials yet? See **[voicetel.com/docs/api/v0.7/voiceml/](https://voicetel.com/docs/api/v0.7/voiceml/)** for issuance and rotation.
 
 ## 🗺️ Resource Reference
 
@@ -307,7 +307,7 @@ mvn package
 
 ## 📖 API Documentation
 
-- **Reference docs:** [voicetel.com/docs/api/v0.6/voiceml/](https://voicetel.com/docs/api/v0.6/voiceml/)
+- **Reference docs:** [voicetel.com/docs/api/v0.7/voiceml/](https://voicetel.com/docs/api/v0.7/voiceml/)
 - **Validator:** [voicetel.com/voiceml/validator/](https://voicetel.com/voiceml/validator/)
 - **SDK catalogue:** [voicetel.com/docs/voiceml-sdks/](https://voicetel.com/docs/voiceml-sdks/)
 - **Type definitions:** see the `com.voicetel.voiceml.models` package — every wire shape has a Jackson model.
