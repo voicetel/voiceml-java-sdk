@@ -764,8 +764,8 @@ class SmokeTest {
     }
 
     @Test
-    void versionIs070() {
-        assertThat(com.voicetel.voiceml.Version.VERSION).isEqualTo("0.7.0");
+    void versionIs071() {
+        assertThat(com.voicetel.voiceml.Version.VERSION).isEqualTo("0.7.1");
     }
 
     @Test
