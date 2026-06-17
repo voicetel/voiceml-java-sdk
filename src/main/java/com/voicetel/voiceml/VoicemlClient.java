@@ -9,6 +9,7 @@ import com.voicetel.voiceml.resources.MessagesResource;
 import com.voicetel.voiceml.resources.NotificationsResource;
 import com.voicetel.voiceml.resources.QueuesResource;
 import com.voicetel.voiceml.resources.RecordingsResource;
+import com.voicetel.voiceml.resources.SipResource;
 
 /**
  * Synchronous client for the VoiceML REST API.
@@ -48,6 +49,7 @@ public final class VoicemlClient {
     private final IncomingPhoneNumbersResource incomingPhoneNumbers;
     private final MessagesResource messages;
     private final NotificationsResource notifications;
+    private final SipResource sip;
     private final DiagnosticsResource diagnostics;
 
     private VoicemlClient(ClientOptions options) {
@@ -60,6 +62,7 @@ public final class VoicemlClient {
         this.incomingPhoneNumbers = new IncomingPhoneNumbersResource(transport);
         this.messages = new MessagesResource(transport);
         this.notifications = new NotificationsResource(transport);
+        this.sip = new SipResource(transport);
         this.diagnostics = new DiagnosticsResource(transport);
     }
 
@@ -93,6 +96,10 @@ public final class VoicemlClient {
 
     public NotificationsResource notifications() {
         return notifications;
+    }
+
+    public SipResource sip() {
+        return sip;
     }
 
     public DiagnosticsResource diagnostics() {
