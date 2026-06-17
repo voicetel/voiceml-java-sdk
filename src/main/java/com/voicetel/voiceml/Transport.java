@@ -221,7 +221,7 @@ public final class Transport {
         if (path == null || path.isEmpty()) {
             return path;
         }
-        if (path.equals("/health") || path.startsWith("/openapi.")) {
+        if (path.equals("/health") || path.startsWith("/openapi.") || path.startsWith("/v2/")) {
             return path;
         }
         int lastSlash = path.lastIndexOf('/');

@@ -2,7 +2,7 @@
 
 The official Java client for the [VoiceML REST API](https://voicetel.com/docs/api/v0.7/voiceml/) — Twilio-compatible outbound voice and answering-machine-detection from VoiceTel, with strongly-typed Jackson models on the modern `java.net.http` transport.
 
-![Version](https://img.shields.io/badge/version-0.8.0-blue)
+![Version](https://img.shields.io/badge/version-0.8.1-blue)
 ![Java](https://img.shields.io/badge/java-11%2B-blue)
 ![License](https://img.shields.io/badge/license-MIT%20%2B%20Commons%20Clause-green)
 ![Tests](https://img.shields.io/badge/tests-51%20unit-brightgreen)
@@ -54,10 +54,11 @@ The official Java client for the [VoiceML REST API](https://voicetel.com/docs/ap
 - **IncomingPhoneNumbers** — list, fetch, update.
 - **Notifications** — fetch, list.
 - **SIP** — SIP Trunking: Domains (CRUD), CredentialLists + Credentials (CRUD), IpAccessControlLists + IpAddresses (CRUD), Domain↔ACL/CredentialList mappings (historical, Auth/Calls, Auth/Registrations namespaces).
+- **Routes V2** — Twilio Inbound Processing Region API: `client.routesV2().sipDomains().fetch(name)` / `update(name, req)`.
 - **Diagnostics** — `/health` deep probe, OpenAPI spec.
 
 ### 🧪 Tested
-- **62 unit tests** covering transport, retry, error mapping, pagination envelope parsing, and request/response serialization.
+- **66 unit tests** covering transport, retry, error mapping, pagination envelope parsing, and request/response serialization.
 - JUnit 5 + AssertJ; runs as part of `mvn test`.
 
 ### 📦 Clean Distribution

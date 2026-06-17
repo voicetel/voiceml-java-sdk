@@ -9,6 +9,7 @@ import com.voicetel.voiceml.resources.MessagesResource;
 import com.voicetel.voiceml.resources.NotificationsResource;
 import com.voicetel.voiceml.resources.QueuesResource;
 import com.voicetel.voiceml.resources.RecordingsResource;
+import com.voicetel.voiceml.resources.RoutesV2Resource;
 import com.voicetel.voiceml.resources.SipResource;
 
 /**
@@ -50,6 +51,7 @@ public final class VoicemlClient {
     private final MessagesResource messages;
     private final NotificationsResource notifications;
     private final SipResource sip;
+    private final RoutesV2Resource routesV2;
     private final DiagnosticsResource diagnostics;
 
     private VoicemlClient(ClientOptions options) {
@@ -63,6 +65,7 @@ public final class VoicemlClient {
         this.messages = new MessagesResource(transport);
         this.notifications = new NotificationsResource(transport);
         this.sip = new SipResource(transport);
+        this.routesV2 = new RoutesV2Resource(transport);
         this.diagnostics = new DiagnosticsResource(transport);
     }
 
@@ -100,6 +103,10 @@ public final class VoicemlClient {
 
     public SipResource sip() {
         return sip;
+    }
+
+    public RoutesV2Resource routesV2() {
+        return routesV2;
     }
 
     public DiagnosticsResource diagnostics() {
