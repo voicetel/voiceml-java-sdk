@@ -1,8 +1,10 @@
 package com.voicetel.voiceml;
 
 import com.voicetel.voiceml.resources.ApplicationsResource;
+import com.voicetel.voiceml.resources.AssistantsV1Resource;
 import com.voicetel.voiceml.resources.CallsResource;
 import com.voicetel.voiceml.resources.ConferencesResource;
+import com.voicetel.voiceml.resources.ConversationsV1Resource;
 import com.voicetel.voiceml.resources.DiagnosticsResource;
 import com.voicetel.voiceml.resources.IncomingPhoneNumbersResource;
 import com.voicetel.voiceml.resources.MessagesResource;
@@ -11,6 +13,7 @@ import com.voicetel.voiceml.resources.QueuesResource;
 import com.voicetel.voiceml.resources.RecordingsResource;
 import com.voicetel.voiceml.resources.RoutesV2Resource;
 import com.voicetel.voiceml.resources.SipResource;
+import com.voicetel.voiceml.resources.VoiceV1Resource;
 
 /**
  * Synchronous client for the VoiceML REST API.
@@ -52,6 +55,9 @@ public final class VoicemlClient {
     private final NotificationsResource notifications;
     private final SipResource sip;
     private final RoutesV2Resource routesV2;
+    private final VoiceV1Resource voiceV1;
+    private final ConversationsV1Resource conversationsV1;
+    private final AssistantsV1Resource assistantsV1;
     private final DiagnosticsResource diagnostics;
 
     private VoicemlClient(ClientOptions options) {
@@ -66,6 +72,9 @@ public final class VoicemlClient {
         this.notifications = new NotificationsResource(transport);
         this.sip = new SipResource(transport);
         this.routesV2 = new RoutesV2Resource(transport);
+        this.voiceV1 = new VoiceV1Resource(transport);
+        this.conversationsV1 = new ConversationsV1Resource(transport);
+        this.assistantsV1 = new AssistantsV1Resource(transport);
         this.diagnostics = new DiagnosticsResource(transport);
     }
 
@@ -107,6 +116,18 @@ public final class VoicemlClient {
 
     public RoutesV2Resource routesV2() {
         return routesV2;
+    }
+
+    public VoiceV1Resource voiceV1() {
+        return voiceV1;
+    }
+
+    public ConversationsV1Resource conversationsV1() {
+        return conversationsV1;
+    }
+
+    public AssistantsV1Resource assistantsV1() {
+        return assistantsV1;
     }
 
     public DiagnosticsResource diagnostics() {

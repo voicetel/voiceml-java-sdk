@@ -97,7 +97,7 @@ public final class Transport {
     public JsonNode request(String method, String path, Map<String, Object> query, Map<String, Object> form) {
         int attempt = 0;
         while (true) {
-            HttpRequest req = buildRequest(method, path, query, form);
+            HttpRequest req = buildRequest(method, path, query, form, null, null);
             HttpResponse<String> resp;
             try {
                 resp = http.send(req, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
@@ -169,8 +169,61 @@ public final class Transport {
         return new BinaryResponse(resp.body(), contentType, status, viaRedirect);
     }
 
+    /**
+     * Issue an HTTP request with a JSON body and parse the JSON response into a {@link JsonNode}.
+     *
+     * <p>Used by surfaces (notably Assistants v1) whose OpenAPI spec declares
+     * {@code application/json} request bodies rather than the Twilio-traditional
+     * {@code application/x-www-form-urlencoded}. {@code jsonBody} is serialised with the shared
+     * {@link ObjectMapper}; pass {@code null} for a bodyless request.
+     */
+    public JsonNode requestJson(String method, String path, Map<String, Object> query, Object jsonBody) {
+        String bodyStr = null;
+        if (jsonBody != null) {
+            try {
+                bodyStr = MAPPER.writeValueAsString(jsonBody);
+            } catch (JsonProcessingException ex) {
+                throw new ApiException(
+                        "failed to serialise JSON body: " + ex.getMessage(), 0, null, null, ex);
+            }
+        }
+        int attempt = 0;
+        while (true) {
+            HttpRequest req = buildRequest(method, path, query, null, bodyStr, "application/json");
+            HttpResponse<String> resp;
+            try {
+                resp = http.send(req, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+            } catch (IOException ex) {
+                if (attempt >= options.getMaxRetries()) {
+                    throw new ApiException(
+                            "transport error after " + (attempt + 1) + " attempts: " + ex.getMessage(),
+                            0,
+                            null,
+                            null,
+                            ex);
+                }
+                sleepBackoff(attempt, null);
+                attempt++;
+                continue;
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+                throw new ApiException(
+                        "request interrupted: " + ex.getMessage(), 0, null, null, ex);
+            }
+
+            int status = resp.statusCode();
+            if (RETRYABLE_STATUSES.contains(status) && attempt < options.getMaxRetries()) {
+                sleepBackoff(attempt, resp);
+                attempt++;
+                continue;
+            }
+            return parse(resp);
+        }
+    }
+
     private HttpRequest buildRequest(String method, String path,
-                                     Map<String, Object> query, Map<String, Object> form) {
+                                     Map<String, Object> query, Map<String, Object> form,
+                                     String rawBody, String rawContentType) {
         String url = baseUrl() + withJsonSuffix(path) + buildQuery(query);
         HttpRequest.Builder b = HttpRequest.newBuilder()
                 .uri(URI.create(url))
@@ -179,11 +232,19 @@ public final class Transport {
                 .header("User-Agent", options.getUserAgent())
                 .header("Accept", "application/json");
 
-        String body = encodeForm(form);
+        String body;
+        String contentType;
+        if (rawBody != null) {
+            body = rawBody;
+            contentType = rawContentType != null ? rawContentType : "application/json";
+        } else {
+            body = encodeForm(form);
+            contentType = "application/x-www-form-urlencoded";
+        }
         HttpRequest.BodyPublisher publisher;
         if (body != null) {
             publisher = HttpRequest.BodyPublishers.ofString(body, StandardCharsets.UTF_8);
-            b.header("Content-Type", "application/x-www-form-urlencoded");
+            b.header("Content-Type", contentType);
         } else {
             publisher = HttpRequest.BodyPublishers.noBody();
         }
@@ -221,7 +282,8 @@ public final class Transport {
         if (path == null || path.isEmpty()) {
             return path;
         }
-        if (path.equals("/health") || path.startsWith("/openapi.") || path.startsWith("/v2/")) {
+        if (path.equals("/health") || path.startsWith("/openapi.")
+                || path.startsWith("/v1/") || path.startsWith("/v2/")) {
             return path;
         }
         int lastSlash = path.lastIndexOf('/');

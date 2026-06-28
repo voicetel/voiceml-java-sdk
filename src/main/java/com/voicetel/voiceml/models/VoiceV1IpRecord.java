@@ -1,0 +1,36 @@
+package com.voicetel.voiceml.models;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+/** Twilio Voice v1 IpRecord (allowed source IP). SID is {@code IL…}. */
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class VoiceV1IpRecord {
+
+    @JsonProperty("account_sid") private String accountSid;
+    @JsonProperty("sid") private String sid;
+    @JsonProperty("friendly_name") private String friendlyName;
+    @JsonProperty("ip_address") private String ipAddress;
+    @JsonProperty("cidr_prefix_length") private Integer cidrPrefixLength;
+    @JsonProperty("date_created") private String dateCreated;
+    @JsonProperty("date_updated") private String dateUpdated;
+    @JsonProperty("url") private String url;
+
+    public String getAccountSid() { return accountSid; }
+    public String getSid() { return sid; }
+    public String getFriendlyName() { return friendlyName; }
+    public String getIpAddress() { return ipAddress; }
+    public Integer getCidrPrefixLength() { return cidrPrefixLength; }
+    public String getDateCreated() { return dateCreated; }
+    public String getDateUpdated() { return dateUpdated; }
+    public String getUrl() { return url; }
+
+    public void setAccountSid(String v) { this.accountSid = v; }
+    public void setSid(String v) { this.sid = v; }
+    public void setFriendlyName(String v) { this.friendlyName = v; }
+    public void setIpAddress(String v) { this.ipAddress = v; }
+    public void setCidrPrefixLength(Integer v) { this.cidrPrefixLength = v; }
+    public void setDateCreated(String v) { this.dateCreated = v; }
+    public void setDateUpdated(String v) { this.dateUpdated = v; }
+    public void setUrl(String v) { this.url = v; }
+}
