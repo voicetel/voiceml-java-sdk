@@ -6,6 +6,7 @@ import com.voicetel.voiceml.models.Application;
 import com.voicetel.voiceml.models.ApplicationList;
 import com.voicetel.voiceml.models.Call;
 import com.voicetel.voiceml.models.CallList;
+import com.voicetel.voiceml.models.CallPayment;
 import com.voicetel.voiceml.models.CallTranscription;
 import com.voicetel.voiceml.models.Conference;
 import com.voicetel.voiceml.models.ConferenceList;
@@ -13,7 +14,6 @@ import com.voicetel.voiceml.models.IncomingPhoneNumber;
 import com.voicetel.voiceml.models.IncomingPhoneNumberList;
 import com.voicetel.voiceml.models.Message;
 import com.voicetel.voiceml.models.MessageList;
-import com.voicetel.voiceml.models.NotificationsList;
 import com.voicetel.voiceml.models.Participant;
 import com.voicetel.voiceml.models.ParticipantList;
 import com.voicetel.voiceml.models.Queue;
@@ -22,6 +22,19 @@ import com.voicetel.voiceml.models.QueueMember;
 import com.voicetel.voiceml.models.QueueMemberList;
 import com.voicetel.voiceml.models.Recording;
 import com.voicetel.voiceml.models.RecordingList;
+import com.voicetel.voiceml.models.SipCredential;
+import com.voicetel.voiceml.models.SipCredentialList;
+import com.voicetel.voiceml.models.SipCredentialListList;
+import com.voicetel.voiceml.models.SipCredentialListMappingList;
+import com.voicetel.voiceml.models.SipCredentialListPage;
+import com.voicetel.voiceml.models.SipDomain;
+import com.voicetel.voiceml.models.SipDomainList;
+import com.voicetel.voiceml.models.SipDomainMapping;
+import com.voicetel.voiceml.models.SipIpAccessControlList;
+import com.voicetel.voiceml.models.SipIpAccessControlListList;
+import com.voicetel.voiceml.models.SipIpAccessControlListMappingList;
+import com.voicetel.voiceml.models.SipIpAddress;
+import com.voicetel.voiceml.models.SipIpAddressList;
 import com.voicetel.voiceml.models.SiprecSession;
 import com.voicetel.voiceml.models.Stream;
 
@@ -51,6 +64,14 @@ import static org.assertj.core.api.Assertions.assertThat;
  * deserialisation fails (wrong primitive type, unknown enum value), or if
  * the post-decode key-field asserts trip, the SDK's model has drifted from
  * Twilio's documented shape — fix the SDK, not the fixture.
+ *
+ * <p>For Twilio resources the Java SDK does not yet model as a Java POJO
+ * (Account, Balance, Media, OutgoingCallerId, classic Transcription,
+ * ValidationRequest), the harness decodes into a generic {@link JsonNode}
+ * and asserts presence of the Twilio-documented top-level fields. This
+ * mirrors the Go harness's {@code &map[string]any{}} dispatch — it still
+ * catches malformed JSON and missing key fields without requiring a
+ * full POJO surface for resources the SDK doesn't expose to callers.
  *
  * <p>Run:
  * <pre>
@@ -264,6 +285,227 @@ class ConformanceTest {
                 assertThat(v.getCallSid()).as("CallTranscription.call_sid").isNotEmpty();
                 break;
             }
+            case "CreatePayments":
+            case "UpdatePayments": {
+                CallPayment v = MAPPER.readValue(body, CallPayment.class);
+                assertThat(v.getSid()).as("CallPayment.sid").isNotEmpty();
+                assertThat(v.getAccountSid()).as("CallPayment.account_sid").isNotEmpty();
+                assertThat(v.getCallSid()).as("CallPayment.call_sid").isNotEmpty();
+                break;
+            }
+
+            // ---------- SIP Domains ----------
+            case "CreateSipDomain":
+            case "FetchSipDomain":
+            case "UpdateSipDomain": {
+                SipDomain v = MAPPER.readValue(body, SipDomain.class);
+                assertThat(v.getSid()).as("SipDomain.sid").isNotEmpty();
+                assertThat(v.getAccountSid()).as("SipDomain.account_sid").isNotEmpty();
+                assertThat(v.getDomainName()).as("SipDomain.domain_name").isNotEmpty();
+                break;
+            }
+            case "ListSipDomain": {
+                SipDomainList v = MAPPER.readValue(body, SipDomainList.class);
+                assertThat(v.getUri()).as("SipDomainList.uri").isNotEmpty();
+                break;
+            }
+
+            // ---------- SIP CredentialLists ----------
+            case "CreateSipCredentialList":
+            case "FetchSipCredentialList":
+            case "UpdateSipCredentialList": {
+                SipCredentialList v = MAPPER.readValue(body, SipCredentialList.class);
+                assertThat(v.getSid()).as("SipCredentialList.sid").isNotEmpty();
+                assertThat(v.getAccountSid()).as("SipCredentialList.account_sid").isNotEmpty();
+                break;
+            }
+            case "ListSipCredentialList": {
+                SipCredentialListList v = MAPPER.readValue(body, SipCredentialListList.class);
+                assertThat(v.getUri()).as("SipCredentialListList.uri").isNotEmpty();
+                break;
+            }
+
+            // ---------- SIP Credentials (inside a CredentialList) ----------
+            case "CreateSipCredential":
+            case "FetchSipCredential":
+            case "UpdateSipCredential": {
+                SipCredential v = MAPPER.readValue(body, SipCredential.class);
+                assertThat(v.getSid()).as("SipCredential.sid").isNotEmpty();
+                assertThat(v.getAccountSid()).as("SipCredential.account_sid").isNotEmpty();
+                assertThat(v.getCredentialListSid()).as("SipCredential.credential_list_sid").isNotEmpty();
+                break;
+            }
+            case "ListSipCredential": {
+                SipCredentialListPage v = MAPPER.readValue(body, SipCredentialListPage.class);
+                assertThat(v.getUri()).as("SipCredentialListPage.uri").isNotEmpty();
+                break;
+            }
+
+            // ---------- SIP IpAccessControlLists ----------
+            case "CreateSipIpAccessControlList":
+            case "FetchSipIpAccessControlList":
+            case "UpdateSipIpAccessControlList": {
+                SipIpAccessControlList v = MAPPER.readValue(body, SipIpAccessControlList.class);
+                assertThat(v.getSid()).as("SipIpAccessControlList.sid").isNotEmpty();
+                assertThat(v.getAccountSid()).as("SipIpAccessControlList.account_sid").isNotEmpty();
+                break;
+            }
+            case "ListSipIpAccessControlList": {
+                SipIpAccessControlListList v = MAPPER.readValue(body, SipIpAccessControlListList.class);
+                assertThat(v.getUri()).as("SipIpAccessControlListList.uri").isNotEmpty();
+                break;
+            }
+
+            // ---------- SIP IpAddresses (inside an IpAccessControlList) ----------
+            case "CreateSipIpAddress":
+            case "FetchSipIpAddress":
+            case "UpdateSipIpAddress": {
+                SipIpAddress v = MAPPER.readValue(body, SipIpAddress.class);
+                assertThat(v.getSid()).as("SipIpAddress.sid").isNotEmpty();
+                assertThat(v.getAccountSid()).as("SipIpAddress.account_sid").isNotEmpty();
+                assertThat(v.getIpAddress()).as("SipIpAddress.ip_address").isNotEmpty();
+                break;
+            }
+            case "ListSipIpAddress": {
+                SipIpAddressList v = MAPPER.readValue(body, SipIpAddressList.class);
+                assertThat(v.getUri()).as("SipIpAddressList.uri").isNotEmpty();
+                break;
+            }
+
+            // ---------- SIP CredentialListMappings (historical /Domains/{SD}/CredentialListMappings) ----------
+            case "CreateSipCredentialListMapping":
+            case "FetchSipCredentialListMapping": {
+                SipDomainMapping v = MAPPER.readValue(body, SipDomainMapping.class);
+                assertThat(v.getSid()).as("SipDomainMapping.sid").isNotEmpty();
+                assertThat(v.getAccountSid()).as("SipDomainMapping.account_sid").isNotEmpty();
+                break;
+            }
+            case "ListSipCredentialListMapping": {
+                SipCredentialListMappingList v = MAPPER.readValue(body, SipCredentialListMappingList.class);
+                assertThat(v.getUri()).as("SipCredentialListMappingList.uri").isNotEmpty();
+                break;
+            }
+
+            // ---------- SIP IpAccessControlListMappings (historical /Domains/{SD}/IpAccessControlListMappings) ----------
+            case "CreateSipIpAccessControlListMapping":
+            case "FetchSipIpAccessControlListMapping": {
+                SipDomainMapping v = MAPPER.readValue(body, SipDomainMapping.class);
+                assertThat(v.getSid()).as("SipDomainMapping.sid").isNotEmpty();
+                assertThat(v.getAccountSid()).as("SipDomainMapping.account_sid").isNotEmpty();
+                break;
+            }
+            case "ListSipIpAccessControlListMapping": {
+                SipIpAccessControlListMappingList v = MAPPER.readValue(body, SipIpAccessControlListMappingList.class);
+                assertThat(v.getUri()).as("SipIpAccessControlListMappingList.uri").isNotEmpty();
+                break;
+            }
+
+            // ---------- SIP Auth/Calls + Auth/Registrations mappings (v0.8 split surfaces) ----------
+            // The Twilio Auth-namespaced mapping fixtures omit domain_sid on the
+            // Create/Fetch response (the binding is implicit in the URL path);
+            // assert only the universally-present sid + account_sid.
+            case "CreateSipAuthCallsCredentialListMapping":
+            case "FetchSipAuthCallsCredentialListMapping":
+            case "CreateSipAuthCallsIpAccessControlListMapping":
+            case "FetchSipAuthCallsIpAccessControlListMapping":
+            case "CreateSipAuthRegistrationsCredentialListMapping":
+            case "FetchSipAuthRegistrationsCredentialListMapping": {
+                SipDomainMapping v = MAPPER.readValue(body, SipDomainMapping.class);
+                assertThat(v.getSid()).as("SipDomainMapping.sid (" + opId + ")").isNotEmpty();
+                assertThat(v.getAccountSid()).as("SipDomainMapping.account_sid (" + opId + ")").isNotEmpty();
+                break;
+            }
+            case "ListSipAuthCallsCredentialListMapping":
+            case "ListSipAuthRegistrationsCredentialListMapping": {
+                SipCredentialListMappingList v = MAPPER.readValue(body, SipCredentialListMappingList.class);
+                assertThat(v.getUri()).as("SipCredentialListMappingList.uri (" + opId + ")").isNotEmpty();
+                break;
+            }
+            case "ListSipAuthCallsIpAccessControlListMapping": {
+                SipIpAccessControlListMappingList v = MAPPER.readValue(body, SipIpAccessControlListMappingList.class);
+                assertThat(v.getUri()).as("SipIpAccessControlListMappingList.uri (" + opId + ")").isNotEmpty();
+                break;
+            }
+
+            // ---------- Resources not (yet) modelled as Java POJOs ----------
+            // Mirrors the Go harness's `&map[string]any{}` dispatch: decode into
+            // a generic JsonNode and assert presence of the Twilio-documented
+            // top-level fields. Catches malformed responses + shape drift on
+            // the key fields without forcing a full POJO surface for resources
+            // the Java SDK doesn't expose to callers (the SDK is intentionally
+            // a subset of the underlying Twilio-compatible surface).
+
+            case "FetchAccount":
+            case "UpdateAccount": {
+                JsonNode v = MAPPER.readTree(body);
+                assertThat(v.path("sid").asText()).as("Account.sid").isNotEmpty();
+                assertThat(v.path("status").asText()).as("Account.status").isNotEmpty();
+                assertThat(v.path("uri").asText()).as("Account.uri").isNotEmpty();
+                break;
+            }
+            case "FetchBalance": {
+                JsonNode v = MAPPER.readTree(body);
+                assertThat(v.path("account_sid").asText()).as("Balance.account_sid").isNotEmpty();
+                assertThat(v.path("balance").asText()).as("Balance.balance").isNotEmpty();
+                assertThat(v.path("currency").asText()).as("Balance.currency").isNotEmpty();
+                break;
+            }
+            case "FetchMedia": {
+                JsonNode v = MAPPER.readTree(body);
+                assertThat(v.path("sid").asText()).as("Media.sid").isNotEmpty();
+                assertThat(v.path("account_sid").asText()).as("Media.account_sid").isNotEmpty();
+                assertThat(v.path("parent_sid").asText()).as("Media.parent_sid").isNotEmpty();
+                assertThat(v.path("content_type").asText()).as("Media.content_type").isNotEmpty();
+                break;
+            }
+            case "ListMedia": {
+                JsonNode v = MAPPER.readTree(body);
+                assertThat(v.path("uri").asText()).as("MediaList.uri").isNotEmpty();
+                assertThat(v.has("media_list")).as("MediaList.media_list (envelope key)").isTrue();
+                break;
+            }
+            case "FetchOutgoingCallerId":
+            case "UpdateOutgoingCallerId": {
+                JsonNode v = MAPPER.readTree(body);
+                assertThat(v.path("sid").asText()).as("OutgoingCallerId.sid").isNotEmpty();
+                assertThat(v.path("account_sid").asText()).as("OutgoingCallerId.account_sid").isNotEmpty();
+                assertThat(v.path("phone_number").asText()).as("OutgoingCallerId.phone_number").isNotEmpty();
+                break;
+            }
+            case "ListOutgoingCallerId": {
+                JsonNode v = MAPPER.readTree(body);
+                assertThat(v.path("uri").asText()).as("OutgoingCallerIdList.uri").isNotEmpty();
+                assertThat(v.has("outgoing_caller_ids"))
+                        .as("OutgoingCallerIdList.outgoing_caller_ids (envelope key)").isTrue();
+                break;
+            }
+            case "CreateValidationRequest": {
+                JsonNode v = MAPPER.readTree(body);
+                assertThat(v.path("account_sid").asText()).as("ValidationRequest.account_sid").isNotEmpty();
+                assertThat(v.path("phone_number").asText()).as("ValidationRequest.phone_number").isNotEmpty();
+                assertThat(v.path("validation_code").asText()).as("ValidationRequest.validation_code").isNotEmpty();
+                break;
+            }
+            case "FetchTranscription":
+            case "FetchRecordingTranscription": {
+                // Classic /Transcriptions resource (NOT the realtime CallTranscription).
+                // The Java SDK doesn't currently expose this as a POJO; assert the
+                // documented top-level fields via JsonNode.
+                JsonNode v = MAPPER.readTree(body);
+                assertThat(v.path("sid").asText()).as("Transcription.sid").isNotEmpty();
+                assertThat(v.path("account_sid").asText()).as("Transcription.account_sid").isNotEmpty();
+                assertThat(v.path("recording_sid").asText()).as("Transcription.recording_sid").isNotEmpty();
+                break;
+            }
+            case "ListTranscription":
+            case "ListRecordingTranscription": {
+                JsonNode v = MAPPER.readTree(body);
+                assertThat(v.path("uri").asText()).as("TranscriptionList.uri (" + opId + ")").isNotEmpty();
+                assertThat(v.has("transcriptions"))
+                        .as("TranscriptionList.transcriptions (envelope key)").isTrue();
+                break;
+            }
+
             default:
                 throw new AssertionError("conformance harness: no mapping for operation_id=" + opId
                         + " (fixture=" + fixturePath + "). Add a case or extend SKIP_OPS.");

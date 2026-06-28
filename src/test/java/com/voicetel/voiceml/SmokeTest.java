@@ -207,7 +207,7 @@ class SmokeTest {
         String expectedAuth =
                 "Basic " + Base64.getEncoder().encodeToString("ACtest:secret".getBytes(StandardCharsets.UTF_8));
         assertThat(r.authorization).isEqualTo(expectedAuth);
-        assertThat(r.userAgent).startsWith("voiceml-java/0.8.1");
+        assertThat(r.userAgent).startsWith("voiceml-java/0.9.1");
     }
 
     @Test
@@ -764,8 +764,8 @@ class SmokeTest {
     }
 
     @Test
-    void versionIs081() {
-        assertThat(com.voicetel.voiceml.Version.VERSION).isEqualTo("0.8.1");
+    void versionIs091() {
+        assertThat(com.voicetel.voiceml.Version.VERSION).isEqualTo("0.9.1");
     }
 
     @Test
