@@ -26,6 +26,8 @@ public final class ClientOptions {
     private final String accountSid;
     private final String apiKey;
     private final String baseUrl;
+    private final String messagingBaseUrlOverride;
+    private final String conversationsBaseUrlOverride;
     private final Duration timeout;
     private final int maxRetries;
     private final String userAgent;
@@ -50,6 +52,8 @@ public final class ClientOptions {
         this.accountSid = b.accountSid;
         this.apiKey = resolvedKey;
         this.baseUrl = stripTrailingSlash(b.baseUrl != null ? b.baseUrl : DEFAULT_BASE_URL);
+        this.messagingBaseUrlOverride = stripTrailingSlash(b.messagingBaseUrl);
+        this.conversationsBaseUrlOverride = stripTrailingSlash(b.conversationsBaseUrl);
         this.timeout = Objects.requireNonNullElse(b.timeout, DEFAULT_TIMEOUT);
         this.maxRetries = b.maxRetries;
         this.userAgent = b.userAgent != null
@@ -69,6 +73,32 @@ public final class ClientOptions {
 
     public String getBaseUrl() {
         return baseUrl;
+    }
+
+    /**
+     * Effective base URL for the Messaging Service group ({@code client.messagingV1()}).
+     *
+     * <p>An explicit {@code messagingBaseUrl(...)} override wins; otherwise the host is derived
+     * from {@link #getBaseUrl()} by swapping the {@code voiceml} label for {@code messaging} on
+     * recognised {@code *.voicetel.com} hosts, falling back to the base URL unchanged for
+     * single-host deployments.
+     */
+    public String getMessagingBaseUrl() {
+        return messagingBaseUrlOverride != null
+                ? messagingBaseUrlOverride
+                : Hosts.deriveProductHost(baseUrl, "messaging");
+    }
+
+    /**
+     * Effective base URL for the Conversations group ({@code client.conversationsV1()}).
+     *
+     * <p>An explicit {@code conversationsBaseUrl(...)} override wins; otherwise the host is derived
+     * from {@link #getBaseUrl()} by swapping the {@code voiceml} label for {@code conversations}.
+     */
+    public String getConversationsBaseUrl() {
+        return conversationsBaseUrlOverride != null
+                ? conversationsBaseUrlOverride
+                : Hosts.deriveProductHost(baseUrl, "conversations");
     }
 
     public Duration getTimeout() {
@@ -93,6 +123,9 @@ public final class ClientOptions {
     }
 
     private static String stripTrailingSlash(String url) {
+        if (url == null) {
+            return null;
+        }
         return url.endsWith("/") ? url.substring(0, url.length() - 1) : url;
     }
 
@@ -102,6 +135,8 @@ public final class ClientOptions {
         private String apiKey;
         private String authToken;
         private String baseUrl;
+        private String messagingBaseUrl;
+        private String conversationsBaseUrl;
         private Duration timeout;
         private int maxRetries = DEFAULT_MAX_RETRIES;
         private String userAgent;
@@ -133,6 +168,28 @@ public final class ClientOptions {
         /** Override the server base URL. Useful for staging or VPC endpoints. */
         public Builder baseUrl(String baseUrl) {
             this.baseUrl = baseUrl;
+            return this;
+        }
+
+        /**
+         * Override the base URL for the Messaging Service group ({@code client.messagingV1()}).
+         * When unset it is derived from {@link #baseUrl(String)} (swap the {@code voiceml} label
+         * for {@code messaging} on {@code *.voicetel.com} hosts, single-host fallback otherwise).
+         * Set this to reach Messaging Service on a custom subdomain in a self-hosted deployment.
+         */
+        public Builder messagingBaseUrl(String messagingBaseUrl) {
+            this.messagingBaseUrl = messagingBaseUrl;
+            return this;
+        }
+
+        /**
+         * Override the base URL for the Conversations group ({@code client.conversationsV1()}).
+         * When unset it is derived from {@link #baseUrl(String)} (swap the {@code voiceml} label
+         * for {@code conversations} on {@code *.voicetel.com} hosts, single-host fallback
+         * otherwise).
+         */
+        public Builder conversationsBaseUrl(String conversationsBaseUrl) {
+            this.conversationsBaseUrl = conversationsBaseUrl;
             return this;
         }
 

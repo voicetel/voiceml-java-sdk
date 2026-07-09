@@ -8,7 +8,9 @@ import com.voicetel.voiceml.resources.ConversationsV1Resource;
 import com.voicetel.voiceml.resources.DiagnosticsResource;
 import com.voicetel.voiceml.resources.IncomingPhoneNumbersResource;
 import com.voicetel.voiceml.resources.MessagesResource;
+import com.voicetel.voiceml.resources.MessagingV1Resource;
 import com.voicetel.voiceml.resources.NotificationsResource;
+import com.voicetel.voiceml.resources.PricingResource;
 import com.voicetel.voiceml.resources.QueuesResource;
 import com.voicetel.voiceml.resources.RecordingsResource;
 import com.voicetel.voiceml.resources.RoutesV2Resource;
@@ -52,7 +54,9 @@ public final class VoicemlClient {
     private final RecordingsResource recordings;
     private final IncomingPhoneNumbersResource incomingPhoneNumbers;
     private final MessagesResource messages;
+    private final MessagingV1Resource messagingV1;
     private final NotificationsResource notifications;
+    private final PricingResource pricing;
     private final SipResource sip;
     private final RoutesV2Resource routesV2;
     private final VoiceV1Resource voiceV1;
@@ -62,6 +66,10 @@ public final class VoicemlClient {
 
     private VoicemlClient(ClientOptions options) {
         this.transport = new Transport(options);
+        // Conversations and Messaging Service ride their own product subdomains
+        // (they share the /v1/Services path shape — the host is what disambiguates them).
+        Transport messagingTransport = transport.withBaseUrl(options.getMessagingBaseUrl());
+        Transport conversationsTransport = transport.withBaseUrl(options.getConversationsBaseUrl());
         this.calls = new CallsResource(transport);
         this.conferences = new ConferencesResource(transport);
         this.queues = new QueuesResource(transport);
@@ -69,11 +77,13 @@ public final class VoicemlClient {
         this.recordings = new RecordingsResource(transport);
         this.incomingPhoneNumbers = new IncomingPhoneNumbersResource(transport);
         this.messages = new MessagesResource(transport);
+        this.messagingV1 = new MessagingV1Resource(messagingTransport);
         this.notifications = new NotificationsResource(transport);
+        this.pricing = new PricingResource(transport);
         this.sip = new SipResource(transport);
         this.routesV2 = new RoutesV2Resource(transport);
         this.voiceV1 = new VoiceV1Resource(transport);
-        this.conversationsV1 = new ConversationsV1Resource(transport);
+        this.conversationsV1 = new ConversationsV1Resource(conversationsTransport);
         this.assistantsV1 = new AssistantsV1Resource(transport);
         this.diagnostics = new DiagnosticsResource(transport);
     }
@@ -106,8 +116,18 @@ public final class VoicemlClient {
         return messages;
     }
 
+    /** Messaging Service group ({@code /v1/Services} on {@code messaging.voicetel.com}). */
+    public MessagingV1Resource messagingV1() {
+        return messagingV1;
+    }
+
     public NotificationsResource notifications() {
         return notifications;
+    }
+
+    /** Pricing group ({@code /v1} + {@code /v2}, read-only, on the default host). */
+    public PricingResource pricing() {
+        return pricing;
     }
 
     public SipResource sip() {
@@ -179,6 +199,26 @@ public final class VoicemlClient {
 
         public Builder baseUrl(String baseUrl) {
             opts.baseUrl(baseUrl);
+            return this;
+        }
+
+        /**
+         * Override the base URL for the Messaging Service group ({@code messagingV1()}). When
+         * unset it is derived from {@link #baseUrl(String)}. See
+         * {@link ClientOptions.Builder#messagingBaseUrl(String)}.
+         */
+        public Builder messagingBaseUrl(String messagingBaseUrl) {
+            opts.messagingBaseUrl(messagingBaseUrl);
+            return this;
+        }
+
+        /**
+         * Override the base URL for the Conversations group ({@code conversationsV1()}). When unset
+         * it is derived from {@link #baseUrl(String)}. See
+         * {@link ClientOptions.Builder#conversationsBaseUrl(String)}.
+         */
+        public Builder conversationsBaseUrl(String conversationsBaseUrl) {
+            opts.conversationsBaseUrl(conversationsBaseUrl);
             return this;
         }
 

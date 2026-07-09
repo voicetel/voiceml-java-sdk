@@ -59,14 +59,35 @@ public final class Transport {
 
     private final ClientOptions options;
     private final HttpClient http;
+    private final String baseUrlOverride;
 
     public Transport(ClientOptions options) {
+        this(options, null, null);
+    }
+
+    private Transport(ClientOptions options, HttpClient sharedHttp, String baseUrlOverride) {
         this.options = options;
-        this.http = options.getHttpClient() != null
-                ? options.getHttpClient()
-                : HttpClient.newBuilder()
-                        .connectTimeout(Duration.ofSeconds(10))
-                        .build();
+        this.http = sharedHttp != null
+                ? sharedHttp
+                : (options.getHttpClient() != null
+                        ? options.getHttpClient()
+                        : HttpClient.newBuilder()
+                                .connectTimeout(Duration.ofSeconds(10))
+                                .build());
+        this.baseUrlOverride = baseUrlOverride;
+    }
+
+    /**
+     * Return a transport view pinned to a product base URL, sharing this transport's underlying
+     * {@link HttpClient}, auth, and retry policy.
+     *
+     * <p>Used to route an entire resource group at its product subdomain
+     * ({@code conversations.voicetel.com} / {@code messaging.voicetel.com}) without each resource
+     * needing to know its own host — the returned transport answers {@link #baseUrl()} with the
+     * scoped host, and every request is issued against it.
+     */
+    public Transport withBaseUrl(String baseUrl) {
+        return new Transport(options, this.http, Hosts.stripTrailingSlash(baseUrl));
     }
 
     public ClientOptions options() {
@@ -78,7 +99,7 @@ public final class Transport {
     }
 
     public String baseUrl() {
-        return options.getBaseUrl();
+        return baseUrlOverride != null ? baseUrlOverride : options.getBaseUrl();
     }
 
     public ObjectMapper mapper() {
