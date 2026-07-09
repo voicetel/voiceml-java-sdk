@@ -1,11 +1,11 @@
 # 📞 VoiceML Java SDK
 
-The official Java client for the [VoiceML REST API](https://voicetel.com/docs/api/v0.8/voiceml/) — Twilio-compatible outbound voice and answering-machine-detection from VoiceTel, with strongly-typed Jackson models on the modern `java.net.http` transport.
+The official Java client for the [VoiceML REST API](https://voicetel.com/docs/api/v0.9/voiceml/) — Twilio-compatible outbound voice and answering-machine-detection from VoiceTel, with strongly-typed Jackson models on the modern `java.net.http` transport.
 
-![Version](https://img.shields.io/badge/version-0.9.1-blue)
+![Version](https://img.shields.io/badge/version-0.9.2-blue)
 ![Java](https://img.shields.io/badge/java-11%2B-blue)
 ![License](https://img.shields.io/badge/license-MIT%20%2B%20Commons%20Clause-green)
-![Tests](https://img.shields.io/badge/tests-51%20unit-brightgreen)
+![Tests](https://img.shields.io/badge/tests-147%20unit-brightgreen)
 ![Typed](https://img.shields.io/badge/typed-jackson-blue)
 
 ## 📚 Table of Contents
@@ -58,7 +58,7 @@ The official Java client for the [VoiceML REST API](https://voicetel.com/docs/ap
 - **Diagnostics** — `/health` deep probe, OpenAPI spec.
 
 ### 🧪 Tested
-- **66 unit tests** covering transport, retry, error mapping, pagination envelope parsing, and request/response serialization.
+- **147 unit tests** covering transport, retry, error mapping, per-product host routing, pagination envelope parsing, and request/response serialization.
 - JUnit 5 + AssertJ; runs as part of `mvn test`.
 
 ### 📦 Clean Distribution
@@ -73,20 +73,20 @@ The official Java client for the [VoiceML REST API](https://voicetel.com/docs/ap
 <dependency>
   <groupId>com.voicetel</groupId>
   <artifactId>voiceml</artifactId>
-  <version>0.7.1</version>
+  <version>0.9.2</version>
 </dependency>
 ```
 
 ### Gradle (Groovy DSL)
 
 ```groovy
-implementation 'com.voicetel:voiceml:0.7.1'
+implementation 'com.voicetel:voiceml:0.9.2'
 ```
 
 ### Gradle (Kotlin DSL)
 
 ```kotlin
-implementation("com.voicetel:voiceml:0.7.1")
+implementation("com.voicetel:voiceml:0.9.2")
 ```
 
 Requires Java 11 or later.
@@ -137,7 +137,7 @@ VoicemlClient client = VoicemlClient.builder()
 var health = client.diagnostics().health();
 ```
 
-> Don't have credentials yet? See **[voicetel.com/docs/api/v0.8/voiceml/](https://voicetel.com/docs/api/v0.8/voiceml/)** for issuance and rotation.
+> Don't have credentials yet? See **[voicetel.com/docs/api/v0.9/voiceml/](https://voicetel.com/docs/api/v0.9/voiceml/)** for issuance and rotation.
 
 ## 🗺️ Resource Reference
 
@@ -149,9 +149,33 @@ var health = client.diagnostics().health();
 | Applications | `client.applications()` | CRUD on TwiML + callback bundles |
 | Recordings | `client.recordings()` | account-wide list, metadata, audio fetch, delete (follows S3 redirect for audio) |
 | Messages | `client.messages()` | create, fetch, list, update, delete (To/From/DateSent filters; Body redaction; Status=canceled) |
+| Messaging Service | `client.messagingV1().services()` | create, list, fetch, update, delete (`/v1/Services`, on the messaging host) |
+| Pricing | `client.pricing()` | read-only `v1`/`v2` Voice, Messaging, PhoneNumbers, Trunking countries + number lookups |
 | IncomingPhoneNumbers | `client.incomingPhoneNumbers()` | list, fetch, update |
 | Notifications | `client.notifications()` | fetch, list |
 | Diagnostics | `client.diagnostics()` | `/health`, OpenAPI spec |
+
+### Product hosts
+
+VoiceML mirrors Twilio's product-per-subdomain model. Given the configured `baseUrl`, two groups are routed to their own hosts automatically:
+
+| Group | Host derived from `https://voiceml.voicetel.com` |
+|---|---|
+| `client.conversationsV1()` | `https://conversations.voicetel.com` |
+| `client.messagingV1()` | `https://messaging.voicetel.com` |
+| everything else (Calls, Voice v1, Routes V2, Pricing, …) | `https://voiceml.voicetel.com` (default) |
+
+Derivation swaps the leftmost `voiceml` label on recognised `*.voicetel.com` hosts; any other base URL (a self-hosted instance, a test stub) keeps all groups on the single configured host. Override a product host explicitly when self-hosting:
+
+```java
+VoicemlClient client = VoicemlClient.builder()
+        .accountSid("AC...")
+        .apiKey("...")
+        .baseUrl("https://pbx.example.com")
+        .messagingBaseUrl("https://messaging.example.com")
+        .conversationsBaseUrl("https://conversations.example.com")
+        .build();
+```
 
 Every method that takes a request body accepts a typed builder from `com.voicetel.voiceml.models`:
 
@@ -309,7 +333,7 @@ mvn package
 
 ## 📖 API Documentation
 
-- **Reference docs:** [voicetel.com/docs/api/v0.8/voiceml/](https://voicetel.com/docs/api/v0.8/voiceml/)
+- **Reference docs:** [voicetel.com/docs/api/v0.9/voiceml/](https://voicetel.com/docs/api/v0.9/voiceml/)
 - **Validator:** [voicetel.com/voiceml/validator/](https://voicetel.com/voiceml/validator/)
 - **SDK catalogue:** [voicetel.com/docs/voiceml-sdks/](https://voicetel.com/docs/voiceml-sdks/)
 - **Type definitions:** see the `com.voicetel.voiceml.models` package — every wire shape has a Jackson model.
