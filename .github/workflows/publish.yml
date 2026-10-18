@@ -65,6 +65,13 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      - name: Pin Maven 3.9.x
+        # ubuntu-latest ships Maven 3.10, which leaks maven-metadata-local.xml
+        # into the bundle; the Portal rejects it (central-publishing#79).
+        uses: stCarolas/setup-maven@v5
+        with:
+          maven-version: 3.9.11
+
       - name: Set up JDK + GPG + Maven settings (central server-id)
         uses: actions/setup-java@v5
         with:
