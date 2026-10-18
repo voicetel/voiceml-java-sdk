@@ -5,6 +5,16 @@ format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); version
 [Semantic Versioning](https://semver.org/). Earlier releases are described on the
 [GitHub Releases](https://github.com/voicetel/voiceml-java-sdk/releases) page.
 
+## [Unreleased]
+
+### Build
+
+- `central-publishing-maven-plugin` 0.11.0 → 0.12.0. With Maven 3.10.0, the default on GitHub's
+  `ubuntu-latest` runners, 0.11.0 left `maven-metadata-local.xml` and `_remote.repositories` in
+  the upload bundle, and the Central Portal rejected the v0.9.3 deployment ("Bundle has content
+  that does NOT have a .pom file"). The publish workflow no longer pins an older Maven, and a new
+  CI job builds the bundle on every push and fails if its layout would be rejected.
+
 ## [0.9.3] - 2026-10-18
 
 ### Breaking changes

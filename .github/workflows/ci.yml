@@ -45,6 +45,38 @@ jobs:
           echo "ConformanceTest skipped: VOICEML_CONFORMANCE_FIXTURES is not configured in CI (private fixture corpus)."
           echo "contract.SpecContractTest ran above against the vendored public spec (every operation and response schema)."
 
+  release-bundle:
+    name: Central bundle layout
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'maven'
+      # Builds the exact bundle the publish workflow uploads, with the runner's default
+      # Maven, but stops before signing (no key here) and before upload (skipUpload).
+      - name: Build the Central Portal bundle
+        run: mvn -B --no-transfer-progress -P release deploy -DskipTests -Dgpg.skip=true -DskipUpload=true
+      - name: Check the bundle layout
+        run: |
+          VERSION=$(mvn -B -q help:evaluate -Dexpression=project.version -DforceStdout)
+          DIR="com/voicetel/voiceml/$VERSION"
+          unzip -Z1 target/central-publishing/central-bundle.zip | sort > target/bundle-entries.txt
+          cat target/bundle-entries.txt
+          if grep -vE "^$DIR/[^/]+$" target/bundle-entries.txt; then
+            echo "::error::bundle has entries outside $DIR; the Portal rejects such deployments"
+            exit 1
+          fi
+          if grep -E 'maven-metadata|_remote\.repositories' target/bundle-entries.txt; then
+            echo "::error::bundle contains local-repository metadata"
+            exit 1
+          fi
+          for f in "voiceml-$VERSION.pom" "voiceml-$VERSION.jar" "voiceml-$VERSION-sources.jar" "voiceml-$VERSION-javadoc.jar"; do
+            grep -qxF "$DIR/$f" target/bundle-entries.txt || { echo "::error::bundle is missing $f"; exit 1; }
+          done
+
   java11-runtime:
     name: Runtime smoke (JDK 11)
     runs-on: ubuntu-latest
