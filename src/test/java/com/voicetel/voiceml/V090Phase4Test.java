@@ -104,7 +104,7 @@ class V090Phase4Test {
             String query = exchange.getRequestURI().getRawQuery();
             recorded.addLast(new RecordedRequest(
                     exchange.getRequestMethod(),
-                    exchange.getRequestURI().getPath(),
+                    exchange.getRequestURI().getRawPath(),
                     query == null ? "" : query,
                     new String(reqBody, StandardCharsets.UTF_8)));
             byte[] payload = body == null ? new byte[0] : body.getBytes(StandardCharsets.UTF_8);
@@ -325,7 +325,7 @@ class V090Phase4Test {
                 .conversations().participants(CH_SID)
                 .create(CreateConversationsV1ServiceConversationParticipantRequest.builder()
                         .identity("alice")
-                        .messagingBindingAddress("+15551234567")
+                        .messagingBindingAddress("+14155550103")
                         .build());
         assertThat(p.getSid()).isEqualTo(MB_SID);
 
@@ -334,7 +334,7 @@ class V090Phase4Test {
         assertThat(r.path).isEqualTo("/v1/Services/" + IS_SID + "/Conversations/" + CH_SID + "/Participants");
         Map<String, List<String>> form = formMulti(r.body);
         assertThat(form.get("Identity")).containsExactly("alice");
-        assertThat(form.get("MessagingBinding.Address")).containsExactly("+15551234567");
+        assertThat(form.get("MessagingBinding.Address")).containsExactly("+14155550103");
     }
 
     @Test
@@ -425,7 +425,7 @@ class V090Phase4Test {
                 .create(CreateConversationsV1ServiceConversationWithParticipantsRequest.builder()
                         .friendlyName("multi")
                         .addParticipant("{\"identity\":\"alice\"}")
-                        .addParticipant("{\"messaging_binding\":{\"address\":\"+15551234567\"}}")
+                        .addParticipant("{\"messaging_binding\":{\"address\":\"+14155550103\"}}")
                         .build());
         assertThat(c.getSid()).isEqualTo(CH_SID);
 
@@ -435,7 +435,7 @@ class V090Phase4Test {
         Map<String, List<String>> form = formMulti(r.body);
         assertThat(form.get("Participant")).containsExactly(
                 "{\"identity\":\"alice\"}",
-                "{\"messaging_binding\":{\"address\":\"+15551234567\"}}");
+                "{\"messaging_binding\":{\"address\":\"+14155550103\"}}");
         assertThat(form.get("FriendlyName")).containsExactly("multi");
     }
 
@@ -464,7 +464,7 @@ class V090Phase4Test {
         RecordedRequest r = recorded.removeFirst();
         assertThat(r.method).isEqualTo("GET");
         assertThat(r.path).isEqualTo("/v1/Services/" + IS_SID + "/ParticipantConversations");
-        assertThat(r.query).contains("Identity=alice");
+        WireAssert.exactPairs(r.query, "Identity=alice");
     }
 
     // --- ServiceUserConversation (list-only) ---
@@ -606,9 +606,7 @@ class V090Phase4Test {
         RecordedRequest listReq = recorded.removeFirst();
         assertThat(listReq.method).isEqualTo("GET");
         assertThat(listReq.path).isEqualTo("/v1/Services/" + IS_SID + "/Bindings");
-        assertThat(listReq.query).contains("BindingType=apn");
-        assertThat(listReq.query).contains("Identity=alice");
-        assertThat(listReq.query).contains("PageSize=50");
+        WireAssert.exactPairs(listReq.query, "BindingType=apn", "Identity=alice", "PageSize=50");
 
         String fetchBody = "{\"sid\":\"" + BS_SID + "\","
                 + "\"chat_service_sid\":\"" + IS_SID + "\","

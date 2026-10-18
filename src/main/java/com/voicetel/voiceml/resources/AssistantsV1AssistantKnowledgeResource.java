@@ -18,8 +18,8 @@ public final class AssistantsV1AssistantKnowledgeResource extends BaseResource {
 
     /** List Knowledge attached to this Assistant. */
     public AssistantsV1KnowledgeList list(ListPageParams params) {
-        Map<String, Object> q = params != null ? params.toQuery() : null;
-        return decode(transport.requestJson("GET", "/v1/Assistants/" + assistantId + "/Knowledge", q, null),
+        Map<String, Object> q = params != null ? params.toPageSizeQuery() : null;
+        return decode(transport.requestJson("GET", "/v1/Assistants/" + seg(assistantId) + "/Knowledge", q, null),
                 AssistantsV1KnowledgeList.class);
     }
 
@@ -28,12 +28,12 @@ public final class AssistantsV1AssistantKnowledgeResource extends BaseResource {
     /** Attach Knowledge to this Assistant ({@code POST} returns {@code 204}). */
     public void attach(String knowledgeId) {
         transport.requestJson("POST",
-                "/v1/Assistants/" + assistantId + "/Knowledge/" + knowledgeId, null, null);
+                "/v1/Assistants/" + seg(assistantId) + "/Knowledge/" + seg(knowledgeId), null, null);
     }
 
     /** Detach Knowledge from this Assistant ({@code DELETE} returns {@code 204}). */
     public void detach(String knowledgeId) {
         transport.requestJson("DELETE",
-                "/v1/Assistants/" + assistantId + "/Knowledge/" + knowledgeId, null, null);
+                "/v1/Assistants/" + seg(assistantId) + "/Knowledge/" + seg(knowledgeId), null, null);
     }
 }

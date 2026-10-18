@@ -21,9 +21,9 @@ public final class ConversationsV1ServiceUserConversationsResource extends BaseR
     }
 
     public ConversationsV1ServiceUserConversationList list(ListPageParams params) {
-        Map<String, Object> q = params != null ? params.toQuery() : null;
+        Map<String, Object> q = params != null ? params.toPageSizeQuery() : null;
         return decode(transport.request("GET",
-                        "/v1/Services/" + chatServiceSid + "/Users/" + userSid + "/Conversations",
+                        "/v1/Services/" + seg(chatServiceSid) + "/Users/" + seg(userSid) + "/Conversations",
                         q, null),
                 ConversationsV1ServiceUserConversationList.class);
     }

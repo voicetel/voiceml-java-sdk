@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * Pagination envelope used by Twilio's {@code /v1/*} resources (Voice v1
- * and Conversations v1). Distinct from {@link Page} (the {@code /2010-04-01}
+ * Pagination envelope of the {@code /v1/*} resources (Voice v1, Conversations v1, Messaging
+ * Service, Assistants v1, Pricing). Distinct from {@link Page} (the {@code /2010-04-01}
  * envelope) — uses {@code first_page_url}/{@code next_page_url}/etc. and
  * carries a {@code key} field naming the array property in the parent
  * response.

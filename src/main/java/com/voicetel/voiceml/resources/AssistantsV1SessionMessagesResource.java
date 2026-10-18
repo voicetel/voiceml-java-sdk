@@ -17,9 +17,9 @@ public final class AssistantsV1SessionMessagesResource extends BaseResource {
     }
 
     public AssistantsV1MessageList list(ListPageParams params) {
-        Map<String, Object> q = params != null ? params.toQuery() : null;
+        Map<String, Object> q = params != null ? params.toPageSizeQuery() : null;
         return decode(transport.requestJson("GET",
-                "/v1/Sessions/" + sessionId + "/Messages", q, null),
+                "/v1/Sessions/" + seg(sessionId) + "/Messages", q, null),
                 AssistantsV1MessageList.class);
     }
 

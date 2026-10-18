@@ -11,7 +11,7 @@ public final class PricingV1VoiceNumbersResource extends BaseResource {
     }
 
     public PricingVoiceNumber fetch(String number) {
-        String path = "/v1/Voice/Numbers/" + PricingNumberEncoding.encodeSegment(number);
+        String path = "/v1/Voice/Numbers/" + seg(number);
         return decode(transport.request("GET", path, null, null), PricingVoiceNumber.class);
     }
 }

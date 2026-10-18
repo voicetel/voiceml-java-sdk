@@ -8,7 +8,7 @@ import java.util.List;
 
 /** Paginated service-scoped Receipts response. */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class ConversationsV1ServiceConversationMessageReceiptList {
+public class ConversationsV1ServiceConversationMessageReceiptList implements MetaPage {
 
     @JsonProperty("delivery_receipts")
     private List<ConversationsV1ServiceConversationMessageReceipt> deliveryReceipts = new ArrayList<>();

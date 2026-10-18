@@ -1,6 +1,6 @@
 package com.voicetel.voiceml.models;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonEnumDefaultValue;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 /** Status of a Participant resource on the wire. */
@@ -13,7 +13,15 @@ public enum ParticipantStatus {
     ON_HOLD("on-hold"),
     COMPLETE("complete"),
     FAILED("failed"),
-    COMPLETED("completed");
+    COMPLETED("completed"),
+
+    /**
+     * Placeholder for a value this SDK version does not recognise. Decode-only: the server may add
+     * values at any time, and they decode to {@code UNKNOWN} instead of failing. The SDK refuses to
+     * send it.
+     */
+    @JsonEnumDefaultValue
+    UNKNOWN("unknown");
 
     private final String value;
 
@@ -21,12 +29,18 @@ public enum ParticipantStatus {
         this.value = value;
     }
 
+    /** @return the wire value */
     @JsonValue
     public String getValue() {
         return value;
     }
 
-    @JsonCreator
+    /**
+     * Parse a wire value.
+     *
+     * @param text the wire value
+     * @return the constant, {@code UNKNOWN} for an unrecognised value, or {@code null} for {@code null}
+     */
     public static ParticipantStatus fromString(String text) {
         if (text == null) {
             return null;
@@ -36,7 +50,7 @@ public enum ParticipantStatus {
                 return s;
             }
         }
-        return null;
+        return UNKNOWN;
     }
 
     @Override

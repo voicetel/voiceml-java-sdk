@@ -5,6 +5,7 @@ import com.voicetel.voiceml.models.CreateSipCredentialListMappingRequest;
 import com.voicetel.voiceml.models.CreateSipDomainRequest;
 import com.voicetel.voiceml.models.CreateSipIpAccessControlListMappingRequest;
 import com.voicetel.voiceml.models.ListPageParams;
+import com.voicetel.voiceml.models.ListSipParams;
 import com.voicetel.voiceml.models.SipCredentialListMappingList;
 import com.voicetel.voiceml.models.SipDomain;
 import com.voicetel.voiceml.models.SipDomainList;
@@ -27,12 +28,23 @@ public final class SipDomainsResource extends BaseResource {
 
     // --- /SIP/Domains CRUD --------------------------------------------------
 
+    /**
+     * The same list filtered by {@code FriendlyName}.
+     *
+     * @param params {@code FriendlyName} and paging
+     * @return the page
+     */
+    public SipDomainList list(ListSipParams params) {
+        Map<String, Object> q = params != null ? params.toQuery() : null;
+        return decode(transport.request("GET", accountPath("SIP", "Domains"), q, null), SipDomainList.class);
+    }
+
     public SipDomainList list(ListPageParams params) {
         Map<String, Object> q = params != null ? params.toQuery() : null;
         return decode(transport.request("GET", accountPath("SIP", "Domains"), q, null), SipDomainList.class);
     }
 
-    public SipDomainList list() { return list(null); }
+    public SipDomainList list() { return list((ListPageParams) null); }
 
     public SipDomain create(CreateSipDomainRequest body) {
         Map<String, Object> form = body != null ? body.toForm() : null;

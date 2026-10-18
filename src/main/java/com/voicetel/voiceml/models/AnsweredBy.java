@@ -1,6 +1,6 @@
 package com.voicetel.voiceml.models;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonEnumDefaultValue;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 /** Machine-detection result for a Call resource on the wire. */
@@ -12,6 +12,11 @@ public enum AnsweredBy {
     MACHINE_END_SILENCE("machine_end_silence"),
     MACHINE_END_OTHER("machine_end_other"),
     FAX("fax"),
+    /**
+     * The server could not determine who answered. Values this SDK version does not recognise
+     * also decode to {@code UNKNOWN}.
+     */
+    @JsonEnumDefaultValue
     UNKNOWN("unknown");
 
     private final String value;
@@ -20,12 +25,18 @@ public enum AnsweredBy {
         this.value = value;
     }
 
+    /** @return the wire value */
     @JsonValue
     public String getValue() {
         return value;
     }
 
-    @JsonCreator
+    /**
+     * Parse a wire value.
+     *
+     * @param text the wire value
+     * @return the constant, {@code UNKNOWN} for an unrecognised value, or {@code null} for {@code null}
+     */
     public static AnsweredBy fromString(String text) {
         if (text == null) {
             return null;
@@ -35,7 +46,7 @@ public enum AnsweredBy {
                 return a;
             }
         }
-        return null;
+        return UNKNOWN;
     }
 
     @Override

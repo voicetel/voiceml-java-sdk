@@ -31,17 +31,17 @@ public final class AssistantsV1KnowledgeResource extends BaseResource {
     public AssistantsV1KnowledgeList list() { return list(null); }
 
     public AssistantsV1Knowledge fetch(String knowledgeId) {
-        return decode(transport.requestJson("GET", "/v1/Knowledge/" + knowledgeId, null, null),
+        return decode(transport.requestJson("GET", "/v1/Knowledge/" + seg(knowledgeId), null, null),
                 AssistantsV1Knowledge.class);
     }
 
     public AssistantsV1Knowledge update(String knowledgeId, UpdateAssistantsV1KnowledgeRequest body) {
         Map<String, Object> json = body != null ? body.toJsonBody() : null;
-        return decode(transport.requestJson("PUT", "/v1/Knowledge/" + knowledgeId, null, json),
+        return decode(transport.requestJson("PUT", "/v1/Knowledge/" + seg(knowledgeId), null, json),
                 AssistantsV1Knowledge.class);
     }
 
     public void delete(String knowledgeId) {
-        transport.requestJson("DELETE", "/v1/Knowledge/" + knowledgeId, null, null);
+        transport.requestJson("DELETE", "/v1/Knowledge/" + seg(knowledgeId), null, null);
     }
 }

@@ -1,22 +1,24 @@
 package com.voicetel.voiceml.resources;
 
+import com.voicetel.voiceml.Pager;
 import com.voicetel.voiceml.Transport;
 import com.voicetel.voiceml.models.GetRecordingParams;
 import com.voicetel.voiceml.models.ListRecordingsParams;
+import com.voicetel.voiceml.models.ListTranscriptionsParams;
 import com.voicetel.voiceml.models.Recording;
 import com.voicetel.voiceml.models.RecordingAudio;
 import com.voicetel.voiceml.models.RecordingList;
+import com.voicetel.voiceml.models.Transcription;
+import com.voicetel.voiceml.models.TranscriptionList;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
  * Account-scoped {@code /Recordings} operations.
  *
  * <p>Per-call recording start/stop/list lives on {@link CallsResource} — this resource handles
- * the account-wide list, single-recording fetch (metadata and audio), and delete.
+ * the account-wide list, single-recording fetch (metadata and audio), delete, and the
+ * recording's post-recording transcriptions.
  */
 public final class RecordingsResource extends BaseResource {
 
@@ -43,26 +45,12 @@ public final class RecordingsResource extends BaseResource {
      * Auto-paginate through all pages of {@code GET /Recordings}, collecting every
      * {@link Recording} into a single list.
      */
-    public List<Recording> iterate(ListRecordingsParams params) {
-        List<Recording> out = new ArrayList<>();
-        Map<String, Object> q = params != null ? params.toQuery() : new LinkedHashMap<>();
-        int page = q.containsKey("Page") ? ((Number) q.get("Page")).intValue() : 0;
-        while (true) {
-            q.put("Page", page);
-            RecordingList chunk = decode(
-                    transport.request("GET", accountPath("Recordings"), q, null),
-                    RecordingList.class);
-            out.addAll(chunk.getRecordings());
-            if (chunk.getNextPageUri() == null || chunk.getNextPageUri().isEmpty()
-                    || chunk.getRecordings().isEmpty()) {
-                return out;
-            }
-            page++;
-        }
+    public Pager<Recording> iterate(ListRecordingsParams params) {
+        return pager(() -> list(params), RecordingList.class, RecordingList::getRecordings);
     }
 
     /** Auto-paginate all recordings (no filters). */
-    public List<Recording> iterate() {
+    public Pager<Recording> iterate() {
         return iterate(null);
     }
 
@@ -82,18 +70,84 @@ public final class RecordingsResource extends BaseResource {
     /**
      * Fetch the WAV audio for a recording.
      *
-     * <p>Three server delivery shapes are flattened into one result by following any 302 redirect
-     * to S3: {@code 200 OK} (local file), {@code 302 Found} → presigned S3 URL, {@code 410 Gone}
-     * (no local file and no S3 key — raises {@code GoneException}).
+     * <p>Three server delivery shapes are flattened into one result: {@code 200 OK} (local file),
+     * {@code 302 Found} to a presigned storage URL (followed without the {@code Authorization}
+     * header; an https-to-http redirect is refused), and {@code 410 Gone} (no local file and no
+     * stored copy; raises {@code GoneException}). The request uses the client's {@code HttpClient}
+     * and timeout and sends {@code Accept: audio/*, *}{@code /*}.
+     *
+     * @param recordingSid the recording SID
+     * @return the audio
      */
     public RecordingAudio getAudio(String recordingSid) {
         Transport.BinaryResponse resp =
-                transport.fetchBytes(accountPath("Recordings", recordingSid) + ".wav");
+                transport.fetchBytes(accountPathWithSuffix(".wav", "Recordings", recordingSid));
         return new RecordingAudio(
                 recordingSid, resp.getContent(), resp.getContentType(), resp.isViaRedirect());
     }
 
     public void delete(String recordingSid) {
         transport.request("DELETE", accountPath("Recordings", recordingSid), null, null);
+    }
+
+    // --- /Recordings/{RecordingSid}/Transcriptions ---
+
+    /**
+     * {@code GET /Recordings/{RecordingSid}/Transcriptions}.
+     *
+     * @param recordingSid the recording SID
+     * @param params filters and paging, or {@code null}
+     * @return the page
+     */
+    public TranscriptionList listTranscriptions(String recordingSid, ListTranscriptionsParams params) {
+        Map<String, Object> q = params != null ? params.toQuery() : null;
+        return decode(
+                transport.request("GET", accountPath("Recordings", recordingSid, "Transcriptions"), q, null),
+                TranscriptionList.class);
+    }
+
+    /**
+     * @param recordingSid the recording SID
+     * @return the first page of the recording's transcriptions
+     */
+    public TranscriptionList listTranscriptions(String recordingSid) {
+        return listTranscriptions(recordingSid, null);
+    }
+
+    /**
+     * Lazily iterate every transcription of a recording.
+     *
+     * @param recordingSid the recording SID
+     * @param params filters and paging, or {@code null}
+     * @return the pager
+     */
+    public Pager<Transcription> iterateTranscriptions(String recordingSid, ListTranscriptionsParams params) {
+        return pager(() -> listTranscriptions(recordingSid, params), TranscriptionList.class,
+                TranscriptionList::getTranscriptions);
+    }
+
+    /**
+     * {@code GET /Recordings/{RecordingSid}/Transcriptions/{Sid}}.
+     *
+     * @param recordingSid the recording SID
+     * @param transcriptionSid the transcription SID
+     * @return the transcription
+     */
+    public Transcription getTranscription(String recordingSid, String transcriptionSid) {
+        return decode(
+                transport.request("GET",
+                        accountPath("Recordings", recordingSid, "Transcriptions", transcriptionSid), null, null),
+                Transcription.class);
+    }
+
+    /**
+     * {@code DELETE /Recordings/{RecordingSid}/Transcriptions/{Sid}}.
+     *
+     * @param recordingSid the recording SID
+     * @param transcriptionSid the transcription SID
+     */
+    public void deleteTranscription(String recordingSid, String transcriptionSid) {
+        transport.request("DELETE",
+                accountPath("Recordings", recordingSid, "Transcriptions", transcriptionSid), null, null);
     }
 }

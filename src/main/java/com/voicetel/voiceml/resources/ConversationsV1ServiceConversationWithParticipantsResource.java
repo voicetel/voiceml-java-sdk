@@ -20,7 +20,7 @@ public final class ConversationsV1ServiceConversationWithParticipantsResource ex
             CreateConversationsV1ServiceConversationWithParticipantsRequest body) {
         Map<String, Object> form = body != null ? body.toForm() : null;
         return decode(transport.request("POST",
-                        "/v1/Services/" + chatServiceSid + "/ConversationWithParticipants",
+                        "/v1/Services/" + seg(chatServiceSid) + "/ConversationWithParticipants",
                         null, form),
                 ConversationsV1ServiceConversationWithParticipants.class);
     }

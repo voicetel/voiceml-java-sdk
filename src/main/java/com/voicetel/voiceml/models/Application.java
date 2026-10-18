@@ -40,9 +40,6 @@ public class Application {
     @JsonProperty("status_callback_method")
     private String statusCallbackMethod;
 
-    @JsonProperty("status_callback_event")
-    private String statusCallbackEvent;
-
     @JsonProperty("date_created")
     private String dateCreated;
 
@@ -51,6 +48,24 @@ public class Application {
 
     @JsonProperty("uri")
     private String uri;
+
+    @JsonProperty("sms_url")
+    private String smsUrl;
+
+    @JsonProperty("sms_method")
+    private String smsMethod;
+
+    @JsonProperty("sms_fallback_url")
+    private String smsFallbackUrl;
+
+    @JsonProperty("sms_fallback_method")
+    private String smsFallbackMethod;
+
+    @JsonProperty("message_status_callback")
+    private String messageStatusCallback;
+
+    @JsonProperty("sms_status_callback")
+    private String smsStatusCallback;
 
     public String getSid() { return sid; }
     public void setSid(String sid) { this.sid = sid; }
@@ -74,12 +89,22 @@ public class Application {
     public void setStatusCallback(String statusCallback) { this.statusCallback = statusCallback; }
     public String getStatusCallbackMethod() { return statusCallbackMethod; }
     public void setStatusCallbackMethod(String statusCallbackMethod) { this.statusCallbackMethod = statusCallbackMethod; }
-    public String getStatusCallbackEvent() { return statusCallbackEvent; }
-    public void setStatusCallbackEvent(String statusCallbackEvent) { this.statusCallbackEvent = statusCallbackEvent; }
     public String getDateCreated() { return dateCreated; }
     public void setDateCreated(String dateCreated) { this.dateCreated = dateCreated; }
     public String getDateUpdated() { return dateUpdated; }
     public void setDateUpdated(String dateUpdated) { this.dateUpdated = dateUpdated; }
     public String getUri() { return uri; }
     public void setUri(String uri) { this.uri = uri; }
+    public String getSmsUrl() { return smsUrl; }
+    public void setSmsUrl(String smsUrl) { this.smsUrl = smsUrl; }
+    public String getSmsMethod() { return smsMethod; }
+    public void setSmsMethod(String smsMethod) { this.smsMethod = smsMethod; }
+    public String getSmsFallbackUrl() { return smsFallbackUrl; }
+    public void setSmsFallbackUrl(String smsFallbackUrl) { this.smsFallbackUrl = smsFallbackUrl; }
+    public String getSmsFallbackMethod() { return smsFallbackMethod; }
+    public void setSmsFallbackMethod(String smsFallbackMethod) { this.smsFallbackMethod = smsFallbackMethod; }
+    public String getMessageStatusCallback() { return messageStatusCallback; }
+    public void setMessageStatusCallback(String messageStatusCallback) { this.messageStatusCallback = messageStatusCallback; }
+    public String getSmsStatusCallback() { return smsStatusCallback; }
+    public void setSmsStatusCallback(String smsStatusCallback) { this.smsStatusCallback = smsStatusCallback; }
 }

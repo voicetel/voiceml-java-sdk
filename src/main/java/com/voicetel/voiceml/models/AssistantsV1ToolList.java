@@ -8,7 +8,7 @@ import java.util.List;
 
 /** Paginated {@code /v1/Tools} response. */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class AssistantsV1ToolList {
+public class AssistantsV1ToolList implements MetaPage {
 
     @JsonProperty("tools")
     private List<AssistantsV1Tool> tools = new ArrayList<>();

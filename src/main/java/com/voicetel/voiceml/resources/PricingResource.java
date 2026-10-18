@@ -3,12 +3,12 @@ package com.voicetel.voiceml.resources;
 import com.voicetel.voiceml.Transport;
 
 /**
- * Top-level surface for Twilio pricing.twilio.com (#18), served on the default host — VoiceML has
- * no dedicated pricing subdomain. All operations are read-only {@code GET}s.
+ * The Twilio-compatible Pricing API ({@code /v1} and {@code /v2}), served on the default host:
+ * VoiceML has no dedicated pricing subdomain. All operations are read-only {@code GET}s.
  *
  * <pre>{@code
  * client.pricing().v1().voice().countries().list();
- * client.pricing().v1().voice().numbers().fetch("+18005551234");
+ * client.pricing().v1().voice().numbers().fetch("+14155550100");
  * client.pricing().v2().trunking().countries().fetch("US");
  * }</pre>
  */

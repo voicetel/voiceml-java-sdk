@@ -19,14 +19,14 @@ public final class RoutesV2SipDomainsResource extends BaseResource {
 
     /** Fetch a domain's Inbound Processing Region binding. */
     public RoutesV2SipDomain fetch(String domainName) {
-        return decode(transport.request("GET", "/v2/SipDomains/" + domainName, null, null),
+        return decode(transport.request("GET", "/v2/SipDomains/" + seg(domainName), null, null),
                 RoutesV2SipDomain.class);
     }
 
     /** Update a domain's voice region and/or friendly name. */
     public RoutesV2SipDomain update(String domainName, UpdateRoutesV2SipDomainRequest body) {
         Map<String, Object> form = body != null ? body.toForm() : null;
-        return decode(transport.request("POST", "/v2/SipDomains/" + domainName, null, form),
+        return decode(transport.request("POST", "/v2/SipDomains/" + seg(domainName), null, form),
                 RoutesV2SipDomain.class);
     }
 }

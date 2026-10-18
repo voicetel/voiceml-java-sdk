@@ -8,7 +8,7 @@ import java.util.List;
 
 /** Paginated {@code /v1/Knowledge/{id}/Chunks} response. */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class AssistantsV1KnowledgeChunkList {
+public class AssistantsV1KnowledgeChunkList implements MetaPage {
 
     @JsonProperty("chunks")
     private List<AssistantsV1KnowledgeChunk> chunks = new ArrayList<>();

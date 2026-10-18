@@ -20,7 +20,7 @@ public final class ConversationsV1ConversationParticipantsResource extends BaseR
     }
 
     private String base() {
-        return "/v1/Conversations/" + conversationSid + "/Participants";
+        return "/v1/Conversations/" + seg(conversationSid) + "/Participants";
     }
 
     public ConversationsV1ConversationParticipant create(CreateConversationsV1ConversationParticipantRequest body) {
@@ -30,7 +30,7 @@ public final class ConversationsV1ConversationParticipantsResource extends BaseR
     }
 
     public ConversationsV1ConversationParticipantList list(ListPageParams params) {
-        Map<String, Object> q = params != null ? params.toQuery() : null;
+        Map<String, Object> q = params != null ? params.toPageSizeQuery() : null;
         return decode(transport.request("GET", base(), q, null),
                 ConversationsV1ConversationParticipantList.class);
     }
@@ -38,18 +38,18 @@ public final class ConversationsV1ConversationParticipantsResource extends BaseR
     public ConversationsV1ConversationParticipantList list() { return list(null); }
 
     public ConversationsV1ConversationParticipant fetch(String participantSid) {
-        return decode(transport.request("GET", base() + "/" + participantSid, null, null),
+        return decode(transport.request("GET", base() + "/" + seg(participantSid), null, null),
                 ConversationsV1ConversationParticipant.class);
     }
 
     public ConversationsV1ConversationParticipant update(String participantSid,
                                                          UpdateConversationsV1ConversationParticipantRequest body) {
         Map<String, Object> form = body != null ? body.toForm() : null;
-        return decode(transport.request("POST", base() + "/" + participantSid, null, form),
+        return decode(transport.request("POST", base() + "/" + seg(participantSid), null, form),
                 ConversationsV1ConversationParticipant.class);
     }
 
     public void delete(String participantSid) {
-        transport.request("DELETE", base() + "/" + participantSid, null, null);
+        transport.request("DELETE", base() + "/" + seg(participantSid), null, null);
     }
 }

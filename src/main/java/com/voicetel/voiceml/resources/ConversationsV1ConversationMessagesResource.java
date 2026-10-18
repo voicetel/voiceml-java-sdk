@@ -20,7 +20,7 @@ public final class ConversationsV1ConversationMessagesResource extends BaseResou
     }
 
     private String base() {
-        return "/v1/Conversations/" + conversationSid + "/Messages";
+        return "/v1/Conversations/" + seg(conversationSid) + "/Messages";
     }
 
     public ConversationsV1ConversationMessage create(CreateConversationsV1ConversationMessageRequest body) {
@@ -30,7 +30,7 @@ public final class ConversationsV1ConversationMessagesResource extends BaseResou
     }
 
     public ConversationsV1ConversationMessageList list(ListPageParams params) {
-        Map<String, Object> q = params != null ? params.toQuery() : null;
+        Map<String, Object> q = params != null ? params.toPageSizeQuery() : null;
         return decode(transport.request("GET", base(), q, null),
                 ConversationsV1ConversationMessageList.class);
     }
@@ -38,19 +38,19 @@ public final class ConversationsV1ConversationMessagesResource extends BaseResou
     public ConversationsV1ConversationMessageList list() { return list(null); }
 
     public ConversationsV1ConversationMessage fetch(String messageSid) {
-        return decode(transport.request("GET", base() + "/" + messageSid, null, null),
+        return decode(transport.request("GET", base() + "/" + seg(messageSid), null, null),
                 ConversationsV1ConversationMessage.class);
     }
 
     public ConversationsV1ConversationMessage update(String messageSid,
                                                      UpdateConversationsV1ConversationMessageRequest body) {
         Map<String, Object> form = body != null ? body.toForm() : null;
-        return decode(transport.request("POST", base() + "/" + messageSid, null, form),
+        return decode(transport.request("POST", base() + "/" + seg(messageSid), null, form),
                 ConversationsV1ConversationMessage.class);
     }
 
     public void delete(String messageSid) {
-        transport.request("DELETE", base() + "/" + messageSid, null, null);
+        transport.request("DELETE", base() + "/" + seg(messageSid), null, null);
     }
 
     /** Sub-resource handle for {@code .../Messages/{MessageSid}/Receipts}. */

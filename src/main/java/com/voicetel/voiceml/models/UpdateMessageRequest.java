@@ -6,7 +6,7 @@ import java.util.Map;
 /**
  * Form body for {@code POST /Messages/{Sid}}.
  *
- * <p>Two flows on the same endpoint (mirrors Twilio):
+ * <p>Two flows on the same endpoint (Twilio-compatible):
  * <ul>
  *   <li>{@code body=""} — redact the stored Message body.</li>
  *   <li>{@code status="canceled"} — attempt to cancel a queued send. Returns 21610 on the

@@ -6,14 +6,65 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
 jobs:
-  test:
+  lint:
+    name: Lint (javac -Xlint:all -Werror, javadoc doclint)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
-          java-version: '21'
+          java-version: '17'
           cache: 'maven'
-      - run: mvn -B test
+      # The compiler plugin runs -Xlint:all with failOnWarning, and the javadoc plugin runs
+      # doclint all,-missing with failOnWarnings, so any warning fails this job.
+      - run: mvn -B --no-transfer-progress -DskipTests verify
+
+  test:
+    name: Test (JDK ${{ matrix.java }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # The test suite needs Java 17 (JUnit 6). The Java 11 floor is covered by java11-runtime.
+        java: ['17', '21']
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: ${{ matrix.java }}
+          cache: 'maven'
+      - run: mvn -B --no-transfer-progress verify
+      - name: Fixture-corpus conformance
+        run: |
+          echo "ConformanceTest skipped: VOICEML_CONFORMANCE_FIXTURES is not configured in CI (private fixture corpus)."
+          echo "contract.SpecContractTest ran above against the vendored public spec (every operation and response schema)."
+
+  java11-runtime:
+    name: Runtime smoke (JDK 11)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'maven'
+      - name: Build the jar (release 11) and collect runtime dependencies
+        run: mvn -B --no-transfer-progress -DskipTests package dependency:copy-dependencies -DincludeScope=runtime -DoutputDirectory=target/runtime-deps
+      - uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+      - name: Compile and run the smoke program on JDK 11
+        run: |
+          java -version
+          JAR=$(ls target/voiceml-*.jar | grep -v -e sources -e javadoc)
+          javac -Xlint:all -Werror --release 11 -cp "$JAR:target/runtime-deps/*" -d target/smoke \
+            src/smoke/java/com/voicetel/voiceml/smoke/Jdk11Smoke.java
+          java -cp "target/smoke:$JAR:target/runtime-deps/*" com.voicetel.voiceml.smoke.Jdk11Smoke

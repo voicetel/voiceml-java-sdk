@@ -8,7 +8,7 @@ import java.util.List;
 
 /** Paginated service-scoped Bindings response. */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class ConversationsV1ServiceBindingList {
+public class ConversationsV1ServiceBindingList implements MetaPage {
 
     @JsonProperty("bindings")
     private List<ConversationsV1ServiceBinding> bindings = new ArrayList<>();

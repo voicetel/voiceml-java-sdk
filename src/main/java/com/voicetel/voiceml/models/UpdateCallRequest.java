@@ -7,7 +7,7 @@ import java.util.Map;
 /**
  * Form body for {@code POST /Calls/{sid}}.
  *
- * <p>Three flows on the same endpoint (mirrors Twilio):
+ * <p>Three flows on the same endpoint (Twilio-compatible):
  * <ul>
  *   <li>{@code status="completed"|"canceled"} — terminate the call. Wins over any TwiML source.</li>
  *   <li>{@code twiml=<inline>} — execute inline TwiML on the live call (wins over {@code url}).</li>

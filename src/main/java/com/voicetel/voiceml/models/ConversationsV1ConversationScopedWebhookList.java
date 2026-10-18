@@ -8,7 +8,7 @@ import java.util.List;
 
 /** Paginated {@code /v1/Conversations/{ConversationSid}/Webhooks} response. */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class ConversationsV1ConversationScopedWebhookList {
+public class ConversationsV1ConversationScopedWebhookList implements MetaPage {
 
     @JsonProperty("webhooks")
     private List<ConversationsV1ConversationScopedWebhook> webhooks = new ArrayList<>();

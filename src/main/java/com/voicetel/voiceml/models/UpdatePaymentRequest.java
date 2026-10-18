@@ -27,8 +27,8 @@ public final class UpdatePaymentRequest {
         Map<String, Object> form = new LinkedHashMap<>();
         if (idempotencyKey != null) form.put("IdempotencyKey", idempotencyKey);
         if (statusCallback != null) form.put("StatusCallback", statusCallback);
-        if (capture != null) form.put("Capture", capture.getValue());
-        if (status != null) form.put("Status", status.getValue());
+        if (capture != null) form.put("Capture", SendableEnums.check(capture).getValue());
+        if (status != null) form.put("Status", SendableEnums.check(status).getValue());
         return form;
     }
 

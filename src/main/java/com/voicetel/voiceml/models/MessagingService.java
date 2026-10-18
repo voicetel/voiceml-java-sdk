@@ -36,6 +36,7 @@ public class MessagingService {
     @JsonProperty("url") private String url;
     @JsonProperty("usecase") private String usecase;
     @JsonProperty("use_inbound_webhook_on_number") private Boolean useInboundWebhookOnNumber;
+    @JsonProperty("advanced_opt_out") private Boolean advancedOptOut;
 
     public String getSid() { return sid; }
     public String getAccountSid() { return accountSid; }
@@ -80,4 +81,6 @@ public class MessagingService {
     public void setUrl(String v) { this.url = v; }
     public void setUsecase(String v) { this.usecase = v; }
     public void setUseInboundWebhookOnNumber(Boolean v) { this.useInboundWebhookOnNumber = v; }
+    public Boolean getAdvancedOptOut() { return advancedOptOut; }
+    public void setAdvancedOptOut(Boolean advancedOptOut) { this.advancedOptOut = advancedOptOut; }
 }

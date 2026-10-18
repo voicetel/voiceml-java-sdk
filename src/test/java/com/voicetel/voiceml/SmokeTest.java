@@ -49,9 +49,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
@@ -106,6 +104,12 @@ class SmokeTest {
         return client(0);
     }
 
+    private static <T> List<T> toList(Iterable<T> items) {
+        List<T> out = new java.util.ArrayList<>();
+        items.forEach(out::add);
+        return out;
+    }
+
     /** Register a one-shot handler that records the request and returns the supplied response. */
     private void handle(String path, int status, String body) {
         server.createContext(path, exchange -> {
@@ -113,7 +117,7 @@ class SmokeTest {
             String query = exchange.getRequestURI().getRawQuery();
             recorded.addLast(new RecordedRequest(
                     exchange.getRequestMethod(),
-                    exchange.getRequestURI().getPath(),
+                    exchange.getRequestURI().getRawPath(),
                     query == null ? "" : query,
                     new String(reqBody, StandardCharsets.UTF_8),
                     exchange.getRequestHeaders().getFirst("Authorization"),
@@ -136,7 +140,7 @@ class SmokeTest {
             byte[] reqBody = exchange.getRequestBody().readAllBytes();
             recorded.addLast(new RecordedRequest(
                     exchange.getRequestMethod(),
-                    exchange.getRequestURI().getPath(),
+                    exchange.getRequestURI().getRawPath(),
                     exchange.getRequestURI().getRawQuery() == null
                             ? ""
                             : exchange.getRequestURI().getRawQuery(),
@@ -185,8 +189,8 @@ class SmokeTest {
 
         Call call = client().calls().create(
                 CreateCallRequest.builder()
-                        .to("+18005551234")
-                        .from("+18005550000")
+                        .to("+14155550100")
+                        .from("+14155550101")
                         .url("https://example.com/twiml")
                         .machineDetection("DetectMessageEnd")
                         .build());
@@ -198,11 +202,7 @@ class SmokeTest {
         assertThat(r.method).isEqualTo("POST");
         assertThat(r.path).isEqualTo("/2010-04-01/Accounts/ACtest/Calls.json");
         assertThat(r.contentType).isEqualTo("application/x-www-form-urlencoded");
-        assertThat(r.body)
-                .contains("To=%2B18005551234")
-                .contains("From=%2B18005550000")
-                .contains("Url=https%3A%2F%2Fexample.com%2Ftwiml")
-                .contains("MachineDetection=DetectMessageEnd");
+        WireAssert.exactPairs(r.body, "To=%2B14155550100", "From=%2B14155550101", "Url=https%3A%2F%2Fexample.com%2Ftwiml", "MachineDetection=DetectMessageEnd");
 
         String expectedAuth =
                 "Basic " + Base64.getEncoder().encodeToString("ACtest:secret".getBytes(StandardCharsets.UTF_8));
@@ -211,14 +211,14 @@ class SmokeTest {
     }
 
     @Test
-    void listCallsTranslatesStartTimeGteAndLte() {
+    void listCallsSendsStartTimeRangeWireNames() {
         handle("/2010-04-01/Accounts/ACtest/Calls", 200,
                 "{\"calls\":[],\"page\":0,\"page_size\":50}");
 
         CallList list = client().calls().list(
                 ListCallsParams.builder()
-                        .startTimeGte("2026-04-01T00:00:00Z")
-                        .startTimeLte("2026-04-30T23:59:59Z")
+                        .startTimeGt("2026-04-01T00:00:00Z")
+                        .startTimeLt("2026-04-30T23:59:59Z")
                         .pageSize(50)
                         .build());
 
@@ -226,9 +226,9 @@ class SmokeTest {
 
         RecordedRequest r = recorded.removeFirst();
         assertThat(r.method).isEqualTo("GET");
-        assertThat(r.query).contains("StartTime%3E%3D=2026-04-01T00%3A00%3A00Z");
-        assertThat(r.query).contains("StartTime%3C%3D=2026-04-30T23%3A59%3A59Z");
-        assertThat(r.query).contains("PageSize=50");
+        assertThat(r.path).isEqualTo("/2010-04-01/Accounts/ACtest/Calls.json");
+        assertThat(r.query).isEqualTo(
+                "StartTime%3C=2026-04-30T23%3A59%3A59Z&StartTime%3E=2026-04-01T00%3A00%3A00Z&PageSize=50");
     }
 
     @Test
@@ -248,9 +248,7 @@ class SmokeTest {
 
         RecordedRequest r = recorded.removeFirst();
         assertThat(r.method).isEqualTo("POST");
-        assertThat(r.body)
-                .contains("Muted=true")
-                .contains("Hold=false");
+        WireAssert.exactPairs(r.body, "Muted=true", "Hold=false");
     }
 
     @Test
@@ -286,7 +284,7 @@ class SmokeTest {
     void error501MapsToNotImplementedException() {
         handle("/2010-04-01/Accounts/ACtest/Calls/CA1/UserDefinedMessages", 501,
                 "{\"code\":20501,\"message\":\"Not Implemented\"}");
-        assertThatThrownBy(() -> client().calls().sendUserDefinedMessage("CA1", null))
+        assertThatThrownBy(() -> client().calls().sendUserDefinedMessage("CA1"))
                 .isInstanceOf(NotImplementedException.class);
     }
 
@@ -367,7 +365,7 @@ class SmokeTest {
                 "{\"incoming_phone_numbers\":[{"
                         + "\"sid\":\"PN" + "0123456789abcdef0123456789abcdef\","
                         + "\"account_sid\":\"ACtest\","
-                        + "\"phone_number\":\"+18005551234\","
+                        + "\"phone_number\":\"+14155550100\","
                         + "\"friendly_name\":null,"
                         + "\"api_version\":\"2010-04-01\","
                         + "\"uri\":\"/2010-04-01/Accounts/ACtest/IncomingPhoneNumbers/PN"
@@ -377,12 +375,12 @@ class SmokeTest {
                         + "\"capabilities\":{\"voice\":true,\"sms\":false,\"mms\":false,\"fax\":false},"
                         + "\"date_created\":\"Wed, 20 May 2026 00:00:00 +0000\","
                         + "\"date_updated\":\"Wed, 20 May 2026 00:00:00 +0000\""
-                        + "}],\"page\":0,\"page_size\":50,\"total\":1,"
+                        + "}],\"page\":0,\"page_size\":50,"
                         + "\"first_page_uri\":\"/x\",\"next_page_uri\":null}");
 
         IncomingPhoneNumberList list = client().incomingPhoneNumbers().list(
                 ListIncomingPhoneNumbersParams.builder()
-                        .phoneNumber("+18005551234")
+                        .phoneNumber("+14155550100")
                         .pageSize(50)
                         .build());
 
@@ -390,18 +388,15 @@ class SmokeTest {
         IncomingPhoneNumber ipn = list.getIncomingPhoneNumbers().get(0);
         assertThat(ipn.getSid()).startsWith("PN");
         assertThat(ipn.getSid()).hasSize(34);
-        assertThat(ipn.getPhoneNumber()).isEqualTo("+18005551234");
+        assertThat(ipn.getPhoneNumber()).isEqualTo("+14155550100");
         assertThat(ipn.getCapabilities()).isNotNull();
         assertThat(ipn.getCapabilities().getVoice()).isTrue();
-        assertThat(list.getTotal()).isEqualTo(1);
         assertThat(list.getNextPageUri()).isNull();
 
         RecordedRequest r = recorded.removeFirst();
         assertThat(r.method).isEqualTo("GET");
         assertThat(r.path).isEqualTo("/2010-04-01/Accounts/ACtest/IncomingPhoneNumbers.json");
-        assertThat(r.query)
-                .contains("PhoneNumber=%2B18005551234")
-                .contains("PageSize=50");
+        WireAssert.exactPairs(r.query, "PhoneNumber=%2B14155550100", "PageSize=50");
     }
 
     @Test
@@ -409,14 +404,14 @@ class SmokeTest {
         handle("/2010-04-01/Accounts/ACtest/IncomingPhoneNumbers", 201,
                 "{\"sid\":\"PN" + "00000000000000000000000000000001\","
                         + "\"account_sid\":\"ACtest\","
-                        + "\"phone_number\":\"+18005551234\","
+                        + "\"phone_number\":\"+14155550100\","
                         + "\"api_version\":\"2010-04-01\","
                         + "\"uri\":\"/x\","
                         + "\"capabilities\":{\"voice\":true,\"sms\":false,\"mms\":false,\"fax\":false}}");
 
         IncomingPhoneNumber ipn = client().incomingPhoneNumbers().create(
                 CreateIncomingPhoneNumberRequest.builder()
-                        .phoneNumber("+18005551234")
+                        .phoneNumber("+14155550100")
                         .voiceUrl("https://example.com/twiml")
                         .voiceMethod("POST")
                         .build());
@@ -427,10 +422,7 @@ class SmokeTest {
         assertThat(r.method).isEqualTo("POST");
         assertThat(r.path).isEqualTo("/2010-04-01/Accounts/ACtest/IncomingPhoneNumbers.json");
         assertThat(r.contentType).isEqualTo("application/x-www-form-urlencoded");
-        assertThat(r.body)
-                .contains("PhoneNumber=%2B18005551234")
-                .contains("VoiceUrl=https%3A%2F%2Fexample.com%2Ftwiml")
-                .contains("VoiceMethod=POST");
+        WireAssert.exactPairs(r.body, "PhoneNumber=%2B14155550100", "VoiceUrl=https%3A%2F%2Fexample.com%2Ftwiml", "VoiceMethod=POST");
     }
 
     @Test
@@ -438,7 +430,7 @@ class SmokeTest {
         String sid = "PN0123456789abcdef0123456789abcdef";
         handle("/2010-04-01/Accounts/ACtest/IncomingPhoneNumbers/" + sid, 200,
                 "{\"sid\":\"" + sid + "\",\"account_sid\":\"ACtest\","
-                        + "\"phone_number\":\"+18005551234\",\"api_version\":\"2010-04-01\","
+                        + "\"phone_number\":\"+14155550100\",\"api_version\":\"2010-04-01\","
                         + "\"uri\":\"/x\","
                         + "\"capabilities\":{\"voice\":true,\"sms\":false,\"mms\":false,\"fax\":false}}");
 
@@ -455,7 +447,7 @@ class SmokeTest {
         String sid = "PN0123456789abcdef0123456789abcdef";
         handle("/2010-04-01/Accounts/ACtest/IncomingPhoneNumbers/" + sid, 200,
                 "{\"sid\":\"" + sid + "\",\"account_sid\":\"ACtest\","
-                        + "\"phone_number\":\"+18005551234\",\"api_version\":\"2010-04-01\","
+                        + "\"phone_number\":\"+14155550100\",\"api_version\":\"2010-04-01\","
                         + "\"uri\":\"/x\","
                         + "\"voice_url\":\"https://example.com/new\","
                         + "\"capabilities\":{\"voice\":true,\"sms\":false,\"mms\":false,\"fax\":false}}");
@@ -473,9 +465,7 @@ class SmokeTest {
         assertThat(r.method).isEqualTo("POST");
         assertThat(r.path)
                 .isEqualTo("/2010-04-01/Accounts/ACtest/IncomingPhoneNumbers/" + sid + ".json");
-        assertThat(r.body)
-                .contains("VoiceUrl=https%3A%2F%2Fexample.com%2Fnew")
-                .contains("VoiceMethod=POST");
+        WireAssert.exactPairs(r.body, "VoiceUrl=https%3A%2F%2Fexample.com%2Fnew", "VoiceMethod=POST");
     }
 
     @Test
@@ -497,7 +487,7 @@ class SmokeTest {
                 "{\"code\":20409,\"message\":\"PhoneNumber already assigned to another account\"}");
 
         assertThatThrownBy(() -> client().incomingPhoneNumbers().create(
-                CreateIncomingPhoneNumberRequest.builder().phoneNumber("+18005551234").build()))
+                CreateIncomingPhoneNumberRequest.builder().phoneNumber("+14155550100").build()))
                 .isInstanceOf(ConflictException.class)
                 .satisfies(e -> assertThat(((ApiException) e).getStatusCode()).isEqualTo(409));
     }
@@ -510,7 +500,7 @@ class SmokeTest {
         handle("/2010-04-01/Accounts/ACtest/IncomingPhoneNumbers/" + sid, 200,
                 "{\"sid\":\"" + sid + "\","
                         + "\"account_sid\":\"ACtest\","
-                        + "\"phone_number\":\"+18005551234\","
+                        + "\"phone_number\":\"+14155550100\","
                         + "\"friendly_name\":\"\","
                         + "\"api_version\":\"2010-04-01\","
                         + "\"uri\":\"/2010-04-01/Accounts/ACtest/IncomingPhoneNumbers/" + sid + ".json\","
@@ -550,7 +540,7 @@ class SmokeTest {
         // Existing core fields still bind.
         assertThat(ipn.getSid()).isEqualTo(sid);
         assertThat(ipn.getAccountSid()).isEqualTo("ACtest");
-        assertThat(ipn.getPhoneNumber()).isEqualTo("+18005551234");
+        assertThat(ipn.getPhoneNumber()).isEqualTo("+14155550100");
         assertThat(ipn.getCapabilities().getVoice()).isTrue();
 
         // Spot-check the new Twilio-compat outer fields.
@@ -585,13 +575,13 @@ class SmokeTest {
     }
 
     @Test
-    void apiKeyAndAuthTokenSetSimultaneouslyThrowsIllegalState() {
+    void apiKeyAndAuthTokenSetSimultaneouslyThrowsConfigurationException() {
         assertThatThrownBy(() -> VoicemlClient.builder()
                 .accountSid("ACtest")
                 .apiKey("one")
                 .authToken("two")
                 .build())
-                .isInstanceOf(IllegalStateException.class)
+                .isInstanceOf(ConfigurationException.class)
                 .hasMessageContaining("apiKey")
                 .hasMessageContaining("authToken");
     }
@@ -674,7 +664,7 @@ class SmokeTest {
     void incomingPhoneNumberTypeFieldDeserializes() throws Exception {
         String json = "{\"sid\":\"PN0123456789abcdef0123456789abcdef\","
                 + "\"account_sid\":\"ACtest\","
-                + "\"phone_number\":\"+18005551234\","
+                + "\"phone_number\":\"+14155550100\","
                 + "\"api_version\":\"2010-04-01\","
                 + "\"uri\":\"/x\","
                 + "\"type\":\"toll-free\","
@@ -741,12 +731,13 @@ class SmokeTest {
                         .build());
 
         RecordedRequest r = recorded.removeFirst();
-        assertThat(r.query).contains("StartTime=2026-05-01");
-        assertThat(r.query).contains("StartTime%3C=2026-05-02");
-        assertThat(r.query).contains("StartTime%3E=2026-04-30");
-        assertThat(r.query).contains("EndTime=2026-05-21");
-        assertThat(r.query).contains("EndTime%3C=2026-05-22");
-        assertThat(r.query).contains("EndTime%3E=2026-05-20");
+        WireAssert.exactPairs(r.query,
+                "StartTime=2026-05-01",
+                "StartTime%3C=2026-05-02",
+                "StartTime%3E=2026-04-30",
+                "EndTime=2026-05-21",
+                "EndTime%3C=2026-05-22",
+                "EndTime%3E=2026-05-20");
     }
 
     @Test
@@ -756,11 +747,11 @@ class SmokeTest {
 
         client().calls().list(
                 ListCallsParams.builder()
-                        .pageToken("cursor-abc123")
+                        .pageToken("PTabc123")
                         .build());
 
         RecordedRequest r = recorded.removeFirst();
-        assertThat(r.query).contains("PageToken=cursor-abc123");
+        WireAssert.exactPairs(r.query, "PageToken=PTabc123");
     }
 
     @Test
@@ -779,15 +770,13 @@ class SmokeTest {
 
         client().conferences().createParticipant(confSid,
                 CreateParticipantRequest.builder()
-                        .from("+18005550000")
-                        .to("+18005551234")
+                        .from("+14155550101")
+                        .to("+14155550100")
                         .build());
 
         RecordedRequest r = recorded.removeFirst();
         assertThat(r.method).isEqualTo("POST");
-        assertThat(r.body)
-                .contains("From=%2B18005550000")
-                .contains("To=%2B18005551234");
+        WireAssert.exactPairs(r.body, "From=%2B14155550101", "To=%2B14155550100");
     }
 
     @Test
@@ -805,10 +794,11 @@ class SmokeTest {
                         .build());
 
         RecordedRequest r = recorded.removeFirst();
-        assertThat(r.query).contains("Log=1");
-        assertThat(r.query).contains("MessageDate=2026-05-01");
-        assertThat(r.query).contains("MessageDate%3C=2026-05-02");
-        assertThat(r.query).contains("MessageDate%3E=2026-04-30");
+        WireAssert.exactPairs(r.query,
+                "Log=1",
+                "MessageDate=2026-05-01",
+                "MessageDate%3C=2026-05-02",
+                "MessageDate%3E=2026-04-30");
     }
 
     @Test
@@ -825,10 +815,11 @@ class SmokeTest {
                         .build());
 
         RecordedRequest r = recorded.removeFirst();
-        assertThat(r.query).contains("DateCreated=2026-05-01");
-        assertThat(r.query).contains("DateCreated%3C=2026-05-02");
-        assertThat(r.query).contains("DateCreated%3E=2026-04-30");
-        assertThat(r.query).contains("CallSid=CA0123456789abcdef0123456789abcdef");
+        WireAssert.exactPairs(r.query,
+                "DateCreated=2026-05-01",
+                "DateCreated%3C=2026-05-02",
+                "DateCreated%3E=2026-04-30",
+                "CallSid=CA0123456789abcdef0123456789abcdef");
     }
 
     // --- Pagination: iterate() auto-pagination tests ---
@@ -845,7 +836,7 @@ class SmokeTest {
                                 + "{\"sid\":\"CA02\",\"account_sid\":\"ACtest\",\"api_version\":\"2010-04-01\","
                                 + "\"status\":\"completed\",\"direction\":\"outbound-api\"}"
                                 + "],\"page\":0,\"page_size\":2,"
-                                + "\"next_page_uri\":\"/2010-04-01/Accounts/ACtest/Calls?Page=1&PageSize=2\"}",
+                                + "\"next_page_uri\":\"/2010-04-01/Accounts/ACtest/Calls.json?PageSize=2&Page=1&PageToken=PACA02\"}",
                         "{\"calls\":["
                                 + "{\"sid\":\"CA03\",\"account_sid\":\"ACtest\",\"api_version\":\"2010-04-01\","
                                 + "\"status\":\"completed\",\"direction\":\"outbound-api\"}"
@@ -853,13 +844,19 @@ class SmokeTest {
                                 + "\"next_page_uri\":null}"
                 });
 
-        List<Call> all = client().calls().iterate();
+        List<Call> all = toList(client().calls().iterate());
 
         assertThat(all).hasSize(3);
         assertThat(all.get(0).getSid()).isEqualTo("CA01");
         assertThat(all.get(1).getSid()).isEqualTo("CA02");
         assertThat(all.get(2).getSid()).isEqualTo("CA03");
         assertThat(recorded).hasSize(2);
+        RecordedRequest first = recorded.removeFirst();
+        assertThat(first.path).isEqualTo("/2010-04-01/Accounts/ACtest/Calls.json");
+        assertThat(first.query).isEmpty();
+        RecordedRequest second = recorded.removeFirst();
+        assertThat(second.path).isEqualTo("/2010-04-01/Accounts/ACtest/Calls.json");
+        assertThat(second.query).isEqualTo("PageSize=2&Page=1&PageToken=PACA02");
     }
 
     @Test
@@ -874,7 +871,7 @@ class SmokeTest {
                                 + "{\"sid\":\"CF02\",\"account_sid\":\"ACtest\",\"status\":\"completed\","
                                 + "\"api_version\":\"2010-04-01\",\"uri\":\"/x\"}"
                                 + "],\"page\":0,\"page_size\":2,"
-                                + "\"next_page_uri\":\"/2010-04-01/Accounts/ACtest/Conferences?Page=1&PageSize=2\"}",
+                                + "\"next_page_uri\":\"/2010-04-01/Accounts/ACtest/Conferences.json?PageSize=2&Page=1&PageToken=PACF02\"}",
                         "{\"conferences\":["
                                 + "{\"sid\":\"CF03\",\"account_sid\":\"ACtest\",\"status\":\"completed\","
                                 + "\"api_version\":\"2010-04-01\",\"uri\":\"/x\"}"
@@ -882,13 +879,17 @@ class SmokeTest {
                                 + "\"next_page_uri\":null}"
                 });
 
-        List<Conference> all = client().conferences().iterate();
+        List<Conference> all = toList(client().conferences().iterate());
 
         assertThat(all).hasSize(3);
         assertThat(all.get(0).getSid()).isEqualTo("CF01");
         assertThat(all.get(1).getSid()).isEqualTo("CF02");
         assertThat(all.get(2).getSid()).isEqualTo("CF03");
         assertThat(recorded).hasSize(2);
+        recorded.removeFirst();
+        RecordedRequest second = recorded.removeFirst();
+        assertThat(second.path).isEqualTo("/2010-04-01/Accounts/ACtest/Conferences.json");
+        assertThat(second.query).isEqualTo("PageSize=2&Page=1&PageToken=PACF02");
     }
 
     @Test
@@ -903,7 +904,7 @@ class SmokeTest {
                                 + "{\"sid\":\"RE02\",\"account_sid\":\"ACtest\","
                                 + "\"status\":\"completed\",\"api_version\":\"2010-04-01\",\"uri\":\"/x\"}"
                                 + "],\"page\":0,\"page_size\":2,"
-                                + "\"next_page_uri\":\"/2010-04-01/Accounts/ACtest/Recordings?Page=1&PageSize=2\"}",
+                                + "\"next_page_uri\":\"/2010-04-01/Accounts/ACtest/Recordings.json?PageSize=2&Page=1&PageToken=PARE02\"}",
                         "{\"recordings\":["
                                 + "{\"sid\":\"RE03\",\"account_sid\":\"ACtest\","
                                 + "\"status\":\"completed\",\"api_version\":\"2010-04-01\",\"uri\":\"/x\"}"
@@ -911,13 +912,17 @@ class SmokeTest {
                                 + "\"next_page_uri\":null}"
                 });
 
-        List<Recording> all = client().recordings().iterate();
+        List<Recording> all = toList(client().recordings().iterate());
 
         assertThat(all).hasSize(3);
         assertThat(all.get(0).getSid()).isEqualTo("RE01");
         assertThat(all.get(1).getSid()).isEqualTo("RE02");
         assertThat(all.get(2).getSid()).isEqualTo("RE03");
         assertThat(recorded).hasSize(2);
+        recorded.removeFirst();
+        RecordedRequest second = recorded.removeFirst();
+        assertThat(second.path).isEqualTo("/2010-04-01/Accounts/ACtest/Recordings.json");
+        assertThat(second.query).isEqualTo("PageSize=2&Page=1&PageToken=PARE02");
     }
 
     @Test
@@ -932,7 +937,7 @@ class SmokeTest {
                                 + "{\"sid\":\"QU02\",\"account_sid\":\"ACtest\","
                                 + "\"friendly_name\":\"sales\",\"uri\":\"/x\"}"
                                 + "],\"page\":0,\"page_size\":2,"
-                                + "\"next_page_uri\":\"/2010-04-01/Accounts/ACtest/Queues?Page=1&PageSize=2\"}",
+                                + "\"next_page_uri\":\"/2010-04-01/Accounts/ACtest/Queues.json?PageSize=2&Page=1&PageToken=PAQU02\"}",
                         "{\"queues\":["
                                 + "{\"sid\":\"QU03\",\"account_sid\":\"ACtest\","
                                 + "\"friendly_name\":\"billing\",\"uri\":\"/x\"}"
@@ -940,13 +945,17 @@ class SmokeTest {
                                 + "\"next_page_uri\":null}"
                 });
 
-        List<Queue> all = client().queues().iterate();
+        List<Queue> all = toList(client().queues().iterate());
 
         assertThat(all).hasSize(3);
         assertThat(all.get(0).getSid()).isEqualTo("QU01");
         assertThat(all.get(1).getSid()).isEqualTo("QU02");
         assertThat(all.get(2).getSid()).isEqualTo("QU03");
         assertThat(recorded).hasSize(2);
+        recorded.removeFirst();
+        RecordedRequest second = recorded.removeFirst();
+        assertThat(second.path).isEqualTo("/2010-04-01/Accounts/ACtest/Queues.json");
+        assertThat(second.query).isEqualTo("PageSize=2&Page=1&PageToken=PAQU02");
     }
 
     @Test
@@ -958,7 +967,7 @@ class SmokeTest {
                         + "],\"page\":0,\"page_size\":50,"
                         + "\"next_page_uri\":null}");
 
-        List<Call> all = client().calls().iterate();
+        List<Call> all = toList(client().calls().iterate());
 
         assertThat(all).hasSize(1);
         assertThat(all.get(0).getSid()).isEqualTo("CA99");
@@ -973,8 +982,8 @@ class SmokeTest {
                 "{\"sid\":\"SM0123456789abcdef0123456789abcdef\","
                         + "\"account_sid\":\"ACtest\","
                         + "\"api_version\":\"2010-04-01\","
-                        + "\"to\":\"+18005551234\","
-                        + "\"from\":\"+18005550000\","
+                        + "\"to\":\"+14155550100\","
+                        + "\"from\":\"+14155550101\","
                         + "\"body\":\"hi\","
                         + "\"status\":\"sent\","
                         + "\"num_segments\":\"1\","
@@ -990,8 +999,8 @@ class SmokeTest {
 
         Message msg = client().messages().create(
                 CreateMessageRequest.builder()
-                        .to("+18005551234")
-                        .from("+18005550000")
+                        .to("+14155550100")
+                        .from("+14155550101")
                         .body("hi")
                         .statusCallback("https://example.com/sms-status")
                         .build());
@@ -1006,11 +1015,7 @@ class SmokeTest {
         assertThat(r.method).isEqualTo("POST");
         assertThat(r.path).isEqualTo("/2010-04-01/Accounts/ACtest/Messages.json");
         assertThat(r.contentType).isEqualTo("application/x-www-form-urlencoded");
-        assertThat(r.body)
-                .contains("To=%2B18005551234")
-                .contains("From=%2B18005550000")
-                .contains("Body=hi")
-                .contains("StatusCallback=https%3A%2F%2Fexample.com%2Fsms-status");
+        WireAssert.exactPairs(r.body, "To=%2B14155550100", "From=%2B14155550101", "Body=hi", "StatusCallback=https%3A%2F%2Fexample.com%2Fsms-status");
     }
 
     @Test
@@ -1020,7 +1025,7 @@ class SmokeTest {
                 "{\"sid\":\"" + sid + "\","
                         + "\"account_sid\":\"ACtest\","
                         + "\"api_version\":\"2010-04-01\","
-                        + "\"to\":\"+18005551234\",\"from\":\"+18005550000\","
+                        + "\"to\":\"+14155550100\",\"from\":\"+14155550101\","
                         + "\"body\":\"hi\",\"status\":\"delivered\","
                         + "\"num_segments\":\"1\",\"num_media\":\"0\","
                         + "\"direction\":\"outbound-api\","
@@ -1040,35 +1045,27 @@ class SmokeTest {
     @Test
     void listMessagesTranslatesDateSentFiltersAndPagination() {
         handle("/2010-04-01/Accounts/ACtest/Messages", 200,
-                "{\"messages\":[],\"page\":0,\"page_size\":25,\"total\":0,"
+                "{\"messages\":[],\"page\":0,\"page_size\":25,"
                         + "\"uri\":\"/2010-04-01/Accounts/ACtest/Messages.json\","
                         + "\"first_page_uri\":\"/x\",\"next_page_uri\":null}");
 
         MessageList list = client().messages().list(
                 ListMessagesParams.builder()
-                        .to("+18005551234")
-                        .from("+18005550000")
+                        .to("+14155550100")
+                        .from("+14155550101")
                         .dateSent("2026-05-01")
                         .dateSentLt("2026-05-02")
                         .dateSentGt("2026-04-30")
                         .pageSize(25)
-                        .pageToken("cursor-msg")
+                        .pageToken("PTmsg")
                         .build());
 
         assertThat(list.getMessages()).isEmpty();
-        assertThat(list.getTotal()).isEqualTo(0);
 
         RecordedRequest r = recorded.removeFirst();
         assertThat(r.method).isEqualTo("GET");
         assertThat(r.path).isEqualTo("/2010-04-01/Accounts/ACtest/Messages.json");
-        assertThat(r.query)
-                .contains("To=%2B18005551234")
-                .contains("From=%2B18005550000")
-                .contains("DateSent=2026-05-01")
-                .contains("DateSent%3C=2026-05-02")
-                .contains("DateSent%3E=2026-04-30")
-                .contains("PageSize=25")
-                .contains("PageToken=cursor-msg");
+        WireAssert.exactPairs(r.query, "To=%2B14155550100", "From=%2B14155550101", "DateSent=2026-05-01", "DateSent%3C=2026-05-02", "DateSent%3E=2026-04-30", "PageSize=25", "PageToken=PTmsg");
     }
 
     @Test
@@ -1078,7 +1075,7 @@ class SmokeTest {
                 "{\"sid\":\"" + sid + "\","
                         + "\"account_sid\":\"ACtest\","
                         + "\"api_version\":\"2010-04-01\","
-                        + "\"to\":\"+18005551234\",\"from\":\"+18005550000\","
+                        + "\"to\":\"+14155550100\",\"from\":\"+14155550101\","
                         + "\"body\":\"\",\"status\":\"sent\","
                         + "\"num_segments\":\"1\",\"num_media\":\"0\","
                         + "\"direction\":\"outbound-api\","
@@ -1094,7 +1091,7 @@ class SmokeTest {
         RecordedRequest r = recorded.removeFirst();
         assertThat(r.method).isEqualTo("POST");
         assertThat(r.path).isEqualTo("/2010-04-01/Accounts/ACtest/Messages/" + sid + ".json");
-        assertThat(r.body).contains("Body=");
+        WireAssert.exactPairs(r.body, "Body=");
     }
 
     @Test
@@ -1147,19 +1144,7 @@ class SmokeTest {
         assertThat(r.path)
                 .isEqualTo("/2010-04-01/Accounts/ACtest/Calls/" + callSid + "/Payments.json");
         assertThat(r.contentType).isEqualTo("application/x-www-form-urlencoded");
-        assertThat(r.body)
-                .contains("IdempotencyKey=idem-1")
-                .contains("StatusCallback=https%3A%2F%2Fexample.com%2Fpay-status")
-                .contains("ChargeAmount=19.99")
-                .contains("Currency=USD")
-                .contains("Description=subscription")
-                .contains("PaymentMethod=credit-card")
-                .contains("TokenType=one-time")
-                .contains("Timeout=7")
-                .contains("PostalCode=true")
-                .contains("SecurityCode=true")
-                .contains("Confirmation=false")
-                .contains("ValidCardTypes=visa+mastercard+amex");
+        WireAssert.exactPairs(r.body, "IdempotencyKey=idem-1", "StatusCallback=https%3A%2F%2Fexample.com%2Fpay-status", "ChargeAmount=19.99", "Currency=USD", "Description=subscription", "PaymentMethod=credit-card", "TokenType=one-time", "Timeout=7", "PostalCode=true", "SecurityCode=true", "Confirmation=false", "ValidCardTypes=visa+mastercard+amex");
     }
 
     @Test
@@ -1187,9 +1172,7 @@ class SmokeTest {
         assertThat(r.method).isEqualTo("POST");
         assertThat(r.path).isEqualTo(
                 "/2010-04-01/Accounts/ACtest/Calls/" + callSid + "/Payments/" + paySid + ".json");
-        assertThat(r.body)
-                .contains("Capture=security-code")
-                .contains("Status=complete");
+        WireAssert.exactPairs(r.body, "Capture=security-code", "Status=complete");
     }
 
     /** Recorded data class for tests. Plain POJO so we don't need records on Java 11. */
@@ -1212,16 +1195,5 @@ class SmokeTest {
             this.contentType = contentType;
             this.userAgent = userAgent;
         }
-    }
-
-    @SuppressWarnings("unused")
-    private static byte[] drain(InputStream is) throws IOException {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        byte[] buf = new byte[1024];
-        int n;
-        while ((n = is.read(buf)) > 0) {
-            out.write(buf, 0, n);
-        }
-        return out.toByteArray();
     }
 }

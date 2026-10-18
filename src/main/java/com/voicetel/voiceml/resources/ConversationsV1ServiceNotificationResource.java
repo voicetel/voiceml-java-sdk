@@ -17,7 +17,7 @@ public final class ConversationsV1ServiceNotificationResource extends BaseResour
     }
 
     private String base() {
-        return "/v1/Services/" + chatServiceSid + "/Configuration/Notifications";
+        return "/v1/Services/" + seg(chatServiceSid) + "/Configuration/Notifications";
     }
 
     public ConversationsV1ServiceNotification fetch() {

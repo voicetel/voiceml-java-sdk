@@ -22,7 +22,7 @@ public final class ConversationsV1ServicesResource extends BaseResource {
     }
 
     public ConversationsV1ServiceList list(ListPageParams params) {
-        Map<String, Object> q = params != null ? params.toQuery() : null;
+        Map<String, Object> q = params != null ? params.toPageSizeQuery() : null;
         return decode(transport.request("GET", "/v1/Services", q, null),
                 ConversationsV1ServiceList.class);
     }
@@ -30,15 +30,15 @@ public final class ConversationsV1ServicesResource extends BaseResource {
     public ConversationsV1ServiceList list() { return list(null); }
 
     public ConversationsV1Service fetch(String chatServiceSid) {
-        return decode(transport.request("GET", "/v1/Services/" + chatServiceSid, null, null),
+        return decode(transport.request("GET", "/v1/Services/" + seg(chatServiceSid), null, null),
                 ConversationsV1Service.class);
     }
 
     public void delete(String chatServiceSid) {
-        transport.request("DELETE", "/v1/Services/" + chatServiceSid, null, null);
+        transport.request("DELETE", "/v1/Services/" + seg(chatServiceSid), null, null);
     }
 
-    /** Sub-resource handle for {@code /v1/Services/{ChatServiceSid}/*} (Phase 4). */
+    /** Sub-resource handle for {@code /v1/Services/{ChatServiceSid}/*}. */
     public ConversationsV1ServiceScopeResource scope(String chatServiceSid) {
         return new ConversationsV1ServiceScopeResource(transport, chatServiceSid);
     }

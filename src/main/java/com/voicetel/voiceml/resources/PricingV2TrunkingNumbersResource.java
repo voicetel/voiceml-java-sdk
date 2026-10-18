@@ -18,7 +18,7 @@ public final class PricingV2TrunkingNumbersResource extends BaseResource {
 
     public PricingTrunkingNumber fetch(String destinationNumber, String originationNumber) {
         String path = "/v2/Trunking/Numbers/"
-                + PricingNumberEncoding.encodeSegment(destinationNumber);
+                + seg(destinationNumber);
         Map<String, Object> q = null;
         if (originationNumber != null) {
             q = new LinkedHashMap<>();

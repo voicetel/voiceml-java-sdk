@@ -3,8 +3,7 @@ package com.voicetel.voiceml.resources;
 import com.voicetel.voiceml.Transport;
 
 /**
- * Top-level {@code /v1/*} surface for Twilio assistants.twilio.com/v1
- * (Phase 5). Sub-resources:
+ * The Twilio-compatible Assistants v1 API ({@code /v1/*} on the default host). Sub-resources:
  *
  * <ul>
  *   <li>{@link #assistants()} — {@code /v1/Assistants} CRUD.

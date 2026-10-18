@@ -6,7 +6,7 @@ import java.util.Map;
 /**
  * Query-string parameters for {@code GET /Messages}.
  *
- * <p>Twilio's documented filter set: {@code To}, {@code From}, {@code DateSent}, plus the
+ * <p>The Twilio-compatible filter set: {@code To}, {@code From}, {@code DateSent}, plus the
  * {@code DateSent<} / {@code DateSent>} comparators. Pagination via {@code Page} / {@code PageSize}
  * / {@code PageToken}.
  */

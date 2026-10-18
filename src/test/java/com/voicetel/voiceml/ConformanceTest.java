@@ -40,6 +40,7 @@ import com.voicetel.voiceml.models.Stream;
 
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
+import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -53,30 +54,21 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Twilio response-shape conformance tests for the Java SDK (#330 Phase C,
- * mirrors the Go (#329) and Python harnesses, and the TS harness shipped
- * at voiceml-node-sdk@a11b0a1).
+ * Fixture-corpus conformance tests: decode each canonical response example of a private fixture
+ * corpus into the matching SDK model.
  *
- * <p>SKIPPED unless {@code VOICEML_CONFORMANCE_FIXTURES} points at a fixture
- * corpus emitted by callBroadcast's {@code cmd/twilio-conformance-fixtures}.
- * The harness loads each canonical Twilio response example from the corpus
- * and deserialises it into the matching SDK model via Jackson. If
- * deserialisation fails (wrong primitive type, unknown enum value), or if
- * the post-decode key-field asserts trip, the SDK's model has drifted from
- * Twilio's documented shape — fix the SDK, not the fixture.
+ * <p><b>Skipped (reported as skipped, with the reason) unless {@code VOICEML_CONFORMANCE_FIXTURES}
+ * points at the corpus.</b> The corpus is not public, so CI does not set it; the spec-driven
+ * {@code contract.SpecContractTest} covers every operation and response schema of the public spec
+ * on every run. If deserialisation fails (wrong primitive type, malformed JSON) or a key-field
+ * assert trips, the SDK model has drifted: fix the SDK, not the fixture.
  *
- * <p>For Twilio resources the Java SDK does not yet model as a Java POJO
- * (Account, Balance, Media, OutgoingCallerId, classic Transcription,
- * ValidationRequest), the harness decodes into a generic {@link JsonNode}
- * and asserts presence of the Twilio-documented top-level fields. This
- * mirrors the Go harness's {@code &map[string]any{}} dispatch — it still
- * catches malformed JSON and missing key fields without requiring a
- * full POJO surface for resources the SDK doesn't expose to callers.
+ * <p>Resources without a dedicated assertion below decode into a generic {@link JsonNode} and are
+ * checked for their documented top-level fields.
  *
  * <p>Run:
  * <pre>
- *   VOICEML_CONFORMANCE_FIXTURES=/path/to/callBroadcast/cmd/twilio-conformance-fixtures/fixtures \
- *     ./mvnw test -Dtest=ConformanceTest
+ *   VOICEML_CONFORMANCE_FIXTURES=/path/to/fixtures mvn test -Dtest=ConformanceTest
  * </pre>
  */
 class ConformanceTest {
@@ -99,19 +91,13 @@ class ConformanceTest {
     ));
 
     @TestFactory
+    @EnabledIfEnvironmentVariable(named = FIXTURES_ENV, matches = ".+",
+            disabledReason = FIXTURES_ENV + " is not set (private fixture corpus); "
+                    + "contract.SpecContractTest covers the public spec")
     Iterable<DynamicTest> twilioFixtureConformance() throws Exception {
         String root = System.getenv(FIXTURES_ENV);
-        if (root == null || root.isEmpty()) {
-            return Arrays.asList(DynamicTest.dynamicTest(
-                    "skipped: " + FIXTURES_ENV + " not set",
-                    () -> {}));
-        }
         Path indexPath = Paths.get(root, "index.json");
-        if (!Files.exists(indexPath)) {
-            return Arrays.asList(DynamicTest.dynamicTest(
-                    "skipped: index.json missing at " + indexPath,
-                    () -> {}));
-        }
+        assertThat(indexPath).as(FIXTURES_ENV + " is set but has no index.json").exists();
 
         JsonNode entries = MAPPER.readTree(indexPath.toFile());
         List<DynamicTest> tests = new ArrayList<>();

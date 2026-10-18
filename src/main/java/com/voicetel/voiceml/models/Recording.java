@@ -63,6 +63,9 @@ public class Recording {
     @JsonProperty("encryption_details")
     private Map<String, Object> encryptionDetails;
 
+    @JsonProperty("track")
+    private String track;
+
     @JsonProperty("subresource_uris")
     private Map<String, Object> subresourceUris;
 
@@ -104,4 +107,6 @@ public class Recording {
     public void setEncryptionDetails(Map<String, Object> encryptionDetails) { this.encryptionDetails = encryptionDetails; }
     public Map<String, Object> getSubresourceUris() { return subresourceUris; }
     public void setSubresourceUris(Map<String, Object> subresourceUris) { this.subresourceUris = subresourceUris; }
+    public String getTrack() { return track; }
+    public void setTrack(String track) { this.track = track; }
 }

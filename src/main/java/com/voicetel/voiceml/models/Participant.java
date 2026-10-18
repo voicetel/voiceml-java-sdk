@@ -43,9 +43,6 @@ public class Participant {
     @JsonProperty("label")
     private String label;
 
-    @JsonProperty("api_version")
-    private String apiVersion;
-
     @JsonProperty("uri")
     private String uri;
 
@@ -79,8 +76,6 @@ public class Participant {
     public void setStatus(ParticipantStatus status) { this.status = status; }
     public String getLabel() { return label; }
     public void setLabel(String label) { this.label = label; }
-    public String getApiVersion() { return apiVersion; }
-    public void setApiVersion(String apiVersion) { this.apiVersion = apiVersion; }
     public String getUri() { return uri; }
     public void setUri(String uri) { this.uri = uri; }
     public String getDateCreated() { return dateCreated; }

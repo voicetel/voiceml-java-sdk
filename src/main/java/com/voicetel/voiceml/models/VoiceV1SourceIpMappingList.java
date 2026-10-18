@@ -8,7 +8,7 @@ import java.util.List;
 
 /** Paginated {@code /v1/SourceIpMappings} response. */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class VoiceV1SourceIpMappingList {
+public class VoiceV1SourceIpMappingList implements MetaPage {
 
     @JsonProperty("source_ip_mappings")
     private List<VoiceV1SourceIpMapping> sourceIpMappings = new ArrayList<>();

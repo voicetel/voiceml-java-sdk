@@ -19,7 +19,7 @@ public final class ConversationsV1ServiceUsersResource extends BaseResource {
         this.chatServiceSid = chatServiceSid;
     }
 
-    private String base() { return "/v1/Services/" + chatServiceSid + "/Users"; }
+    private String base() { return "/v1/Services/" + seg(chatServiceSid) + "/Users"; }
 
     public ConversationsV1ServiceUser create(CreateConversationsV1ServiceUserRequest body) {
         Map<String, Object> form = body != null ? body.toForm() : null;
@@ -28,7 +28,7 @@ public final class ConversationsV1ServiceUsersResource extends BaseResource {
     }
 
     public ConversationsV1ServiceUserList list(ListPageParams params) {
-        Map<String, Object> q = params != null ? params.toQuery() : null;
+        Map<String, Object> q = params != null ? params.toPageSizeQuery() : null;
         return decode(transport.request("GET", base(), q, null),
                 ConversationsV1ServiceUserList.class);
     }
@@ -36,18 +36,18 @@ public final class ConversationsV1ServiceUsersResource extends BaseResource {
     public ConversationsV1ServiceUserList list() { return list(null); }
 
     public ConversationsV1ServiceUser fetch(String sid) {
-        return decode(transport.request("GET", base() + "/" + sid, null, null),
+        return decode(transport.request("GET", base() + "/" + seg(sid), null, null),
                 ConversationsV1ServiceUser.class);
     }
 
     public ConversationsV1ServiceUser update(String sid, UpdateConversationsV1ServiceUserRequest body) {
         Map<String, Object> form = body != null ? body.toForm() : null;
-        return decode(transport.request("POST", base() + "/" + sid, null, form),
+        return decode(transport.request("POST", base() + "/" + seg(sid), null, form),
                 ConversationsV1ServiceUser.class);
     }
 
     public void delete(String sid) {
-        transport.request("DELETE", base() + "/" + sid, null, null);
+        transport.request("DELETE", base() + "/" + seg(sid), null, null);
     }
 
     /** Sub-resource handle for {@code .../Users/{UserSid}/Conversations}. */

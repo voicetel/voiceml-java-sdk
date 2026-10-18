@@ -10,10 +10,21 @@ public class VoiceMLException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
 
+    /**
+     * Create the exception.
+     *
+     * @param message human-readable message
+     */
     public VoiceMLException(String message) {
         super(message);
     }
 
+    /**
+     * Create the exception with an underlying cause.
+     *
+     * @param message human-readable message
+     * @param cause underlying cause
+     */
     public VoiceMLException(String message, Throwable cause) {
         super(message, cause);
     }

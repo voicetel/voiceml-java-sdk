@@ -40,6 +40,6 @@ public final class PricingCountriesResource<T> extends BaseResource {
 
     /** Fetch the pricing body for one ISO country. */
     public T fetch(String isoCountry) {
-        return decode(transport.request("GET", basePath + "/" + isoCountry, null, null), model);
+        return decode(transport.request("GET", basePath + "/" + seg(isoCountry), null, null), model);
     }
 }

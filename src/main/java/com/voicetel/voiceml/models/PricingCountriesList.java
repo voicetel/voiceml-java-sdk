@@ -8,7 +8,7 @@ import java.util.List;
 
 /** Shared {@code Countries} list envelope returned by every Pricing {@code countries().list()}. */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class PricingCountriesList {
+public class PricingCountriesList implements MetaPage {
 
     @JsonProperty("countries") private List<PricingCountryRef> countries = new ArrayList<>();
     @JsonProperty("meta") private VoiceV1Meta meta;

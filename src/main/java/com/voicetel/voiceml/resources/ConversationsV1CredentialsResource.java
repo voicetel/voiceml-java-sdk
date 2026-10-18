@@ -23,7 +23,7 @@ public final class ConversationsV1CredentialsResource extends BaseResource {
     }
 
     public ConversationsV1CredentialList list(ListPageParams params) {
-        Map<String, Object> q = params != null ? params.toQuery() : null;
+        Map<String, Object> q = params != null ? params.toPageSizeQuery() : null;
         return decode(transport.request("GET", "/v1/Credentials", q, null),
                 ConversationsV1CredentialList.class);
     }
@@ -31,17 +31,17 @@ public final class ConversationsV1CredentialsResource extends BaseResource {
     public ConversationsV1CredentialList list() { return list(null); }
 
     public ConversationsV1Credential fetch(String sid) {
-        return decode(transport.request("GET", "/v1/Credentials/" + sid, null, null),
+        return decode(transport.request("GET", "/v1/Credentials/" + seg(sid), null, null),
                 ConversationsV1Credential.class);
     }
 
     public ConversationsV1Credential update(String sid, UpdateConversationsV1CredentialRequest body) {
         Map<String, Object> form = body != null ? body.toForm() : null;
-        return decode(transport.request("POST", "/v1/Credentials/" + sid, null, form),
+        return decode(transport.request("POST", "/v1/Credentials/" + seg(sid), null, form),
                 ConversationsV1Credential.class);
     }
 
     public void delete(String sid) {
-        transport.request("DELETE", "/v1/Credentials/" + sid, null, null);
+        transport.request("DELETE", "/v1/Credentials/" + seg(sid), null, null);
     }
 }

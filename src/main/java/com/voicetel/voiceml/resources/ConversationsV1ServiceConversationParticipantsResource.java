@@ -24,7 +24,7 @@ public final class ConversationsV1ServiceConversationParticipantsResource extend
     }
 
     private String base() {
-        return "/v1/Services/" + chatServiceSid + "/Conversations/" + conversationSid + "/Participants";
+        return "/v1/Services/" + seg(chatServiceSid) + "/Conversations/" + seg(conversationSid) + "/Participants";
     }
 
     public ConversationsV1ServiceConversationParticipant create(CreateConversationsV1ServiceConversationParticipantRequest body) {
@@ -34,7 +34,7 @@ public final class ConversationsV1ServiceConversationParticipantsResource extend
     }
 
     public ConversationsV1ServiceConversationParticipantList list(ListPageParams params) {
-        Map<String, Object> q = params != null ? params.toQuery() : null;
+        Map<String, Object> q = params != null ? params.toPageSizeQuery() : null;
         return decode(transport.request("GET", base(), q, null),
                 ConversationsV1ServiceConversationParticipantList.class);
     }
@@ -42,18 +42,18 @@ public final class ConversationsV1ServiceConversationParticipantsResource extend
     public ConversationsV1ServiceConversationParticipantList list() { return list(null); }
 
     public ConversationsV1ServiceConversationParticipant fetch(String participantSid) {
-        return decode(transport.request("GET", base() + "/" + participantSid, null, null),
+        return decode(transport.request("GET", base() + "/" + seg(participantSid), null, null),
                 ConversationsV1ServiceConversationParticipant.class);
     }
 
     public ConversationsV1ServiceConversationParticipant update(String participantSid,
                                                                 UpdateConversationsV1ServiceConversationParticipantRequest body) {
         Map<String, Object> form = body != null ? body.toForm() : null;
-        return decode(transport.request("POST", base() + "/" + participantSid, null, form),
+        return decode(transport.request("POST", base() + "/" + seg(participantSid), null, form),
                 ConversationsV1ServiceConversationParticipant.class);
     }
 
     public void delete(String participantSid) {
-        transport.request("DELETE", base() + "/" + participantSid, null, null);
+        transport.request("DELETE", base() + "/" + seg(participantSid), null, null);
     }
 }

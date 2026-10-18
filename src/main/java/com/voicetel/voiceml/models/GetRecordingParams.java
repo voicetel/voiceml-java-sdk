@@ -3,7 +3,7 @@ package com.voicetel.voiceml.models;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/** Optional query params for {@code GET /Recordings/{sid}. */
+/** Optional query params for {@code GET /Recordings/{Sid}}. */
 public final class GetRecordingParams {
 
     private final Boolean includeSoftDeleted;

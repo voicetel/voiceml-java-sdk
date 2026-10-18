@@ -19,8 +19,9 @@ name: Publish to Maven Central
 #      MAVEN_GPG_PRIVATE_KEY and MAVEN_GPG_PASSPHRASE.
 #
 # Until those secrets are set, the workflow will fail at the deploy
-# step. The build + test + javadoc + sources jar steps still run so
-# you can see what would have shipped.
+# step. The `test` job (tests, -Xlint:all, javadoc doclint, and a check
+# that the tag equals the pom and Version.java versions) must pass
+# before `publish` starts.
 
 on:
   push:
@@ -31,8 +32,34 @@ permissions:
   contents: read
 
 jobs:
+  test:
+    name: Verify (tests, lint, javadoc, tag == version)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - name: Tag matches pom.xml and Version.java
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          POM=$(mvn -B -q help:evaluate -Dexpression=project.version -DforceStdout)
+          CONST=$(sed -n 's/.*VERSION = "\(.*\)";.*/\1/p' src/main/java/com/voicetel/voiceml/Version.java)
+          TAG="${GITHUB_REF_NAME#v}"
+          echo "tag=$TAG pom=$POM Version.java=$CONST"
+          test "$TAG" = "$POM" && test "$TAG" = "$CONST"
+
+      - name: Build, test, lint
+        run: mvn -B --no-transfer-progress verify
+
   publish:
     name: Publish to Maven Central
+    needs: test
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:

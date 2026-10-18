@@ -128,7 +128,7 @@ class V090Test {
             String query = exchange.getRequestURI().getRawQuery();
             recorded.addLast(new RecordedRequest(
                     exchange.getRequestMethod(),
-                    exchange.getRequestURI().getPath(),
+                    exchange.getRequestURI().getRawPath(),
                     query == null ? "" : query,
                     new String(reqBody, StandardCharsets.UTF_8)));
             byte[] payload = body == null ? new byte[0] : body.getBytes(StandardCharsets.UTF_8);
@@ -186,22 +186,20 @@ class V090Test {
         assertThat(c.conversationsV1().services()).isNotNull();
     }
 
-    // --- Transport.withJsonSuffix: /v1/ must NOT get .json appended ---
+    // --- /v1 and /v2 paths carry no .json suffix; path segments are percent-encoded ---
 
     @Test
-    void v1PathsDoNotGetJsonSuffix() {
-        assertThat(Transport.withJsonSuffix("/v1/Conversations")).isEqualTo("/v1/Conversations");
-        assertThat(Transport.withJsonSuffix("/v1/Conversations/" + CH_SID))
-                .isEqualTo("/v1/Conversations/" + CH_SID);
-        assertThat(Transport.withJsonSuffix("/v2/PhoneNumbers/+18005551234"))
-                .isEqualTo("/v2/PhoneNumbers/+18005551234");
+    void v1AndV2PathsHaveNoJsonSuffixAndEncodedSegments() {
+        handle("/v1/Conversations/", 200, "{\"sid\":\"" + CH_SID + "\"}");
+        client().conversationsV1().conversations().fetch(CH_SID);
+        assertThat(recorded.removeFirst().path).isEqualTo("/v1/Conversations/" + CH_SID);
     }
 
     // --- Routes V2 PhoneNumbers ---
 
     @Test
     void routesV2PhoneNumbersFetchAndUpdate() {
-        String pn = "+18005551234";
+        String pn = "+14155550100";
         String body = "{\"sid\":\"" + QQ_SID + "\",\"phone_number\":\"" + pn + "\","
                 + "\"account_sid\":\"" + ACCOUNT + "\",\"friendly_name\":\"main\","
                 + "\"voice_region\":\"us1\",\"url\":\"https://example/v2/PhoneNumbers/" + pn + "\","
@@ -223,12 +221,12 @@ class V090Test {
 
         RecordedRequest fetchReq = recorded.removeFirst();
         assertThat(fetchReq.method).isEqualTo("GET");
-        assertThat(fetchReq.path).isEqualTo("/v2/PhoneNumbers/" + pn);
+        assertThat(fetchReq.path).isEqualTo("/v2/PhoneNumbers/%2B14155550100");
         assertThat(fetchReq.path).doesNotContain(".json");
 
         RecordedRequest updReq = recorded.removeFirst();
         assertThat(updReq.method).isEqualTo("POST");
-        assertThat(updReq.path).isEqualTo("/v2/PhoneNumbers/" + pn);
+        assertThat(updReq.path).isEqualTo("/v2/PhoneNumbers/%2B14155550100");
         Map<String, List<String>> form = formMulti(updReq.body);
         assertThat(form.get("VoiceRegion")).containsExactly("ie1");
         assertThat(form.get("FriendlyName")).containsExactly("renamed");
@@ -281,7 +279,7 @@ class V090Test {
 
         RecordedRequest listReq = recorded.removeFirst();
         assertThat(listReq.method).isEqualTo("GET");
-        assertThat(listReq.query).contains("PageSize=50");
+        WireAssert.exactPairs(listReq.query, "PageSize=50");
     }
 
     @Test
@@ -492,7 +490,7 @@ class V090Test {
     void conversationsV1MessageCreateUnderConversation() {
         String body = "{\"account_sid\":\"" + ACCOUNT + "\","
                 + "\"conversation_sid\":\"" + CH_SID + "\",\"sid\":\"" + IM_SID + "\","
-                + "\"index\":0,\"author\":\"+15551234567\",\"body\":\"hi\",\"attributes\":\"{}\","
+                + "\"index\":0,\"author\":\"+14155550103\",\"body\":\"hi\",\"attributes\":\"{}\","
                 + "\"date_created\":\"2026-06-27T00:00:00Z\","
                 + "\"date_updated\":\"2026-06-27T00:00:00Z\","
                 + "\"url\":\"/v1/Conversations/" + CH_SID + "/Messages/" + IM_SID + "\"}";
@@ -501,7 +499,7 @@ class V090Test {
         ConversationsV1ConversationMessage m = client().conversationsV1().conversations()
                 .messages(CH_SID)
                 .create(CreateConversationsV1ConversationMessageRequest.builder()
-                        .author("+15551234567").body("hi").build());
+                        .author("+14155550103").body("hi").build());
 
         assertThat(m.getSid()).isEqualTo(IM_SID);
         assertThat(m.getIndex()).isEqualTo(0);
@@ -510,7 +508,7 @@ class V090Test {
         assertThat(r.method).isEqualTo("POST");
         assertThat(r.path).isEqualTo("/v1/Conversations/" + CH_SID + "/Messages");
         Map<String, List<String>> form = formMulti(r.body);
-        assertThat(form.get("Author")).containsExactly("+15551234567");
+        assertThat(form.get("Author")).containsExactly("+14155550103");
         assertThat(form.get("Body")).containsExactly("hi");
     }
 
@@ -561,7 +559,7 @@ class V090Test {
                 .participants(CH_SID)
                 .create(CreateConversationsV1ConversationParticipantRequest.builder()
                         .identity("alice")
-                        .messagingBindingAddress("+15551234567")
+                        .messagingBindingAddress("+14155550103")
                         .build());
 
         assertThat(p.getSid()).isEqualTo(MB_SID);
@@ -571,7 +569,7 @@ class V090Test {
         assertThat(r.path).isEqualTo("/v1/Conversations/" + CH_SID + "/Participants");
         Map<String, List<String>> form = formMulti(r.body);
         assertThat(form.get("Identity")).containsExactly("alice");
-        assertThat(form.get("MessagingBinding.Address")).containsExactly("+15551234567");
+        assertThat(form.get("MessagingBinding.Address")).containsExactly("+14155550103");
     }
 
     // --- Conversations V1: Scoped Webhooks ---
@@ -779,7 +777,7 @@ class V090Test {
     @Test
     void conversationsV1ConfigAddressCreate() {
         String body = "{\"sid\":\"" + IG_SID + "\",\"account_sid\":\"" + ACCOUNT + "\","
-                + "\"type\":\"sms\",\"address\":\"+18005551234\","
+                + "\"type\":\"sms\",\"address\":\"+14155550100\","
                 + "\"date_created\":\"2026-06-27T00:00:00Z\","
                 + "\"date_updated\":\"2026-06-27T00:00:00Z\","
                 + "\"url\":\"/v1/Configuration/Addresses/" + IG_SID + "\"}";
@@ -788,7 +786,7 @@ class V090Test {
         ConversationsV1ConfigAddress addr = client().conversationsV1().configuration().addresses()
                 .create(CreateConversationsV1ConfigAddressRequest.builder()
                         .type("sms")
-                        .address("+18005551234")
+                        .address("+14155550100")
                         .autoCreationEnabled(true)
                         .autoCreationType("webhook")
                         .build());
@@ -799,7 +797,7 @@ class V090Test {
         assertThat(r.path).isEqualTo("/v1/Configuration/Addresses");
         Map<String, List<String>> form = formMulti(r.body);
         assertThat(form.get("Type")).containsExactly("sms");
-        assertThat(form.get("Address")).containsExactly("+18005551234");
+        assertThat(form.get("Address")).containsExactly("+14155550100");
         assertThat(form.get("AutoCreation.Enabled")).containsExactly("true");
         assertThat(form.get("AutoCreation.Type")).containsExactly("webhook");
     }
@@ -828,7 +826,7 @@ class V090Test {
         RecordedRequest r = recorded.removeFirst();
         assertThat(r.method).isEqualTo("GET");
         assertThat(r.path).isEqualTo("/v1/ParticipantConversations");
-        assertThat(r.query).contains("Identity=alice");
+        WireAssert.exactPairs(r.query, "Identity=alice");
     }
 
     // --- Conversations V1: ConversationWithParticipants (one-shot create) ---
@@ -847,7 +845,7 @@ class V090Test {
                 .create(CreateConversationsV1ConversationWithParticipantsRequest.builder()
                         .friendlyName("multi")
                         .addParticipant("{\"identity\":\"alice\"}")
-                        .addParticipant("{\"messaging_binding\":{\"address\":\"+15551234567\"}}")
+                        .addParticipant("{\"messaging_binding\":{\"address\":\"+14155550103\"}}")
                         .build());
         assertThat(c.getSid()).isEqualTo(CH_SID);
 
@@ -857,7 +855,7 @@ class V090Test {
         Map<String, List<String>> form = formMulti(r.body);
         assertThat(form.get("Participant")).containsExactly(
                 "{\"identity\":\"alice\"}",
-                "{\"messaging_binding\":{\"address\":\"+15551234567\"}}");
+                "{\"messaging_binding\":{\"address\":\"+14155550103\"}}");
     }
 
     // --- Conversations V1: Services ---

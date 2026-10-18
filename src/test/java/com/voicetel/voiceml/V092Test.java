@@ -26,8 +26,8 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Wire-shape tests for the v0.9.2 surface: per-product host routing, Messaging Service (#16), and
- * Pricing v1/v2 (#18).
+ * Wire-level tests for the v0.9.2 surface: per-product host routing, Messaging Service, and
+ * Pricing v1/v2.
  *
  * <p>Messaging Service must ride the messaging host (that host is what disambiguates it from a
  * Conversation Service on the shared {@code /v1/Services} path); Pricing rides the default host.
@@ -270,17 +270,17 @@ class V092Test {
                         + "\"current_price\":\"0.0085\",\"number_type\":\"local\"}],"
                         + "\"price_unit\":\"USD\",\"url\":\"/v1/Voice/Countries/US\"}");
         // Number path is percent-encoded on the wire; server decodes it to +.
-        defaultServer.route("GET", "/v1/Voice/Numbers/+18005551234", 200,
-                "{\"number\":\"+18005551234\",\"country\":\"United States\",\"iso_country\":\"US\","
+        defaultServer.route("GET", "/v1/Voice/Numbers/+14155550100", 200,
+                "{\"number\":\"+14155550100\",\"country\":\"United States\",\"iso_country\":\"US\","
                         + "\"outbound_call_price\":{\"base_price\":\"0.013\",\"current_price\":\"0.013\"},"
                         + "\"inbound_call_price\":{\"base_price\":\"0.0085\",\"current_price\":\"0.0085\","
                         + "\"number_type\":\"toll free\"},\"price_unit\":\"USD\","
-                        + "\"url\":\"/v1/Voice/Numbers/+18005551234\"}");
+                        + "\"url\":\"/v1/Voice/Numbers/+14155550100\"}");
 
         VoicemlClient c = defaultHostClient();
         PricingCountriesList listed = c.pricing().v1().voice().countries().list();
         PricingVoiceCountry country = c.pricing().v1().voice().countries().fetch("US");
-        PricingVoiceNumber num = c.pricing().v1().voice().numbers().fetch("+18005551234");
+        PricingVoiceNumber num = c.pricing().v1().voice().numbers().fetch("+14155550100");
 
         assertThat(listed.getCountries().get(0).getIsoCountry()).isEqualTo("US");
         assertThat(country.getOutboundPrefixPrices().get(0).getPrefixes()).containsExactly("1");
@@ -289,29 +289,29 @@ class V092Test {
         // Everything on the default host; the encoded number path is on the wire.
         assertThat(messagingServer.recorded).isEmpty();
         RecordedRequest numReq = defaultServer.recorded.removeLast();
-        assertThat(numReq.rawPath).isEqualTo("/v1/Voice/Numbers/%2B18005551234");
+        assertThat(numReq.rawPath).isEqualTo("/v1/Voice/Numbers/%2B14155550100");
     }
 
     @Test
     void pricingV2VoiceNumberWithOrigination() {
-        defaultServer.route("GET", "/v2/Voice/Numbers/+18005551234", 200,
-                "{\"destination_number\":\"+18005551234\","
-                        + "\"origination_number\":\"+12025550199\","
+        defaultServer.route("GET", "/v2/Voice/Numbers/+14155550100", 200,
+                "{\"destination_number\":\"+14155550100\","
+                        + "\"origination_number\":\"+14155550104\","
                         + "\"country\":\"United States\",\"iso_country\":\"US\","
                         + "\"outbound_call_prices\":[{\"origination_prefixes\":[\"1\"],"
                         + "\"base_price\":\"0.013\",\"current_price\":\"0.013\"}],"
                         + "\"inbound_call_price\":{\"base_price\":\"0.0085\","
                         + "\"current_price\":\"0.0085\",\"number_type\":\"local\"},"
-                        + "\"price_unit\":\"USD\",\"url\":\"/v2/Voice/Numbers/+18005551234\"}");
+                        + "\"price_unit\":\"USD\",\"url\":\"/v2/Voice/Numbers/+14155550100\"}");
 
         VoicemlClient c = defaultHostClient();
         PricingVoiceNumberV2 got = c.pricing().v2().voice().numbers()
-                .fetch("+18005551234", "+12025550199");
+                .fetch("+14155550100", "+14155550104");
 
-        assertThat(got.getOriginationNumber()).isEqualTo("+12025550199");
+        assertThat(got.getOriginationNumber()).isEqualTo("+14155550104");
         RecordedRequest r = defaultServer.recorded.removeFirst();
-        assertThat(r.rawPath).isEqualTo("/v2/Voice/Numbers/%2B18005551234");
-        assertThat(r.rawQuery).contains("OriginationNumber=%2B12025550199");
+        assertThat(r.rawPath).isEqualTo("/v2/Voice/Numbers/%2B14155550100");
+        assertThat(r.rawQuery).contains("OriginationNumber=%2B14155550104");
     }
 
     @Test

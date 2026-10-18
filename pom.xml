@@ -11,14 +11,15 @@
     <packaging>jar</packaging>
 
     <name>VoiceML Java SDK</name>
-    <description>Official Java SDK for the VoiceML REST API — Twilio-compatible outbound voice and AMD.</description>
-    <url>https://voicetel.com</url>
+    <description>Official Java SDK for the VoiceML REST API, a Twilio-compatible voice and messaging API.</description>
+    <url>https://github.com/voicetel/voiceml-java-sdk</url>
 
     <licenses>
         <license>
-            <name>MIT License with Commons Clause Restriction</name>
-            <url>https://voicetel.com/legal/</url>
+            <name>MIT with Commons Clause</name>
+            <url>https://github.com/voicetel/voiceml-java-sdk/blob/main/LICENSE</url>
             <distribution>repo</distribution>
+            <comments>MIT License with the Commons Clause restriction; see the LICENSE file and https://voicetel.com/legal/.</comments>
         </license>
     </licenses>
 
@@ -51,19 +52,45 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <!--
+            The published library targets Java 11 (`release 11`). The test suite needs
+            Java 17 because JUnit 6 does; CI additionally runs a JUnit-free runtime smoke
+            test of the built jar on JDK 11 (see .github/workflows/ci.yml).
+        -->
         <maven.compiler.release>11</maven.compiler.release>
-        <jackson.version>2.22.1</jackson.version>
+        <maven.compiler.testRelease>17</maven.compiler.testRelease>
+        <jackson.version>2.22.3</jackson.version>
         <junit.version>6.1.3</junit.version>
         <assertj.version>3.27.7</assertj.version>
+        <conformance.exclude>**/ConformanceTest.java</conformance.exclude>
     </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- Keeps jackson-core / jackson-annotations / jackson-databind aligned. -->
+            <dependency>
+                <groupId>com.fasterxml.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+                <version>${jackson.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
         </dependency>
 
         <dependency>
@@ -96,7 +123,13 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.15.0</version>
                 <configuration>
-                    <release>11</release>
+                    <release>${maven.compiler.release}</release>
+                    <testRelease>${maven.compiler.testRelease}</testRelease>
+                    <showWarnings>true</showWarnings>
+                    <failOnWarning>true</failOnWarning>
+                    <compilerArgs>
+                        <arg>-Xlint:all</arg>
+                    </compilerArgs>
                 </configuration>
             </plugin>
 
@@ -104,6 +137,33 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.5.6</version>
+                <configuration>
+                    <systemPropertyVariables>
+                        <!-- The JDK test HTTP server otherwise adds ~40 ms (Nagle) per mocked response. -->
+                        <sun.net.httpserver.nodelay>true</sun.net.httpserver.nodelay>
+                    </systemPropertyVariables>
+                    <excludes>
+                        <!--
+                            Needs the private fixture corpus; runs only under the `conformance`
+                            profile below, which activates when VOICEML_CONFORMANCE_FIXTURES is set.
+                            The public spec is covered on every run by contract.SpecContractTest.
+                        -->
+                        <exclude>${conformance.exclude}</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.5.1</version>
+                <configuration>
+                    <archive>
+                        <manifestEntries>
+                            <Automatic-Module-Name>com.voicetel.voiceml</Automatic-Module-Name>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
             </plugin>
 
             <plugin>
@@ -133,15 +193,30 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <doclint>none</doclint>
-                    <failOnError>false</failOnError>
-                    <source>11</source>
+                    <!-- Every Javadoc problem except a missing comment fails the build. -->
+                    <doclint>all,-missing</doclint>
+                    <failOnWarnings>true</failOnWarnings>
+                    <release>${maven.compiler.release}</release>
+                    <quiet>true</quiet>
                 </configuration>
             </plugin>
         </plugins>
     </build>
 
     <profiles>
+        <!-- Fixture-corpus conformance tests: on whenever VOICEML_CONFORMANCE_FIXTURES is set. -->
+        <profile>
+            <id>conformance</id>
+            <activation>
+                <property>
+                    <name>env.VOICEML_CONFORMANCE_FIXTURES</name>
+                </property>
+            </activation>
+            <properties>
+                <conformance.exclude>none</conformance.exclude>
+            </properties>
+        </profile>
+
         <!--
             Activated by `mvn -P release deploy` (CI release workflow). Adds the
             two pieces required by Maven Central:

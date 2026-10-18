@@ -3,8 +3,7 @@ package com.voicetel.voiceml.resources;
 import com.voicetel.voiceml.Transport;
 
 /**
- * Top-level {@code /v1/*} surface for Twilio voice.twilio.com/v1 (#420).
- * Sub-resources:
+ * The Twilio-compatible Voice v1 API ({@code /v1/*} on the default host). Sub-resources:
  *
  * <ul>
  *   <li>{@link #ipRecords()} — {@code /v1/IpRecords}.

@@ -8,7 +8,7 @@ import java.util.List;
 
 /** Paginated {@code /v1/ConnectionPolicies/{Sid}/Targets} response. */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class VoiceV1ConnectionPolicyTargetList {
+public class VoiceV1ConnectionPolicyTargetList implements MetaPage {
 
     @JsonProperty("targets")
     private List<VoiceV1ConnectionPolicyTarget> targets = new ArrayList<>();

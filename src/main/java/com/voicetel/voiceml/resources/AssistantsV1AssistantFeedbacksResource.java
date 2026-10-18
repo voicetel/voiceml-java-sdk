@@ -19,9 +19,9 @@ public final class AssistantsV1AssistantFeedbacksResource extends BaseResource {
     }
 
     public AssistantsV1FeedbackList list(ListPageParams params) {
-        Map<String, Object> q = params != null ? params.toQuery() : null;
+        Map<String, Object> q = params != null ? params.toPageSizeQuery() : null;
         return decode(transport.requestJson("GET",
-                "/v1/Assistants/" + assistantId + "/Feedbacks", q, null),
+                "/v1/Assistants/" + seg(assistantId) + "/Feedbacks", q, null),
                 AssistantsV1FeedbackList.class);
     }
 
@@ -30,7 +30,7 @@ public final class AssistantsV1AssistantFeedbacksResource extends BaseResource {
     public AssistantsV1Feedback create(CreateAssistantsV1FeedbackRequest body) {
         Map<String, Object> json = body != null ? body.toJsonBody() : null;
         return decode(transport.requestJson("POST",
-                "/v1/Assistants/" + assistantId + "/Feedbacks", null, json),
+                "/v1/Assistants/" + seg(assistantId) + "/Feedbacks", null, json),
                 AssistantsV1Feedback.class);
     }
 }

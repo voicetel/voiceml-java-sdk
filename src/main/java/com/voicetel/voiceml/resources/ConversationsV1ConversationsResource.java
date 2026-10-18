@@ -23,7 +23,7 @@ public final class ConversationsV1ConversationsResource extends BaseResource {
     }
 
     public ConversationsV1ConversationList list(ListPageParams params) {
-        Map<String, Object> q = params != null ? params.toQuery() : null;
+        Map<String, Object> q = params != null ? params.toPageSizeQuery() : null;
         return decode(transport.request("GET", "/v1/Conversations", q, null),
                 ConversationsV1ConversationList.class);
     }
@@ -31,19 +31,19 @@ public final class ConversationsV1ConversationsResource extends BaseResource {
     public ConversationsV1ConversationList list() { return list(null); }
 
     public ConversationsV1Conversation fetch(String conversationSid) {
-        return decode(transport.request("GET", "/v1/Conversations/" + conversationSid, null, null),
+        return decode(transport.request("GET", "/v1/Conversations/" + seg(conversationSid), null, null),
                 ConversationsV1Conversation.class);
     }
 
     public ConversationsV1Conversation update(String conversationSid,
                                               UpdateConversationsV1ConversationRequest body) {
         Map<String, Object> form = body != null ? body.toForm() : null;
-        return decode(transport.request("POST", "/v1/Conversations/" + conversationSid, null, form),
+        return decode(transport.request("POST", "/v1/Conversations/" + seg(conversationSid), null, form),
                 ConversationsV1Conversation.class);
     }
 
     public void delete(String conversationSid) {
-        transport.request("DELETE", "/v1/Conversations/" + conversationSid, null, null);
+        transport.request("DELETE", "/v1/Conversations/" + seg(conversationSid), null, null);
     }
 
     /** Sub-resource handle for {@code .../Messages}. */

@@ -20,7 +20,7 @@ public final class ConversationsV1ServiceConversationsResource extends BaseResou
     }
 
     private String base() {
-        return "/v1/Services/" + chatServiceSid + "/Conversations";
+        return "/v1/Services/" + seg(chatServiceSid) + "/Conversations";
     }
 
     public ConversationsV1ServiceConversation create(CreateConversationsV1ServiceConversationRequest body) {
@@ -30,7 +30,7 @@ public final class ConversationsV1ServiceConversationsResource extends BaseResou
     }
 
     public ConversationsV1ServiceConversationList list(ListPageParams params) {
-        Map<String, Object> q = params != null ? params.toQuery() : null;
+        Map<String, Object> q = params != null ? params.toPageSizeQuery() : null;
         return decode(transport.request("GET", base(), q, null),
                 ConversationsV1ServiceConversationList.class);
     }
@@ -38,19 +38,19 @@ public final class ConversationsV1ServiceConversationsResource extends BaseResou
     public ConversationsV1ServiceConversationList list() { return list(null); }
 
     public ConversationsV1ServiceConversation fetch(String conversationSid) {
-        return decode(transport.request("GET", base() + "/" + conversationSid, null, null),
+        return decode(transport.request("GET", base() + "/" + seg(conversationSid), null, null),
                 ConversationsV1ServiceConversation.class);
     }
 
     public ConversationsV1ServiceConversation update(String conversationSid,
                                                      UpdateConversationsV1ServiceConversationRequest body) {
         Map<String, Object> form = body != null ? body.toForm() : null;
-        return decode(transport.request("POST", base() + "/" + conversationSid, null, form),
+        return decode(transport.request("POST", base() + "/" + seg(conversationSid), null, form),
                 ConversationsV1ServiceConversation.class);
     }
 
     public void delete(String conversationSid) {
-        transport.request("DELETE", base() + "/" + conversationSid, null, null);
+        transport.request("DELETE", base() + "/" + seg(conversationSid), null, null);
     }
 
     /** Sub-resource handle for {@code .../Messages}. */

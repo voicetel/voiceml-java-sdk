@@ -19,11 +19,11 @@ public final class ConversationsV1UserConversationsResource extends BaseResource
     }
 
     private String base() {
-        return "/v1/Users/" + userSid + "/Conversations";
+        return "/v1/Users/" + seg(userSid) + "/Conversations";
     }
 
     public ConversationsV1UserConversationList list(ListPageParams params) {
-        Map<String, Object> q = params != null ? params.toQuery() : null;
+        Map<String, Object> q = params != null ? params.toPageSizeQuery() : null;
         return decode(transport.request("GET", base(), q, null),
                 ConversationsV1UserConversationList.class);
     }
@@ -31,18 +31,18 @@ public final class ConversationsV1UserConversationsResource extends BaseResource
     public ConversationsV1UserConversationList list() { return list(null); }
 
     public ConversationsV1UserConversation fetch(String conversationSid) {
-        return decode(transport.request("GET", base() + "/" + conversationSid, null, null),
+        return decode(transport.request("GET", base() + "/" + seg(conversationSid), null, null),
                 ConversationsV1UserConversation.class);
     }
 
     public ConversationsV1UserConversation update(String conversationSid,
                                                   UpdateConversationsV1UserConversationRequest body) {
         Map<String, Object> form = body != null ? body.toForm() : null;
-        return decode(transport.request("POST", base() + "/" + conversationSid, null, form),
+        return decode(transport.request("POST", base() + "/" + seg(conversationSid), null, form),
                 ConversationsV1UserConversation.class);
     }
 
     public void delete(String conversationSid) {
-        transport.request("DELETE", base() + "/" + conversationSid, null, null);
+        transport.request("DELETE", base() + "/" + seg(conversationSid), null, null);
     }
 }

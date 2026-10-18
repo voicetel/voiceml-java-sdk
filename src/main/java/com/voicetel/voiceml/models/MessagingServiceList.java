@@ -8,7 +8,7 @@ import java.util.List;
 
 /** Paginated {@code GET /v1/Services} response on the messaging host. */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class MessagingServiceList {
+public class MessagingServiceList implements MetaPage {
 
     @JsonProperty("services")
     private List<MessagingService> services = new ArrayList<>();

@@ -18,8 +18,8 @@ public final class AssistantsV1AssistantToolsResource extends BaseResource {
 
     /** List Tools attached to this Assistant. */
     public AssistantsV1ToolList list(ListPageParams params) {
-        Map<String, Object> q = params != null ? params.toQuery() : null;
-        return decode(transport.requestJson("GET", "/v1/Assistants/" + assistantId + "/Tools", q, null),
+        Map<String, Object> q = params != null ? params.toPageSizeQuery() : null;
+        return decode(transport.requestJson("GET", "/v1/Assistants/" + seg(assistantId) + "/Tools", q, null),
                 AssistantsV1ToolList.class);
     }
 
@@ -27,11 +27,11 @@ public final class AssistantsV1AssistantToolsResource extends BaseResource {
 
     /** Attach a Tool to this Assistant ({@code POST} returns {@code 204}). */
     public void attach(String toolId) {
-        transport.requestJson("POST", "/v1/Assistants/" + assistantId + "/Tools/" + toolId, null, null);
+        transport.requestJson("POST", "/v1/Assistants/" + seg(assistantId) + "/Tools/" + seg(toolId), null, null);
     }
 
     /** Detach a Tool from this Assistant ({@code DELETE} returns {@code 204}). */
     public void detach(String toolId) {
-        transport.requestJson("DELETE", "/v1/Assistants/" + assistantId + "/Tools/" + toolId, null, null);
+        transport.requestJson("DELETE", "/v1/Assistants/" + seg(assistantId) + "/Tools/" + seg(toolId), null, null);
     }
 }

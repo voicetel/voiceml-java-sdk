@@ -23,7 +23,7 @@ public final class AssistantsV1AssistantMessagesResource extends BaseResource {
     public AssistantsV1SendMessageResponse send(SendAssistantsV1MessageRequest body) {
         Map<String, Object> json = body != null ? body.toJsonBody() : null;
         return decode(transport.requestJson("POST",
-                "/v1/Assistants/" + assistantId + "/Messages", null, json),
+                "/v1/Assistants/" + seg(assistantId) + "/Messages", null, json),
                 AssistantsV1SendMessageResponse.class);
     }
 }

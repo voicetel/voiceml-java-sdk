@@ -5,17 +5,15 @@ import java.net.URI;
 /**
  * Per-product host resolution for the VoiceML API.
  *
- * <p>Twilio splits its products across dedicated subdomains ({@code api.twilio.com},
- * {@code conversations.twilio.com}, {@code messaging.twilio.com}, …). VoiceML mirrors that shape
- * on {@code voicetel.com}: the Conversations product answers on {@code conversations.voicetel.com}
- * and the Messaging Service product on {@code messaging.voicetel.com}, while everything else stays
- * on the default {@code voiceml.voicetel.com} host. Conversation Service and Messaging Service
- * share the identical {@code /v1/Services} path shape, so the <em>host</em> is what disambiguates
+ * <p>VoiceML serves each product on its own subdomain of {@code voicetel.com}: Conversations on
+ * {@code conversations.voicetel.com}, Messaging Service on {@code messaging.voicetel.com}, and
+ * everything else on the default {@code voiceml.voicetel.com} host. Conversation Service and
+ * Messaging Service both use {@code /v1/Services}, so the <em>host</em> is what disambiguates
  * them on the wire.
  *
  * <p>Given the configured base URL this helper derives the two product hosts by swapping the
  * leftmost {@code voiceml} label — but only for recognised {@code *.voicetel.com} hosts. For any
- * other base URL (a self-hosted callBroadcast instance, a test stub, a regional override) the
+ * other base URL (a self-hosted instance, a test stub, a regional override) the
  * product hosts fall back to the configured host unchanged, so a single-host deployment keeps
  * working. A caller who needs Messaging Service against a custom host points
  * {@code messagingBaseUrl} (or {@code conversationsBaseUrl}) at their own subdomain explicitly.

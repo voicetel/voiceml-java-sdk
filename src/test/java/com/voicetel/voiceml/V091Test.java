@@ -101,7 +101,7 @@ class V091Test {
             String contentType = exchange.getRequestHeaders().getFirst("Content-Type");
             recorded.addLast(new RecordedRequest(
                     exchange.getRequestMethod(),
-                    exchange.getRequestURI().getPath(),
+                    exchange.getRequestURI().getRawPath(),
                     query == null ? "" : query,
                     new String(reqBody, StandardCharsets.UTF_8),
                     contentType));
@@ -126,7 +126,7 @@ class V091Test {
             String method = exchange.getRequestMethod().toUpperCase();
             recorded.addLast(new RecordedRequest(
                     method,
-                    exchange.getRequestURI().getPath(),
+                    exchange.getRequestURI().getRawPath(),
                     query == null ? "" : query,
                     new String(reqBody, StandardCharsets.UTF_8),
                     contentType));
@@ -345,8 +345,7 @@ class V091Test {
         RecordedRequest r = recorded.removeFirst();
         assertThat(r.method).isEqualTo("GET");
         assertThat(r.path).isEqualTo("/v1/Tools");
-        assertThat(r.query).contains("AssistantId=" + AID);
-        assertThat(r.query).contains("PageSize=25");
+        WireAssert.exactPairs(r.query, "AssistantId=" + AID, "PageSize=25");
     }
 
     @Test
@@ -485,7 +484,7 @@ class V091Test {
         RecordedRequest r = recorded.removeFirst();
         assertThat(r.method).isEqualTo("GET");
         assertThat(r.path).isEqualTo("/v1/Knowledge");
-        assertThat(r.query).contains("AssistantId=" + AID);
+        WireAssert.exactPairs(r.query, "AssistantId=" + AID);
     }
 
     @Test
@@ -740,9 +739,7 @@ class V091Test {
         RecordedRequest r = recorded.removeFirst();
         assertThat(r.method).isEqualTo("GET");
         assertThat(r.path).isEqualTo("/v1/Policies");
-        assertThat(r.query).contains("ToolId=" + TID);
-        assertThat(r.query).contains("KnowledgeId=" + KID);
-        assertThat(r.query).contains("PageSize=10");
+        WireAssert.exactPairs(r.query, "ToolId=" + TID, "KnowledgeId=" + KID, "PageSize=10");
     }
 
     /** Plain POJO so we don't need records on Java 11. */

@@ -8,7 +8,7 @@ import java.util.List;
 
 /** Paginated service-scoped Roles response. */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class ConversationsV1ServiceRoleList {
+public class ConversationsV1ServiceRoleList implements MetaPage {
 
     @JsonProperty("roles")
     private List<ConversationsV1ServiceRole> roles = new ArrayList<>();

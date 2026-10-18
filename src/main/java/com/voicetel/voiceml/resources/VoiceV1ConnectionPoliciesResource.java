@@ -23,7 +23,7 @@ public final class VoiceV1ConnectionPoliciesResource extends BaseResource {
     }
 
     public VoiceV1ConnectionPolicyList list(ListPageParams params) {
-        Map<String, Object> q = params != null ? params.toQuery() : null;
+        Map<String, Object> q = params != null ? params.toPageSizeQuery() : null;
         return decode(transport.request("GET", "/v1/ConnectionPolicies", q, null),
                 VoiceV1ConnectionPolicyList.class);
     }
@@ -31,18 +31,18 @@ public final class VoiceV1ConnectionPoliciesResource extends BaseResource {
     public VoiceV1ConnectionPolicyList list() { return list(null); }
 
     public VoiceV1ConnectionPolicy fetch(String connectionPolicySid) {
-        return decode(transport.request("GET", "/v1/ConnectionPolicies/" + connectionPolicySid, null, null),
+        return decode(transport.request("GET", "/v1/ConnectionPolicies/" + seg(connectionPolicySid), null, null),
                 VoiceV1ConnectionPolicy.class);
     }
 
     public VoiceV1ConnectionPolicy update(String connectionPolicySid, UpdateVoiceV1ConnectionPolicyRequest body) {
         Map<String, Object> form = body != null ? body.toForm() : null;
-        return decode(transport.request("POST", "/v1/ConnectionPolicies/" + connectionPolicySid, null, form),
+        return decode(transport.request("POST", "/v1/ConnectionPolicies/" + seg(connectionPolicySid), null, form),
                 VoiceV1ConnectionPolicy.class);
     }
 
     public void delete(String connectionPolicySid) {
-        transport.request("DELETE", "/v1/ConnectionPolicies/" + connectionPolicySid, null, null);
+        transport.request("DELETE", "/v1/ConnectionPolicies/" + seg(connectionPolicySid), null, null);
     }
 
     /** Sub-resource handle for {@code /v1/ConnectionPolicies/{ConnectionPolicySid}/Targets}. */

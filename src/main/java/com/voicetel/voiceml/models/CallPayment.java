@@ -4,9 +4,9 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * REST companion to the {@code <Pay>} TwiML verb. Twilio-compatible response shape — the
- * minimal payload mirrors Twilio's documented surface; runtime config (ChargeAmount,
- * PaymentConnector, ValidCardTypes, etc.) is captured server-side and not echoed back.
+ * REST companion to the {@code <Pay>} TwiML verb (Twilio-compatible). The response is
+ * deliberately minimal: runtime config (ChargeAmount, PaymentConnector, ValidCardTypes, etc.) and
+ * the session status are captured server-side and not echoed back.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class CallPayment {

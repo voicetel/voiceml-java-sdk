@@ -20,7 +20,7 @@ public final class ConversationsV1ServiceParticipantConversationsResource extend
             ListConversationsV1ServiceParticipantConversationsParams params) {
         Map<String, Object> q = params != null ? params.toQuery() : null;
         return decode(transport.request("GET",
-                        "/v1/Services/" + chatServiceSid + "/ParticipantConversations",
+                        "/v1/Services/" + seg(chatServiceSid) + "/ParticipantConversations",
                         q, null),
                 ConversationsV1ServiceParticipantConversationList.class);
     }

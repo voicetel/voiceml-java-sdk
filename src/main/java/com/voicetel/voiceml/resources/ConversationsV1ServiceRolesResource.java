@@ -19,7 +19,7 @@ public final class ConversationsV1ServiceRolesResource extends BaseResource {
         this.chatServiceSid = chatServiceSid;
     }
 
-    private String base() { return "/v1/Services/" + chatServiceSid + "/Roles"; }
+    private String base() { return "/v1/Services/" + seg(chatServiceSid) + "/Roles"; }
 
     public ConversationsV1ServiceRole create(CreateConversationsV1ServiceRoleRequest body) {
         Map<String, Object> form = body != null ? body.toForm() : null;
@@ -28,7 +28,7 @@ public final class ConversationsV1ServiceRolesResource extends BaseResource {
     }
 
     public ConversationsV1ServiceRoleList list(ListPageParams params) {
-        Map<String, Object> q = params != null ? params.toQuery() : null;
+        Map<String, Object> q = params != null ? params.toPageSizeQuery() : null;
         return decode(transport.request("GET", base(), q, null),
                 ConversationsV1ServiceRoleList.class);
     }
@@ -36,17 +36,17 @@ public final class ConversationsV1ServiceRolesResource extends BaseResource {
     public ConversationsV1ServiceRoleList list() { return list(null); }
 
     public ConversationsV1ServiceRole fetch(String sid) {
-        return decode(transport.request("GET", base() + "/" + sid, null, null),
+        return decode(transport.request("GET", base() + "/" + seg(sid), null, null),
                 ConversationsV1ServiceRole.class);
     }
 
     public ConversationsV1ServiceRole update(String sid, UpdateConversationsV1ServiceRoleRequest body) {
         Map<String, Object> form = body != null ? body.toForm() : null;
-        return decode(transport.request("POST", base() + "/" + sid, null, form),
+        return decode(transport.request("POST", base() + "/" + seg(sid), null, form),
                 ConversationsV1ServiceRole.class);
     }
 
     public void delete(String sid) {
-        transport.request("DELETE", base() + "/" + sid, null, null);
+        transport.request("DELETE", base() + "/" + seg(sid), null, null);
     }
 }

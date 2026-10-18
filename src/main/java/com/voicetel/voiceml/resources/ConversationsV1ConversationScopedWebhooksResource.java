@@ -20,7 +20,7 @@ public final class ConversationsV1ConversationScopedWebhooksResource extends Bas
     }
 
     private String base() {
-        return "/v1/Conversations/" + conversationSid + "/Webhooks";
+        return "/v1/Conversations/" + seg(conversationSid) + "/Webhooks";
     }
 
     public ConversationsV1ConversationScopedWebhook create(CreateConversationsV1ConversationScopedWebhookRequest body) {
@@ -30,7 +30,7 @@ public final class ConversationsV1ConversationScopedWebhooksResource extends Bas
     }
 
     public ConversationsV1ConversationScopedWebhookList list(ListPageParams params) {
-        Map<String, Object> q = params != null ? params.toQuery() : null;
+        Map<String, Object> q = params != null ? params.toPageSizeQuery() : null;
         return decode(transport.request("GET", base(), q, null),
                 ConversationsV1ConversationScopedWebhookList.class);
     }
@@ -38,18 +38,18 @@ public final class ConversationsV1ConversationScopedWebhooksResource extends Bas
     public ConversationsV1ConversationScopedWebhookList list() { return list(null); }
 
     public ConversationsV1ConversationScopedWebhook fetch(String webhookSid) {
-        return decode(transport.request("GET", base() + "/" + webhookSid, null, null),
+        return decode(transport.request("GET", base() + "/" + seg(webhookSid), null, null),
                 ConversationsV1ConversationScopedWebhook.class);
     }
 
     public ConversationsV1ConversationScopedWebhook update(String webhookSid,
                                                            UpdateConversationsV1ConversationScopedWebhookRequest body) {
         Map<String, Object> form = body != null ? body.toForm() : null;
-        return decode(transport.request("POST", base() + "/" + webhookSid, null, form),
+        return decode(transport.request("POST", base() + "/" + seg(webhookSid), null, form),
                 ConversationsV1ConversationScopedWebhook.class);
     }
 
     public void delete(String webhookSid) {
-        transport.request("DELETE", base() + "/" + webhookSid, null, null);
+        transport.request("DELETE", base() + "/" + seg(webhookSid), null, null);
     }
 }

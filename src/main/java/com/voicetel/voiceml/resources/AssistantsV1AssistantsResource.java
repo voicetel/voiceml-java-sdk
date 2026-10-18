@@ -33,17 +33,17 @@ public final class AssistantsV1AssistantsResource extends BaseResource {
 
     /** Returns the Assistant inlined with its attached {@code tools} and {@code knowledge}. */
     public AssistantsV1AssistantWithToolsAndKnowledge fetch(String assistantId) {
-        return decode(transport.requestJson("GET", "/v1/Assistants/" + assistantId, null, null),
+        return decode(transport.requestJson("GET", "/v1/Assistants/" + seg(assistantId), null, null),
                 AssistantsV1AssistantWithToolsAndKnowledge.class);
     }
 
     public AssistantsV1Assistant update(String assistantId, UpdateAssistantsV1AssistantRequest body) {
         Map<String, Object> json = body != null ? body.toJsonBody() : null;
-        return decode(transport.requestJson("PUT", "/v1/Assistants/" + assistantId, null, json),
+        return decode(transport.requestJson("PUT", "/v1/Assistants/" + seg(assistantId), null, json),
                 AssistantsV1Assistant.class);
     }
 
     public void delete(String assistantId) {
-        transport.requestJson("DELETE", "/v1/Assistants/" + assistantId, null, null);
+        transport.requestJson("DELETE", "/v1/Assistants/" + seg(assistantId), null, null);
     }
 }

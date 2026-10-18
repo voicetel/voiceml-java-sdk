@@ -17,7 +17,7 @@ public final class ConversationsV1ServiceWebhookConfigurationResource extends Ba
     }
 
     private String base() {
-        return "/v1/Services/" + chatServiceSid + "/Configuration/Webhooks";
+        return "/v1/Services/" + seg(chatServiceSid) + "/Configuration/Webhooks";
     }
 
     public ConversationsV1ServiceWebhookConfiguration fetch() {

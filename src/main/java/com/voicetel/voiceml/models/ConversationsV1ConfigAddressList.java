@@ -8,7 +8,7 @@ import java.util.List;
 
 /** Paginated {@code /v1/Configuration/Addresses} response. */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class ConversationsV1ConfigAddressList {
+public class ConversationsV1ConfigAddressList implements MetaPage {
 
     @JsonProperty("addresses")
     private List<ConversationsV1ConfigAddress> addresses = new ArrayList<>();

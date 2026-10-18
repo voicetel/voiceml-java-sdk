@@ -17,9 +17,9 @@ public final class AssistantsV1KnowledgeChunksResource extends BaseResource {
     }
 
     public AssistantsV1KnowledgeChunkList list(ListPageParams params) {
-        Map<String, Object> q = params != null ? params.toQuery() : null;
+        Map<String, Object> q = params != null ? params.toPageSizeQuery() : null;
         return decode(transport.requestJson("GET",
-                "/v1/Knowledge/" + knowledgeId + "/Chunks", q, null),
+                "/v1/Knowledge/" + seg(knowledgeId) + "/Chunks", q, null),
                 AssistantsV1KnowledgeChunkList.class);
     }
 

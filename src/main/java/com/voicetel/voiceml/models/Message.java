@@ -9,7 +9,7 @@ import java.util.Map;
  * A Twilio-compatible Message resource. Returned by the {@code /Messages} endpoints.
  *
  * <p>Note: {@code num_segments} and {@code num_media} are surfaced as {@code String} on the wire
- * to match Twilio's documented response shape.
+ * for Twilio-compatible decoding.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Message {

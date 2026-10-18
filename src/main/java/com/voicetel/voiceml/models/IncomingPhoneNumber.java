@@ -3,6 +3,8 @@ package com.voicetel.voiceml.models;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.Map;
+
 /**
  * Tenant-self-serve view of an assigned DID.
  *
@@ -10,16 +12,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * {@code phoneNumber} carries the E.164 form. Tenant-scoped — only DIDs assigned to the
  * authenticated account are visible.
  *
- * <p>The full Twilio outer field set is bound here so strict-binding code paths (Jackson against
- * a twilio-java-shape model) deserialize without throwing. Fields VoiceML does not track
- * ({@code voiceApplicationSid}, SMS, emergency, trunking, regulatory) come back as a Twilio-compat
- * default — empty string, {@code null}, or the documented enum default. Customer code that reads
- * e.g. {@code number.getCapabilities().getVoice()} therefore behaves identically against VoiceML
- * and Twilio.
+ * <p>Every field of the Twilio-compatible resource is bound, so migration-compatible code that
+ * reads, for example, {@code number.getCapabilities().getVoice()} keeps working. Fields VoiceML
+ * does not track ({@code voiceApplicationSid}, emergency, trunking, regulatory) come back as an
+ * empty string, {@code null}, or the documented enum default.
  *
- * <p>Enum-shaped properties are typed as {@link String} on purpose (defensive deserialization —
- * matches the twilio-java pattern): if the server starts emitting a new enum value the SDK does
- * not throw on bind, and {@link JsonIgnoreProperties} keeps forward-compat extras from breaking.
+ * <p>Enum-valued properties are typed as {@link String} on purpose: if the server starts emitting
+ * a new value the SDK does not fail to decode, and unknown properties are ignored.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class IncomingPhoneNumber {
@@ -128,6 +127,9 @@ public class IncomingPhoneNumber {
 
     @JsonProperty("capabilities")
     private Capabilities capabilities;
+
+    @JsonProperty("subresource_uris")
+    private Map<String, String> subresourceUris;
 
     public String getSid() { return sid; }
     public void setSid(String sid) { this.sid = sid; }
@@ -262,4 +264,6 @@ public class IncomingPhoneNumber {
         public Boolean getFax() { return fax; }
         public void setFax(Boolean fax) { this.fax = fax; }
     }
+    public Map<String, String> getSubresourceUris() { return subresourceUris; }
+    public void setSubresourceUris(Map<String, String> subresourceUris) { this.subresourceUris = subresourceUris; }
 }

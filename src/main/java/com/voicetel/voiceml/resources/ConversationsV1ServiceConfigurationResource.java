@@ -24,7 +24,7 @@ public final class ConversationsV1ServiceConfigurationResource extends BaseResou
         this.webhooks = new ConversationsV1ServiceWebhookConfigurationResource(transport, chatServiceSid);
     }
 
-    private String base() { return "/v1/Services/" + chatServiceSid + "/Configuration"; }
+    private String base() { return "/v1/Services/" + seg(chatServiceSid) + "/Configuration"; }
 
     public ConversationsV1ServiceConfiguration fetch() {
         return decode(transport.request("GET", base(), null, null),

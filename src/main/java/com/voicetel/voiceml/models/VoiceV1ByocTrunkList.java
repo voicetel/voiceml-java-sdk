@@ -8,7 +8,7 @@ import java.util.List;
 
 /** Paginated {@code /v1/ByocTrunks} response. */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class VoiceV1ByocTrunkList {
+public class VoiceV1ByocTrunkList implements MetaPage {
 
     @JsonProperty("byoc_trunks")
     private List<VoiceV1ByocTrunk> byocTrunks = new ArrayList<>();

@@ -4,6 +4,7 @@ import com.voicetel.voiceml.Transport;
 import com.voicetel.voiceml.models.CreateSipCredentialListRequest;
 import com.voicetel.voiceml.models.CreateSipCredentialRequest;
 import com.voicetel.voiceml.models.ListPageParams;
+import com.voicetel.voiceml.models.ListSipParams;
 import com.voicetel.voiceml.models.SipCredential;
 import com.voicetel.voiceml.models.SipCredentialList;
 import com.voicetel.voiceml.models.SipCredentialListList;
@@ -22,13 +23,24 @@ public final class SipCredentialListsResource extends BaseResource {
 
     // --- /SIP/CredentialLists CRUD ------------------------------------------
 
+    /**
+     * The same list filtered by {@code FriendlyName}.
+     *
+     * @param params {@code FriendlyName} and paging
+     * @return the page
+     */
+    public SipCredentialListList list(ListSipParams params) {
+        Map<String, Object> q = params != null ? params.toQuery() : null;
+        return decode(transport.request("GET", accountPath("SIP", "CredentialLists"), q, null), SipCredentialListList.class);
+    }
+
     public SipCredentialListList list(ListPageParams params) {
         Map<String, Object> q = params != null ? params.toQuery() : null;
         return decode(transport.request("GET", accountPath("SIP", "CredentialLists"), q, null),
                 SipCredentialListList.class);
     }
 
-    public SipCredentialListList list() { return list(null); }
+    public SipCredentialListList list() { return list((ListPageParams) null); }
 
     public SipCredentialList create(CreateSipCredentialListRequest body) {
         Map<String, Object> form = body != null ? body.toForm() : null;

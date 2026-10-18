@@ -46,17 +46,27 @@ public final class MessagingV1ServicesResource extends BaseResource {
     }
 
     public MessagingService fetch(String sid) {
-        return decode(transport.request("GET", "/v1/Services/" + sid, null, null),
+        return decode(transport.request("GET", "/v1/Services/" + seg(sid), null, null),
                 MessagingService.class);
     }
 
     public MessagingService update(String sid, UpdateMessagingServiceRequest body) {
         Map<String, Object> form = body != null ? body.toForm() : null;
-        return decode(transport.request("POST", "/v1/Services/" + sid, null, form),
+        return decode(transport.request("POST", "/v1/Services/" + seg(sid), null, form),
                 MessagingService.class);
     }
 
     public void delete(String sid) {
-        transport.request("DELETE", "/v1/Services/" + sid, null, null);
+        transport.request("DELETE", "/v1/Services/" + seg(sid), null, null);
+    }
+
+    /**
+     * The sender pool of a Messaging Service ({@code /v1/Services/{Sid}/PhoneNumbers}).
+     *
+     * @param serviceSid the Messaging Service SID ({@code MG…})
+     * @return the scoped resource
+     */
+    public MessagingV1ServicePhoneNumbersResource phoneNumbers(String serviceSid) {
+        return new MessagingV1ServicePhoneNumbersResource(transport, serviceSid);
     }
 }

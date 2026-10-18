@@ -76,7 +76,7 @@ class SipTest {
             byte[] reqBody = exchange.getRequestBody().readAllBytes();
             recorded.addLast(new Recorded(
                     exchange.getRequestMethod(),
-                    exchange.getRequestURI().getPath(),
+                    exchange.getRequestURI().getRawPath(),
                     exchange.getRequestURI().getRawQuery() == null ? "" : exchange.getRequestURI().getRawQuery(),
                     new String(reqBody, StandardCharsets.UTF_8)));
             byte[] payload = body == null ? new byte[0] : body.getBytes(StandardCharsets.UTF_8);

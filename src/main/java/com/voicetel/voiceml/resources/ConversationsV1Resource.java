@@ -3,8 +3,8 @@ package com.voicetel.voiceml.resources;
 import com.voicetel.voiceml.Transport;
 
 /**
- * Top-level {@code /v1/*} surface for Twilio conversations.twilio.com/v1
- * (#421). Sub-resources:
+ * The Twilio-compatible Conversations v1 API ({@code /v1/*}, routed at the conversations host,
+ * {@code conversations.voicetel.com}). Sub-resources:
  *
  * <ul>
  *   <li>{@link #conversations()} — {@code /v1/Conversations} (+ Messages/Participants/Webhooks).

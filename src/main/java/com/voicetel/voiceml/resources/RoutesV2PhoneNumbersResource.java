@@ -20,14 +20,14 @@ public final class RoutesV2PhoneNumbersResource extends BaseResource {
 
     /** Fetch a phone number's Inbound Processing Region binding. */
     public RoutesV2PhoneNumber fetch(String phoneNumber) {
-        return decode(transport.request("GET", "/v2/PhoneNumbers/" + phoneNumber, null, null),
+        return decode(transport.request("GET", "/v2/PhoneNumbers/" + seg(phoneNumber), null, null),
                 RoutesV2PhoneNumber.class);
     }
 
     /** Update a phone number's voice region and/or friendly name. */
     public RoutesV2PhoneNumber update(String phoneNumber, UpdateRoutesV2PhoneNumberRequest body) {
         Map<String, Object> form = body != null ? body.toForm() : null;
-        return decode(transport.request("POST", "/v2/PhoneNumbers/" + phoneNumber, null, form),
+        return decode(transport.request("POST", "/v2/PhoneNumbers/" + seg(phoneNumber), null, form),
                 RoutesV2PhoneNumber.class);
     }
 }

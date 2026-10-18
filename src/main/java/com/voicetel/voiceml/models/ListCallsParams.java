@@ -4,12 +4,11 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * Query-string parameters for {@code GET /Calls}.
+ * Query parameters for {@code GET /Calls}.
  *
- * <p>The Twilio wire names {@code StartTime>=} and {@code StartTime<=} are the literal query keys
- * the server expects. In Java those characters can't be field identifiers, so the field names here
- * are {@code startTimeGte} / {@code startTimeLte}; {@link #toQuery()} translates back to the wire
- * shape.
+ * <p>The wire names {@code StartTime<} / {@code StartTime>} (and the {@code EndTime} pair) cannot be
+ * Java identifiers, so the builder methods are {@code startTimeLt} / {@code startTimeGt};
+ * {@link #toQuery()} sends the wire names.
  */
 public final class ListCallsParams {
 
@@ -23,8 +22,6 @@ public final class ListCallsParams {
     private final String endTime;
     private final String endTimeLt;
     private final String endTimeGt;
-    private final String startTimeGte;
-    private final String startTimeLte;
     private final Integer page;
     private final Integer pageSize;
     private final String pageToken;
@@ -40,37 +37,101 @@ public final class ListCallsParams {
         this.endTime = b.endTime;
         this.endTimeLt = b.endTimeLt;
         this.endTimeGt = b.endTimeGt;
-        this.startTimeGte = b.startTimeGte;
-        this.startTimeLte = b.startTimeLte;
         this.page = b.page;
         this.pageSize = b.pageSize;
         this.pageToken = b.pageToken;
     }
 
+    /** @return the query parameters, keyed by wire name; unset values are omitted */
     public Map<String, Object> toQuery() {
-        Map<String, Object> q = new LinkedHashMap<>();
-        if (to != null) q.put("To", to);
-        if (from != null) q.put("From", from);
-        if (status != null) q.put("Status", status);
-        if (parentCallSid != null) q.put("ParentCallSid", parentCallSid);
-        if (startTime != null) q.put("StartTime", startTime);
-        if (startTimeLt != null) q.put("StartTime<", startTimeLt);
-        if (startTimeGt != null) q.put("StartTime>", startTimeGt);
-        if (endTime != null) q.put("EndTime", endTime);
-        if (endTimeLt != null) q.put("EndTime<", endTimeLt);
-        if (endTimeGt != null) q.put("EndTime>", endTimeGt);
-        if (startTimeGte != null) q.put("StartTime>=", startTimeGte);
-        if (startTimeLte != null) q.put("StartTime<=", startTimeLte);
-        if (page != null) q.put("Page", page);
-        if (pageSize != null) q.put("PageSize", pageSize);
-        if (pageToken != null) q.put("PageToken", pageToken);
-        return q;
+        Map<String, Object> m = new LinkedHashMap<>();
+        if (to != null) m.put("To", to);
+        if (from != null) m.put("From", from);
+        if (status != null) m.put("Status", status);
+        if (parentCallSid != null) m.put("ParentCallSid", parentCallSid);
+        if (startTime != null) m.put("StartTime", startTime);
+        if (startTimeLt != null) m.put("StartTime<", startTimeLt);
+        if (startTimeGt != null) m.put("StartTime>", startTimeGt);
+        if (endTime != null) m.put("EndTime", endTime);
+        if (endTimeLt != null) m.put("EndTime<", endTimeLt);
+        if (endTimeGt != null) m.put("EndTime>", endTimeGt);
+        if (page != null) m.put("Page", page);
+        if (pageSize != null) m.put("PageSize", pageSize);
+        if (pageToken != null) m.put("PageToken", pageToken);
+        return m;
     }
 
+    /** @return the {@code To} value, or {@code null} when unset */
+    public String getTo() {
+        return to;
+    }
+
+    /** @return the {@code From} value, or {@code null} when unset */
+    public String getFrom() {
+        return from;
+    }
+
+    /** @return the {@code Status} value, or {@code null} when unset */
+    public String getStatus() {
+        return status;
+    }
+
+    /** @return the {@code ParentCallSid} value, or {@code null} when unset */
+    public String getParentCallSid() {
+        return parentCallSid;
+    }
+
+    /** @return the {@code StartTime} value, or {@code null} when unset */
+    public String getStartTime() {
+        return startTime;
+    }
+
+    /** @return the {@code StartTime<} value, or {@code null} when unset */
+    public String getStartTimeLt() {
+        return startTimeLt;
+    }
+
+    /** @return the {@code StartTime>} value, or {@code null} when unset */
+    public String getStartTimeGt() {
+        return startTimeGt;
+    }
+
+    /** @return the {@code EndTime} value, or {@code null} when unset */
+    public String getEndTime() {
+        return endTime;
+    }
+
+    /** @return the {@code EndTime<} value, or {@code null} when unset */
+    public String getEndTimeLt() {
+        return endTimeLt;
+    }
+
+    /** @return the {@code EndTime>} value, or {@code null} when unset */
+    public String getEndTimeGt() {
+        return endTimeGt;
+    }
+
+    /** @return the {@code Page} value, or {@code null} when unset */
+    public Integer getPage() {
+        return page;
+    }
+
+    /** @return the {@code PageSize} value, or {@code null} when unset */
+    public Integer getPageSize() {
+        return pageSize;
+    }
+
+    /** @return the {@code PageToken} value, or {@code null} when unset */
+    public String getPageToken() {
+        return pageToken;
+    }
+
+    /** @return a new builder */
     public static Builder builder() {
         return new Builder();
     }
 
+    /** Builder for {@link ListCallsParams}. */
     public static final class Builder {
         private String to;
         private String from;
@@ -82,30 +143,135 @@ public final class ListCallsParams {
         private String endTime;
         private String endTimeLt;
         private String endTimeGt;
-        private String startTimeGte;
-        private String startTimeLte;
         private Integer page;
         private Integer pageSize;
         private String pageToken;
 
-        public Builder to(String s) { this.to = s; return this; }
-        public Builder from(String s) { this.from = s; return this; }
-        public Builder status(String s) { this.status = s; return this; }
-        public Builder parentCallSid(String s) { this.parentCallSid = s; return this; }
-        public Builder startTime(String s) { this.startTime = s; return this; }
-        public Builder startTimeLt(String s) { this.startTimeLt = s; return this; }
-        public Builder startTimeGt(String s) { this.startTimeGt = s; return this; }
-        public Builder endTime(String s) { this.endTime = s; return this; }
-        public Builder endTimeLt(String s) { this.endTimeLt = s; return this; }
-        public Builder endTimeGt(String s) { this.endTimeGt = s; return this; }
-        /** Inclusive lower bound — wire name {@code StartTime>=}. */
-        public Builder startTimeGte(String s) { this.startTimeGte = s; return this; }
-        /** Inclusive upper bound — wire name {@code StartTime<=}. */
-        public Builder startTimeLte(String s) { this.startTimeLte = s; return this; }
-        public Builder page(Integer v) { this.page = v; return this; }
-        public Builder pageSize(Integer v) { this.pageSize = v; return this; }
-        public Builder pageToken(String s) { this.pageToken = s; return this; }
+        /** Create an empty builder; prefer {@link ListCallsParams#builder()}. */
+        public Builder() {
+            // all fields start unset
+        }
 
+        /**
+         * @param v {@code To}
+         * @return this builder
+         */
+        public Builder to(String v) {
+            this.to = v;
+            return this;
+        }
+
+        /**
+         * @param v {@code From}
+         * @return this builder
+         */
+        public Builder from(String v) {
+            this.from = v;
+            return this;
+        }
+
+        /**
+         * @param v {@code Status}
+         * @return this builder
+         */
+        public Builder status(String v) {
+            this.status = v;
+            return this;
+        }
+
+        /**
+         * @param v {@code ParentCallSid}
+         * @return this builder
+         */
+        public Builder parentCallSid(String v) {
+            this.parentCallSid = v;
+            return this;
+        }
+
+        /**
+         * @param v {@code StartTime}
+         * @return this builder
+         */
+        public Builder startTime(String v) {
+            this.startTime = v;
+            return this;
+        }
+
+        /**
+         * @param v {@code StartTime<}
+         * @return this builder
+         */
+        public Builder startTimeLt(String v) {
+            this.startTimeLt = v;
+            return this;
+        }
+
+        /**
+         * @param v {@code StartTime>}
+         * @return this builder
+         */
+        public Builder startTimeGt(String v) {
+            this.startTimeGt = v;
+            return this;
+        }
+
+        /**
+         * @param v {@code EndTime}
+         * @return this builder
+         */
+        public Builder endTime(String v) {
+            this.endTime = v;
+            return this;
+        }
+
+        /**
+         * @param v {@code EndTime<}
+         * @return this builder
+         */
+        public Builder endTimeLt(String v) {
+            this.endTimeLt = v;
+            return this;
+        }
+
+        /**
+         * @param v {@code EndTime>}
+         * @return this builder
+         */
+        public Builder endTimeGt(String v) {
+            this.endTimeGt = v;
+            return this;
+        }
+
+        /**
+         * @param v {@code Page}
+         * @return this builder
+         */
+        public Builder page(Integer v) {
+            this.page = v;
+            return this;
+        }
+
+        /**
+         * @param v {@code PageSize}
+         * @return this builder
+         */
+        public Builder pageSize(Integer v) {
+            this.pageSize = v;
+            return this;
+        }
+
+        /**
+         * @param v {@code PageToken}
+         * @return this builder
+         */
+        public Builder pageToken(String v) {
+            this.pageToken = v;
+            return this;
+        }
+
+        /**
+         * @return the request
+         */
         public ListCallsParams build() {
             return new ListCallsParams(this);
         }

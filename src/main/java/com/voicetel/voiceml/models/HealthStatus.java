@@ -10,7 +10,9 @@ import java.util.List;
  * {@code GET /health} response — composite probe.
  *
  * <p>Hard-check failures flip {@link #isOk()} to {@code false} (server returns 503). Soft-check
- * warnings surface in {@link #getWarnings()} only and don't take the host out of rotation.
+ * warnings surface in {@link #getWarnings()} only and don't take the host out of rotation. The
+ * server omits {@code warnings} and {@code failures} when they are empty; the getters then return
+ * empty lists.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class HealthStatus {
@@ -27,7 +29,7 @@ public class HealthStatus {
     public boolean isOk() { return ok; }
     public void setOk(boolean ok) { this.ok = ok; }
     public List<HealthFailure> getWarnings() { return warnings; }
-    public void setWarnings(List<HealthFailure> warnings) { this.warnings = warnings; }
+    public void setWarnings(List<HealthFailure> warnings) { this.warnings = warnings != null ? warnings : new ArrayList<>(); }
     public List<HealthFailure> getFailures() { return failures; }
-    public void setFailures(List<HealthFailure> failures) { this.failures = failures; }
+    public void setFailures(List<HealthFailure> failures) { this.failures = failures != null ? failures : new ArrayList<>(); }
 }

@@ -4,6 +4,7 @@ import com.voicetel.voiceml.Transport;
 import com.voicetel.voiceml.models.CreateSipIpAccessControlListRequest;
 import com.voicetel.voiceml.models.CreateSipIpAddressRequest;
 import com.voicetel.voiceml.models.ListPageParams;
+import com.voicetel.voiceml.models.ListSipParams;
 import com.voicetel.voiceml.models.SipIpAccessControlList;
 import com.voicetel.voiceml.models.SipIpAccessControlListList;
 import com.voicetel.voiceml.models.SipIpAddress;
@@ -22,13 +23,24 @@ public final class SipIpAccessControlListsResource extends BaseResource {
 
     // --- /SIP/IpAccessControlLists CRUD ------------------------------------
 
+    /**
+     * The same list filtered by {@code FriendlyName}.
+     *
+     * @param params {@code FriendlyName} and paging
+     * @return the page
+     */
+    public SipIpAccessControlListList list(ListSipParams params) {
+        Map<String, Object> q = params != null ? params.toQuery() : null;
+        return decode(transport.request("GET", accountPath("SIP", "IpAccessControlLists"), q, null), SipIpAccessControlListList.class);
+    }
+
     public SipIpAccessControlListList list(ListPageParams params) {
         Map<String, Object> q = params != null ? params.toQuery() : null;
         return decode(transport.request("GET", accountPath("SIP", "IpAccessControlLists"), q, null),
                 SipIpAccessControlListList.class);
     }
 
-    public SipIpAccessControlListList list() { return list(null); }
+    public SipIpAccessControlListList list() { return list((ListPageParams) null); }
 
     public SipIpAccessControlList create(CreateSipIpAccessControlListRequest body) {
         Map<String, Object> form = body != null ? body.toForm() : null;
@@ -52,6 +64,18 @@ public final class SipIpAccessControlListsResource extends BaseResource {
     }
 
     // --- /SIP/IpAccessControlLists/{Sid}/IpAddresses sub-resource ----------
+
+    /**
+     * The same list filtered by {@code FriendlyName}.
+     *
+     * @param aclSid the parent SID
+     * @param params {@code FriendlyName} and paging
+     * @return the page
+     */
+    public SipIpAddressList listIpAddresses(String aclSid, ListSipParams params) {
+        Map<String, Object> q = params != null ? params.toQuery() : null;
+        return decode(transport.request("GET", accountPath("SIP", "IpAccessControlLists", aclSid, "IpAddresses"), q, null), SipIpAddressList.class);
+    }
 
     public SipIpAddressList listIpAddresses(String aclSid, ListPageParams params) {
         Map<String, Object> q = params != null ? params.toQuery() : null;

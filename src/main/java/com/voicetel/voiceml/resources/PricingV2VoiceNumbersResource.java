@@ -17,7 +17,7 @@ public final class PricingV2VoiceNumbersResource extends BaseResource {
     }
 
     public PricingVoiceNumberV2 fetch(String destinationNumber, String originationNumber) {
-        String path = "/v2/Voice/Numbers/" + PricingNumberEncoding.encodeSegment(destinationNumber);
+        String path = "/v2/Voice/Numbers/" + seg(destinationNumber);
         Map<String, Object> q = null;
         if (originationNumber != null) {
             q = new LinkedHashMap<>();

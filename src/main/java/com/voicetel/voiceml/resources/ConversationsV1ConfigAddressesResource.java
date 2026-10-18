@@ -23,7 +23,7 @@ public final class ConversationsV1ConfigAddressesResource extends BaseResource {
     }
 
     public ConversationsV1ConfigAddressList list(ListPageParams params) {
-        Map<String, Object> q = params != null ? params.toQuery() : null;
+        Map<String, Object> q = params != null ? params.toPageSizeQuery() : null;
         return decode(transport.request("GET", "/v1/Configuration/Addresses", q, null),
                 ConversationsV1ConfigAddressList.class);
     }
@@ -31,17 +31,17 @@ public final class ConversationsV1ConfigAddressesResource extends BaseResource {
     public ConversationsV1ConfigAddressList list() { return list(null); }
 
     public ConversationsV1ConfigAddress fetch(String sid) {
-        return decode(transport.request("GET", "/v1/Configuration/Addresses/" + sid, null, null),
+        return decode(transport.request("GET", "/v1/Configuration/Addresses/" + seg(sid), null, null),
                 ConversationsV1ConfigAddress.class);
     }
 
     public ConversationsV1ConfigAddress update(String sid, UpdateConversationsV1ConfigAddressRequest body) {
         Map<String, Object> form = body != null ? body.toForm() : null;
-        return decode(transport.request("POST", "/v1/Configuration/Addresses/" + sid, null, form),
+        return decode(transport.request("POST", "/v1/Configuration/Addresses/" + seg(sid), null, form),
                 ConversationsV1ConfigAddress.class);
     }
 
     public void delete(String sid) {
-        transport.request("DELETE", "/v1/Configuration/Addresses/" + sid, null, null);
+        transport.request("DELETE", "/v1/Configuration/Addresses/" + seg(sid), null, null);
     }
 }

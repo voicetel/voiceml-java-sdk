@@ -20,7 +20,7 @@ public final class VoiceV1ConnectionPolicyTargetsResource extends BaseResource {
     }
 
     private String base() {
-        return "/v1/ConnectionPolicies/" + connectionPolicySid + "/Targets";
+        return "/v1/ConnectionPolicies/" + seg(connectionPolicySid) + "/Targets";
     }
 
     public VoiceV1ConnectionPolicyTarget create(CreateVoiceV1ConnectionPolicyTargetRequest body) {
@@ -29,24 +29,24 @@ public final class VoiceV1ConnectionPolicyTargetsResource extends BaseResource {
     }
 
     public VoiceV1ConnectionPolicyTargetList list(ListPageParams params) {
-        Map<String, Object> q = params != null ? params.toQuery() : null;
+        Map<String, Object> q = params != null ? params.toPageSizeQuery() : null;
         return decode(transport.request("GET", base(), q, null), VoiceV1ConnectionPolicyTargetList.class);
     }
 
     public VoiceV1ConnectionPolicyTargetList list() { return list(null); }
 
     public VoiceV1ConnectionPolicyTarget fetch(String sid) {
-        return decode(transport.request("GET", base() + "/" + sid, null, null),
+        return decode(transport.request("GET", base() + "/" + seg(sid), null, null),
                 VoiceV1ConnectionPolicyTarget.class);
     }
 
     public VoiceV1ConnectionPolicyTarget update(String sid, UpdateVoiceV1ConnectionPolicyTargetRequest body) {
         Map<String, Object> form = body != null ? body.toForm() : null;
-        return decode(transport.request("POST", base() + "/" + sid, null, form),
+        return decode(transport.request("POST", base() + "/" + seg(sid), null, form),
                 VoiceV1ConnectionPolicyTarget.class);
     }
 
     public void delete(String sid) {
-        transport.request("DELETE", base() + "/" + sid, null, null);
+        transport.request("DELETE", base() + "/" + seg(sid), null, null);
     }
 }

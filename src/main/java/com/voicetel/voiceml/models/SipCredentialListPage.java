@@ -7,9 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Paginated page of credentials within a CredentialList. Spec name
- * {@code SipCredentialListPage} mirrors Twilio — note: it's a *page of
- * credentials*, not of credential-lists.
+ * Paginated page of credentials within a CredentialList. Despite the spec name
+ * {@code SipCredentialListPage}, it is a page of <em>credentials</em>, not of credential lists.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SipCredentialListPage extends Page {

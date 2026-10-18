@@ -15,7 +15,7 @@ public final class AssistantsV1KnowledgeStatusResource extends BaseResource {
 
     public AssistantsV1KnowledgeStatus fetch() {
         return decode(transport.requestJson("GET",
-                "/v1/Knowledge/" + knowledgeId + "/Status", null, null),
+                "/v1/Knowledge/" + seg(knowledgeId) + "/Status", null, null),
                 AssistantsV1KnowledgeStatus.class);
     }
 }

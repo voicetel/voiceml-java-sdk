@@ -8,7 +8,7 @@ import java.util.List;
 
 /** Paginated {@code /v1/Assistants/{id}/Feedbacks} response. */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class AssistantsV1FeedbackList {
+public class AssistantsV1FeedbackList implements MetaPage {
 
     @JsonProperty("feedbacks")
     private List<AssistantsV1Feedback> feedbacks = new ArrayList<>();

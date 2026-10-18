@@ -22,23 +22,23 @@ public final class ConversationsV1UsersResource extends BaseResource {
     }
 
     public ConversationsV1UserList list(ListPageParams params) {
-        Map<String, Object> q = params != null ? params.toQuery() : null;
+        Map<String, Object> q = params != null ? params.toPageSizeQuery() : null;
         return decode(transport.request("GET", "/v1/Users", q, null), ConversationsV1UserList.class);
     }
 
     public ConversationsV1UserList list() { return list(null); }
 
     public ConversationsV1User fetch(String sid) {
-        return decode(transport.request("GET", "/v1/Users/" + sid, null, null), ConversationsV1User.class);
+        return decode(transport.request("GET", "/v1/Users/" + seg(sid), null, null), ConversationsV1User.class);
     }
 
     public ConversationsV1User update(String sid, UpdateConversationsV1UserRequest body) {
         Map<String, Object> form = body != null ? body.toForm() : null;
-        return decode(transport.request("POST", "/v1/Users/" + sid, null, form), ConversationsV1User.class);
+        return decode(transport.request("POST", "/v1/Users/" + seg(sid), null, form), ConversationsV1User.class);
     }
 
     public void delete(String sid) {
-        transport.request("DELETE", "/v1/Users/" + sid, null, null);
+        transport.request("DELETE", "/v1/Users/" + seg(sid), null, null);
     }
 
     /** Sub-resource handle for {@code /v1/Users/{Sid}/Conversations}. */

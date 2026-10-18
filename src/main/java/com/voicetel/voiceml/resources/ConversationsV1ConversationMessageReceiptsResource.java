@@ -22,11 +22,11 @@ public final class ConversationsV1ConversationMessageReceiptsResource extends Ba
     }
 
     private String base() {
-        return "/v1/Conversations/" + conversationSid + "/Messages/" + messageSid + "/Receipts";
+        return "/v1/Conversations/" + seg(conversationSid) + "/Messages/" + seg(messageSid) + "/Receipts";
     }
 
     public ConversationsV1ConversationMessageReceiptList list(ListPageParams params) {
-        Map<String, Object> q = params != null ? params.toQuery() : null;
+        Map<String, Object> q = params != null ? params.toPageSizeQuery() : null;
         return decode(transport.request("GET", base(), q, null),
                 ConversationsV1ConversationMessageReceiptList.class);
     }
@@ -34,7 +34,7 @@ public final class ConversationsV1ConversationMessageReceiptsResource extends Ba
     public ConversationsV1ConversationMessageReceiptList list() { return list(null); }
 
     public ConversationsV1ConversationMessageReceipt fetch(String sid) {
-        return decode(transport.request("GET", base() + "/" + sid, null, null),
+        return decode(transport.request("GET", base() + "/" + seg(sid), null, null),
                 ConversationsV1ConversationMessageReceipt.class);
     }
 }

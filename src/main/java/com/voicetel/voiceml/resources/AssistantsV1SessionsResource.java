@@ -15,7 +15,7 @@ public final class AssistantsV1SessionsResource extends BaseResource {
     }
 
     public AssistantsV1SessionList list(ListPageParams params) {
-        Map<String, Object> q = params != null ? params.toQuery() : null;
+        Map<String, Object> q = params != null ? params.toPageSizeQuery() : null;
         return decode(transport.requestJson("GET", "/v1/Sessions", q, null),
                 AssistantsV1SessionList.class);
     }
@@ -23,7 +23,7 @@ public final class AssistantsV1SessionsResource extends BaseResource {
     public AssistantsV1SessionList list() { return list(null); }
 
     public AssistantsV1Session fetch(String sessionId) {
-        return decode(transport.requestJson("GET", "/v1/Sessions/" + sessionId, null, null),
+        return decode(transport.requestJson("GET", "/v1/Sessions/" + seg(sessionId), null, null),
                 AssistantsV1Session.class);
     }
 }

@@ -57,7 +57,7 @@ class RoutesV2Test {
         server.createContext(path, exchange -> {
             byte[] reqBody = exchange.getRequestBody().readAllBytes();
             recordedMethods.addLast(exchange.getRequestMethod());
-            recordedPaths.addLast(exchange.getRequestURI().getPath());
+            recordedPaths.addLast(exchange.getRequestURI().getRawPath());
             recordedBodies.addLast(new String(reqBody, StandardCharsets.UTF_8));
             byte[] payload = body.getBytes(StandardCharsets.UTF_8);
             exchange.getResponseHeaders().set("Content-Type", "application/json");

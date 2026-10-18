@@ -13,9 +13,6 @@ public class QueueMember {
     @JsonProperty("queue_sid")
     private String queueSid;
 
-    @JsonProperty("account_sid")
-    private String accountSid;
-
     @JsonProperty("date_enqueued")
     private String dateEnqueued;
 
@@ -32,8 +29,6 @@ public class QueueMember {
     public void setCallSid(String callSid) { this.callSid = callSid; }
     public String getQueueSid() { return queueSid; }
     public void setQueueSid(String queueSid) { this.queueSid = queueSid; }
-    public String getAccountSid() { return accountSid; }
-    public void setAccountSid(String accountSid) { this.accountSid = accountSid; }
     public String getDateEnqueued() { return dateEnqueued; }
     public void setDateEnqueued(String dateEnqueued) { this.dateEnqueued = dateEnqueued; }
     public Integer getWaitTime() { return waitTime; }

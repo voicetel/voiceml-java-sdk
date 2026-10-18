@@ -3,10 +3,7 @@ package com.voicetel.voiceml.models;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/**
- * Shared form body for {@code POST /Applications} (create) and {@code POST /Applications/{sid}}
- * (update). All fields optional — updates are partial.
- */
+/** Form body for {@code POST /Applications} and {@code POST /Applications/{Sid}}. */
 public final class ApplicationBody {
 
     private final String friendlyName;
@@ -18,6 +15,8 @@ public final class ApplicationBody {
     private final String statusCallback;
     private final String statusCallbackMethod;
     private final String statusCallbackEvent;
+    private final String messageStatusCallback;
+    private final String smsStatusCallback;
 
     private ApplicationBody(Builder b) {
         this.friendlyName = b.friendlyName;
@@ -29,26 +28,88 @@ public final class ApplicationBody {
         this.statusCallback = b.statusCallback;
         this.statusCallbackMethod = b.statusCallbackMethod;
         this.statusCallbackEvent = b.statusCallbackEvent;
+        this.messageStatusCallback = b.messageStatusCallback;
+        this.smsStatusCallback = b.smsStatusCallback;
     }
 
+    /** @return the form fields, keyed by wire name; unset values are omitted */
     public Map<String, Object> toForm() {
-        Map<String, Object> form = new LinkedHashMap<>();
-        if (friendlyName != null) form.put("FriendlyName", friendlyName);
-        if (voiceUrl != null) form.put("VoiceUrl", voiceUrl);
-        if (voiceMethod != null) form.put("VoiceMethod", voiceMethod);
-        if (voiceFallbackUrl != null) form.put("VoiceFallbackUrl", voiceFallbackUrl);
-        if (voiceFallbackMethod != null) form.put("VoiceFallbackMethod", voiceFallbackMethod);
-        if (voiceCallerIdLookup != null) form.put("VoiceCallerIdLookup", voiceCallerIdLookup);
-        if (statusCallback != null) form.put("StatusCallback", statusCallback);
-        if (statusCallbackMethod != null) form.put("StatusCallbackMethod", statusCallbackMethod);
-        if (statusCallbackEvent != null) form.put("StatusCallbackEvent", statusCallbackEvent);
-        return form;
+        Map<String, Object> m = new LinkedHashMap<>();
+        if (friendlyName != null) m.put("FriendlyName", friendlyName);
+        if (voiceUrl != null) m.put("VoiceUrl", voiceUrl);
+        if (voiceMethod != null) m.put("VoiceMethod", voiceMethod);
+        if (voiceFallbackUrl != null) m.put("VoiceFallbackUrl", voiceFallbackUrl);
+        if (voiceFallbackMethod != null) m.put("VoiceFallbackMethod", voiceFallbackMethod);
+        if (voiceCallerIdLookup != null) m.put("VoiceCallerIdLookup", voiceCallerIdLookup);
+        if (statusCallback != null) m.put("StatusCallback", statusCallback);
+        if (statusCallbackMethod != null) m.put("StatusCallbackMethod", statusCallbackMethod);
+        if (statusCallbackEvent != null) m.put("StatusCallbackEvent", statusCallbackEvent);
+        if (messageStatusCallback != null) m.put("MessageStatusCallback", messageStatusCallback);
+        if (smsStatusCallback != null) m.put("SmsStatusCallback", smsStatusCallback);
+        return m;
     }
 
+    /** @return the {@code FriendlyName} value, or {@code null} when unset */
+    public String getFriendlyName() {
+        return friendlyName;
+    }
+
+    /** @return the {@code VoiceUrl} value, or {@code null} when unset */
+    public String getVoiceUrl() {
+        return voiceUrl;
+    }
+
+    /** @return the {@code VoiceMethod} value, or {@code null} when unset */
+    public String getVoiceMethod() {
+        return voiceMethod;
+    }
+
+    /** @return the {@code VoiceFallbackUrl} value, or {@code null} when unset */
+    public String getVoiceFallbackUrl() {
+        return voiceFallbackUrl;
+    }
+
+    /** @return the {@code VoiceFallbackMethod} value, or {@code null} when unset */
+    public String getVoiceFallbackMethod() {
+        return voiceFallbackMethod;
+    }
+
+    /** @return the {@code VoiceCallerIdLookup} value, or {@code null} when unset */
+    public Boolean getVoiceCallerIdLookup() {
+        return voiceCallerIdLookup;
+    }
+
+    /** @return the {@code StatusCallback} value, or {@code null} when unset */
+    public String getStatusCallback() {
+        return statusCallback;
+    }
+
+    /** @return the {@code StatusCallbackMethod} value, or {@code null} when unset */
+    public String getStatusCallbackMethod() {
+        return statusCallbackMethod;
+    }
+
+    /** @return the {@code StatusCallbackEvent} value, or {@code null} when unset */
+    public String getStatusCallbackEvent() {
+        return statusCallbackEvent;
+    }
+
+    /** @return the {@code MessageStatusCallback} value, or {@code null} when unset */
+    public String getMessageStatusCallback() {
+        return messageStatusCallback;
+    }
+
+    /** @return the {@code SmsStatusCallback} value, or {@code null} when unset */
+    public String getSmsStatusCallback() {
+        return smsStatusCallback;
+    }
+
+    /** @return a new builder */
     public static Builder builder() {
         return new Builder();
     }
 
+    /** Builder for {@link ApplicationBody}. */
     public static final class Builder {
         private String friendlyName;
         private String voiceUrl;
@@ -59,17 +120,116 @@ public final class ApplicationBody {
         private String statusCallback;
         private String statusCallbackMethod;
         private String statusCallbackEvent;
+        private String messageStatusCallback;
+        private String smsStatusCallback;
 
-        public Builder friendlyName(String s) { this.friendlyName = s; return this; }
-        public Builder voiceUrl(String s) { this.voiceUrl = s; return this; }
-        public Builder voiceMethod(String s) { this.voiceMethod = s; return this; }
-        public Builder voiceFallbackUrl(String s) { this.voiceFallbackUrl = s; return this; }
-        public Builder voiceFallbackMethod(String s) { this.voiceFallbackMethod = s; return this; }
-        public Builder voiceCallerIdLookup(Boolean v) { this.voiceCallerIdLookup = v; return this; }
-        public Builder statusCallback(String s) { this.statusCallback = s; return this; }
-        public Builder statusCallbackMethod(String s) { this.statusCallbackMethod = s; return this; }
-        public Builder statusCallbackEvent(String s) { this.statusCallbackEvent = s; return this; }
+        /** Create an empty builder; prefer {@link ApplicationBody#builder()}. */
+        public Builder() {
+            // all fields start unset
+        }
 
+        /**
+         * @param v {@code FriendlyName}
+         * @return this builder
+         */
+        public Builder friendlyName(String v) {
+            this.friendlyName = v;
+            return this;
+        }
+
+        /**
+         * @param v {@code VoiceUrl}
+         * @return this builder
+         */
+        public Builder voiceUrl(String v) {
+            this.voiceUrl = v;
+            return this;
+        }
+
+        /**
+         * @param v {@code VoiceMethod}: one of {@code GET}, {@code POST}
+         * @return this builder
+         */
+        public Builder voiceMethod(String v) {
+            this.voiceMethod = v;
+            return this;
+        }
+
+        /**
+         * @param v {@code VoiceFallbackUrl}
+         * @return this builder
+         */
+        public Builder voiceFallbackUrl(String v) {
+            this.voiceFallbackUrl = v;
+            return this;
+        }
+
+        /**
+         * @param v {@code VoiceFallbackMethod}: one of {@code GET}, {@code POST}
+         * @return this builder
+         */
+        public Builder voiceFallbackMethod(String v) {
+            this.voiceFallbackMethod = v;
+            return this;
+        }
+
+        /**
+         * @param v {@code VoiceCallerIdLookup}
+         * @return this builder
+         */
+        public Builder voiceCallerIdLookup(Boolean v) {
+            this.voiceCallerIdLookup = v;
+            return this;
+        }
+
+        /**
+         * @param v {@code StatusCallback}
+         * @return this builder
+         */
+        public Builder statusCallback(String v) {
+            this.statusCallback = v;
+            return this;
+        }
+
+        /**
+         * @param v {@code StatusCallbackMethod}: one of {@code GET}, {@code POST}
+         * @return this builder
+         */
+        public Builder statusCallbackMethod(String v) {
+            this.statusCallbackMethod = v;
+            return this;
+        }
+
+        /**
+         * @param v {@code StatusCallbackEvent}
+         * @return this builder
+         */
+        public Builder statusCallbackEvent(String v) {
+            this.statusCallbackEvent = v;
+            return this;
+        }
+
+        /**
+         * @param v {@code MessageStatusCallback}
+         * @return this builder
+         */
+        public Builder messageStatusCallback(String v) {
+            this.messageStatusCallback = v;
+            return this;
+        }
+
+        /**
+         * @param v {@code SmsStatusCallback}
+         * @return this builder
+         */
+        public Builder smsStatusCallback(String v) {
+            this.smsStatusCallback = v;
+            return this;
+        }
+
+        /**
+         * @return the request
+         */
         public ApplicationBody build() {
             return new ApplicationBody(this);
         }

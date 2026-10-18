@@ -8,7 +8,7 @@ import java.util.Map;
  * Form body for {@code POST /Calls}.
  *
  * <p>Set at most one of {@code url} / {@code twiml} / {@code applicationSid} — TwiML wins
- * server-side when multiple are set (Twilio's documented precedence).
+ * server-side when multiple are set (Twilio-compatible precedence).
  *
  * <p>Build via {@link #builder()}. Only fields the caller explicitly sets are emitted on the wire
  * — the form encoder skips {@code null} values.

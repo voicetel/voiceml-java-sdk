@@ -33,17 +33,17 @@ public final class AssistantsV1ToolsResource extends BaseResource {
 
     /** Returns the Tool inlined with its attached {@code policies}. */
     public AssistantsV1ToolWithPolicies fetch(String toolId) {
-        return decode(transport.requestJson("GET", "/v1/Tools/" + toolId, null, null),
+        return decode(transport.requestJson("GET", "/v1/Tools/" + seg(toolId), null, null),
                 AssistantsV1ToolWithPolicies.class);
     }
 
     public AssistantsV1Tool update(String toolId, UpdateAssistantsV1ToolRequest body) {
         Map<String, Object> json = body != null ? body.toJsonBody() : null;
-        return decode(transport.requestJson("PUT", "/v1/Tools/" + toolId, null, json),
+        return decode(transport.requestJson("PUT", "/v1/Tools/" + seg(toolId), null, json),
                 AssistantsV1Tool.class);
     }
 
     public void delete(String toolId) {
-        transport.requestJson("DELETE", "/v1/Tools/" + toolId, null, null);
+        transport.requestJson("DELETE", "/v1/Tools/" + seg(toolId), null, null);
     }
 }
