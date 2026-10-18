@@ -2,7 +2,7 @@
 
 The official Java client for the [VoiceML REST API](https://voicetel.com/docs/api/v0.9/voiceml/), VoiceTel's Twilio-compatible voice and messaging API, with typed Jackson models on the standard `java.net.http` transport.
 
-![Version](https://img.shields.io/badge/version-0.9.2-blue)
+![Version](https://img.shields.io/badge/version-0.9.3-blue)
 ![Java](https://img.shields.io/badge/java-11%2B-blue)
 ![License](https://img.shields.io/badge/license-MIT%20%2B%20Commons%20Clause-green)
 [![CI](https://github.com/voicetel/voiceml-java-sdk/actions/workflows/ci.yml/badge.svg)](https://github.com/voicetel/voiceml-java-sdk/actions/workflows/ci.yml)

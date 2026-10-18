@@ -27,17 +27,17 @@ class RequestValidatorTest {
     @Test
     void v1PostVector() {
         String url = "https://example.com/voice/answer?case=1";
-        assertThat(validator.computeSignature(url, v1Params())).isEqualTo("pk/0TPPT+p98NEZykeWQLqRXyGU=");
-        assertThat(validator.validate(url, v1Params(), "pk/0TPPT+p98NEZykeWQLqRXyGU=")).isTrue();
+        assertThat(validator.computeSignature(url, v1Params())).isEqualTo("RweoLyWqNC7H8+MLXPb7EPz18OI=");
+        assertThat(validator.validate(url, v1Params(), "RweoLyWqNC7H8+MLXPb7EPz18OI=")).isTrue();
     }
 
     @Test
     void v1DefaultPortIsNormalisedBothWays() {
         String withPort = "https://example.com:443/voice/answer?case=1";
         String without = "https://example.com/voice/answer?case=1";
-        assertThat(validator.validate(withPort, v1Params(), "pk/0TPPT+p98NEZykeWQLqRXyGU=")).isTrue();
-        assertThat(validator.computeSignature(withPort, v1Params())).isEqualTo("/Bw0s+u5vlGd6zLAOTz/eMg33pk=");
-        assertThat(validator.validate(without, v1Params(), "/Bw0s+u5vlGd6zLAOTz/eMg33pk=")).isTrue();
+        assertThat(validator.validate(withPort, v1Params(), "RweoLyWqNC7H8+MLXPb7EPz18OI=")).isTrue();
+        assertThat(validator.computeSignature(withPort, v1Params())).isEqualTo("xE0r2wPa6d1ktQeCFpPyINmTNYg=");
+        assertThat(validator.validate(without, v1Params(), "xE0r2wPa6d1ktQeCFpPyINmTNYg=")).isTrue();
     }
 
     @Test
@@ -67,12 +67,12 @@ class RequestValidatorTest {
         String url = "https://example.com/voice/answer?case=1";
         Map<String, List<String>> tampered = v1Params();
         tampered.put("Digits", List.of("9999"));
-        assertThat(validator.validate(url, tampered, "pk/0TPPT+p98NEZykeWQLqRXyGU=")).isFalse();
-        assertThat(new RequestValidator("wrong-key").validate(url, v1Params(), "pk/0TPPT+p98NEZykeWQLqRXyGU=")).isFalse();
+        assertThat(validator.validate(url, tampered, "RweoLyWqNC7H8+MLXPb7EPz18OI=")).isFalse();
+        assertThat(new RequestValidator("wrong-key").validate(url, v1Params(), "RweoLyWqNC7H8+MLXPb7EPz18OI=")).isFalse();
         assertThat(validator.validate(url, v1Params(), "")).isFalse();
         assertThat(validator.validate(url, v1Params(), null)).isFalse();
         assertThat(validator.validate("https://example.com:8443/voice/answer?case=1", v1Params(),
-                "pk/0TPPT+p98NEZykeWQLqRXyGU=")).isFalse();
+                "RweoLyWqNC7H8+MLXPb7EPz18OI=")).isFalse();
     }
 
     @Test
@@ -80,7 +80,7 @@ class RequestValidatorTest {
         Map<String, String> p = new LinkedHashMap<>();
         v1Params().forEach((k, v) -> p.put(k, v.get(0)));
         assertThat(validator.computeSignatureSingle("https://example.com/voice/answer?case=1", p))
-                .isEqualTo("pk/0TPPT+p98NEZykeWQLqRXyGU=");
+                .isEqualTo("RweoLyWqNC7H8+MLXPb7EPz18OI=");
     }
 
     @Test

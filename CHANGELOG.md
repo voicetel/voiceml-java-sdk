@@ -5,7 +5,7 @@ format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); version
 [Semantic Versioning](https://semver.org/). Earlier releases are described on the
 [GitHub Releases](https://github.com/voicetel/voiceml-java-sdk/releases) page.
 
-## [Unreleased]
+## [0.9.3] - 2026-10-18
 
 ### Breaking changes
 
