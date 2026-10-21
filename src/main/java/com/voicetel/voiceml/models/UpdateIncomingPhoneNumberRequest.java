@@ -15,6 +15,9 @@ public final class UpdateIncomingPhoneNumberRequest {
     private final String smsFallbackUrl;
     private final String smsFallbackMethod;
     private final String smsApplicationSid;
+    private final String voiceApplicationSid;
+    private final String statusCallback;
+    private final String statusCallbackMethod;
 
     private UpdateIncomingPhoneNumberRequest(Builder b) {
         this.voiceUrl = b.voiceUrl;
@@ -26,6 +29,9 @@ public final class UpdateIncomingPhoneNumberRequest {
         this.smsFallbackUrl = b.smsFallbackUrl;
         this.smsFallbackMethod = b.smsFallbackMethod;
         this.smsApplicationSid = b.smsApplicationSid;
+        this.voiceApplicationSid = b.voiceApplicationSid;
+        this.statusCallback = b.statusCallback;
+        this.statusCallbackMethod = b.statusCallbackMethod;
     }
 
     /** @return the form fields, keyed by wire name; unset values are omitted */
@@ -40,6 +46,9 @@ public final class UpdateIncomingPhoneNumberRequest {
         if (smsFallbackUrl != null) m.put("SmsFallbackUrl", smsFallbackUrl);
         if (smsFallbackMethod != null) m.put("SmsFallbackMethod", smsFallbackMethod);
         if (smsApplicationSid != null) m.put("SmsApplicationSid", smsApplicationSid);
+        if (voiceApplicationSid != null) m.put("VoiceApplicationSid", voiceApplicationSid);
+        if (statusCallback != null) m.put("StatusCallback", statusCallback);
+        if (statusCallbackMethod != null) m.put("StatusCallbackMethod", statusCallbackMethod);
         return m;
     }
 
@@ -88,6 +97,21 @@ public final class UpdateIncomingPhoneNumberRequest {
         return smsApplicationSid;
     }
 
+    /** @return the {@code VoiceApplicationSid} value, or {@code null} when unset */
+    public String getVoiceApplicationSid() {
+        return voiceApplicationSid;
+    }
+
+    /** @return the {@code StatusCallback} value, or {@code null} when unset */
+    public String getStatusCallback() {
+        return statusCallback;
+    }
+
+    /** @return the {@code StatusCallbackMethod} value, or {@code null} when unset */
+    public String getStatusCallbackMethod() {
+        return statusCallbackMethod;
+    }
+
     /** @return a new builder */
     public static Builder builder() {
         return new Builder();
@@ -104,6 +128,9 @@ public final class UpdateIncomingPhoneNumberRequest {
         private String smsFallbackUrl;
         private String smsFallbackMethod;
         private String smsApplicationSid;
+        private String voiceApplicationSid;
+        private String statusCallback;
+        private String statusCallbackMethod;
 
         /** Create an empty builder; prefer {@link UpdateIncomingPhoneNumberRequest#builder()}. */
         public Builder() {
@@ -188,6 +215,34 @@ public final class UpdateIncomingPhoneNumberRequest {
          */
         public Builder smsApplicationSid(String v) {
             this.smsApplicationSid = v;
+            return this;
+        }
+
+        /**
+         * @param v {@code VoiceApplicationSid}: an {@code AP} + 32 hex Application sid that
+         *     routes inbound voice calls to the Application
+         * @return this builder
+         */
+        public Builder voiceApplicationSid(String v) {
+            this.voiceApplicationSid = v;
+            return this;
+        }
+
+        /**
+         * @param v {@code StatusCallback}: number-level lifecycle webhook URL for inbound calls
+         * @return this builder
+         */
+        public Builder statusCallback(String v) {
+            this.statusCallback = v;
+            return this;
+        }
+
+        /**
+         * @param v {@code StatusCallbackMethod}: one of {@code GET}, {@code POST}
+         * @return this builder
+         */
+        public Builder statusCallbackMethod(String v) {
+            this.statusCallbackMethod = v;
             return this;
         }
 

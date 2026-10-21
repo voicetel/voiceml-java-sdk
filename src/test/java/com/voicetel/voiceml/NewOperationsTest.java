@@ -79,7 +79,9 @@ class NewOperationsTest {
                     .phoneNumber("+14155550100").voiceUrl("https://example.com/voice")
                     .smsUrl("https://example.com/sms").smsMethod("POST")
                     .smsFallbackUrl("https://example.com/fb").smsFallbackMethod("GET")
-                    .smsApplicationSid("AP0123456789abcdef0123456789abcdef").build());
+                    .smsApplicationSid("AP0123456789abcdef0123456789abcdef")
+                    .voiceApplicationSid("APfedcba9876543210fedcba9876543210")
+                    .statusCallback("https://example.com/sc").statusCallbackMethod("GET").build());
             c.incomingPhoneNumbers().createLocal(CreateTypedIncomingPhoneNumberRequest.builder()
                     .phoneNumber("+14155550100").voiceUrl("https://example.com/voice").voiceMethod("POST").build());
             c.incomingPhoneNumbers().list(ListIncomingPhoneNumbersParams.builder()
@@ -87,7 +89,9 @@ class NewOperationsTest {
             assertThat(mock.requests.get(0).body).isEqualTo("PhoneNumber=%2B14155550100"
                     + "&VoiceUrl=https%3A%2F%2Fexample.com%2Fvoice&SmsUrl=https%3A%2F%2Fexample.com%2Fsms&SmsMethod=POST"
                     + "&SmsFallbackUrl=https%3A%2F%2Fexample.com%2Ffb&SmsFallbackMethod=GET"
-                    + "&SmsApplicationSid=AP0123456789abcdef0123456789abcdef");
+                    + "&SmsApplicationSid=AP0123456789abcdef0123456789abcdef"
+                    + "&VoiceApplicationSid=APfedcba9876543210fedcba9876543210"
+                    + "&StatusCallback=https%3A%2F%2Fexample.com%2Fsc&StatusCallbackMethod=GET");
             assertThat(mock.requests.get(1).rawPath).isEqualTo(A + "/IncomingPhoneNumbers/Local.json");
             assertThat(mock.requests.get(1).body)
                     .isEqualTo("PhoneNumber=%2B14155550100&VoiceUrl=https%3A%2F%2Fexample.com%2Fvoice&VoiceMethod=POST");
@@ -138,7 +142,8 @@ class NewOperationsTest {
             mock.respond(200, "{\"phone_number\":\"+14155550100\",\"validation_code\":\"123456\"}");
             VoicemlClient c = mock.client(0);
             ValidationRequest v = c.outgoingCallerIds().create(CreateOutgoingCallerIdRequest.builder()
-                    .phoneNumber("+14155550100").friendlyName("desk").build());
+                    .phoneNumber("+14155550100").friendlyName("desk").callDelay(5).extension("123")
+                    .statusCallback("https://example.com/vc").statusCallbackMethod("POST").build());
             c.outgoingCallerIds().update("PN1", UpdateOutgoingCallerIdRequest.builder().friendlyName("desk 2").build());
             c.outgoingCallerIds().delete("PN1");
             c.messages().fetchMedia("MM1", "ME1");
@@ -154,7 +159,9 @@ class NewOperationsTest {
                     "DELETE " + A + "/Messages/MM1/Media/ME1.json",
                     "GET " + A + "/Transcriptions/TR1.json",
                     "DELETE " + A + "/Recordings/RE1/Transcriptions/TR1.json");
-            assertThat(mock.requests.get(0).body).isEqualTo("PhoneNumber=%2B14155550100&FriendlyName=desk");
+            assertThat(mock.requests.get(0).body).isEqualTo("PhoneNumber=%2B14155550100&FriendlyName=desk"
+                    + "&CallDelay=5&Extension=123"
+                    + "&StatusCallback=https%3A%2F%2Fexample.com%2Fvc&StatusCallbackMethod=POST");
         }
     }
 

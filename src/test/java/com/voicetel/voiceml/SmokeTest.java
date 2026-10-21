@@ -414,6 +414,9 @@ class SmokeTest {
                         .phoneNumber("+14155550100")
                         .voiceUrl("https://example.com/twiml")
                         .voiceMethod("POST")
+                        .voiceApplicationSid("AP0123456789abcdef0123456789abcdef")
+                        .statusCallback("https://example.com/inbound")
+                        .statusCallbackMethod("GET")
                         .build());
 
         assertThat(ipn.getSid()).matches("PN[a-f0-9]{32}");
@@ -422,7 +425,9 @@ class SmokeTest {
         assertThat(r.method).isEqualTo("POST");
         assertThat(r.path).isEqualTo("/2010-04-01/Accounts/ACtest/IncomingPhoneNumbers.json");
         assertThat(r.contentType).isEqualTo("application/x-www-form-urlencoded");
-        WireAssert.exactPairs(r.body, "PhoneNumber=%2B14155550100", "VoiceUrl=https%3A%2F%2Fexample.com%2Ftwiml", "VoiceMethod=POST");
+        WireAssert.exactPairs(r.body, "PhoneNumber=%2B14155550100", "VoiceUrl=https%3A%2F%2Fexample.com%2Ftwiml", "VoiceMethod=POST",
+                "VoiceApplicationSid=AP0123456789abcdef0123456789abcdef",
+                "StatusCallback=https%3A%2F%2Fexample.com%2Finbound", "StatusCallbackMethod=GET");
     }
 
     @Test
@@ -457,6 +462,9 @@ class SmokeTest {
                 UpdateIncomingPhoneNumberRequest.builder()
                         .voiceUrl("https://example.com/new")
                         .voiceMethod("POST")
+                        .voiceApplicationSid("AP0123456789abcdef0123456789abcdef")
+                        .statusCallback("https://example.com/inbound")
+                        .statusCallbackMethod("GET")
                         .build());
 
         assertThat(ipn.getVoiceUrl()).isEqualTo("https://example.com/new");
@@ -465,7 +473,9 @@ class SmokeTest {
         assertThat(r.method).isEqualTo("POST");
         assertThat(r.path)
                 .isEqualTo("/2010-04-01/Accounts/ACtest/IncomingPhoneNumbers/" + sid + ".json");
-        WireAssert.exactPairs(r.body, "VoiceUrl=https%3A%2F%2Fexample.com%2Fnew", "VoiceMethod=POST");
+        WireAssert.exactPairs(r.body, "VoiceUrl=https%3A%2F%2Fexample.com%2Fnew", "VoiceMethod=POST",
+                "VoiceApplicationSid=AP0123456789abcdef0123456789abcdef",
+                "StatusCallback=https%3A%2F%2Fexample.com%2Finbound", "StatusCallbackMethod=GET");
     }
 
     @Test
