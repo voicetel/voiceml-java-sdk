@@ -2,7 +2,7 @@
 
 The official Java client for the [VoiceML REST API](https://voicetel.com/docs/api/v0.9/voiceml/), VoiceTel's Twilio-compatible voice and messaging API, with typed Jackson models on the standard `java.net.http` transport.
 
-![Version](https://img.shields.io/badge/version-0.9.3-blue)
+![Version](https://img.shields.io/badge/version-0.9.4-blue)
 ![Java](https://img.shields.io/badge/java-11%2B-blue)
 ![License](https://img.shields.io/badge/license-MIT%20%2B%20Commons%20Clause-green)
 [![CI](https://github.com/voicetel/voiceml-java-sdk/actions/workflows/ci.yml/badge.svg)](https://github.com/voicetel/voiceml-java-sdk/actions/workflows/ci.yml)
@@ -45,23 +45,23 @@ The official Java client for the [VoiceML REST API](https://voicetel.com/docs/ap
 <dependency>
   <groupId>com.voicetel</groupId>
   <artifactId>voiceml</artifactId>
-  <version>0.9.2</version>
+  <version>0.9.4</version>
 </dependency>
 ```
 
 ### Gradle (Groovy DSL)
 
 ```groovy
-implementation 'com.voicetel:voiceml:0.9.2'
+implementation 'com.voicetel:voiceml:0.9.4'
 ```
 
 ### Gradle (Kotlin DSL)
 
 ```kotlin
-implementation("com.voicetel:voiceml:0.9.2")
+implementation("com.voicetel:voiceml:0.9.4")
 ```
 
-Requires Java 11 or later. The latest release on Maven Central is 0.9.2. This README documents the `main` branch; its changes since 0.9.2, including the breaking ones, are listed under **Unreleased** in [CHANGELOG.md](CHANGELOG.md).
+Requires Java 11 or later. The latest release on Maven Central is 0.9.4. This README documents the `main` branch; its changes since 0.9.4, including the breaking ones, are listed under **Unreleased** in [CHANGELOG.md](CHANGELOG.md).
 
 ## 🏁 Quickstart
 
