@@ -17,6 +17,11 @@ public final class ApplicationBody {
     private final String statusCallbackEvent;
     private final String messageStatusCallback;
     private final String smsStatusCallback;
+    private final String smsUrl;
+    private final String smsMethod;
+    private final String smsFallbackUrl;
+    private final String smsFallbackMethod;
+    private final Boolean publicApplicationConnectEnabled;
 
     private ApplicationBody(Builder b) {
         this.friendlyName = b.friendlyName;
@@ -30,6 +35,11 @@ public final class ApplicationBody {
         this.statusCallbackEvent = b.statusCallbackEvent;
         this.messageStatusCallback = b.messageStatusCallback;
         this.smsStatusCallback = b.smsStatusCallback;
+        this.smsUrl = b.smsUrl;
+        this.smsMethod = b.smsMethod;
+        this.smsFallbackUrl = b.smsFallbackUrl;
+        this.smsFallbackMethod = b.smsFallbackMethod;
+        this.publicApplicationConnectEnabled = b.publicApplicationConnectEnabled;
     }
 
     /** @return the form fields, keyed by wire name; unset values are omitted */
@@ -46,6 +56,11 @@ public final class ApplicationBody {
         if (statusCallbackEvent != null) m.put("StatusCallbackEvent", statusCallbackEvent);
         if (messageStatusCallback != null) m.put("MessageStatusCallback", messageStatusCallback);
         if (smsStatusCallback != null) m.put("SmsStatusCallback", smsStatusCallback);
+        if (smsUrl != null) m.put("SmsUrl", smsUrl);
+        if (smsMethod != null) m.put("SmsMethod", smsMethod);
+        if (smsFallbackUrl != null) m.put("SmsFallbackUrl", smsFallbackUrl);
+        if (smsFallbackMethod != null) m.put("SmsFallbackMethod", smsFallbackMethod);
+        if (publicApplicationConnectEnabled != null) m.put("PublicApplicationConnectEnabled", publicApplicationConnectEnabled);
         return m;
     }
 
@@ -104,6 +119,31 @@ public final class ApplicationBody {
         return smsStatusCallback;
     }
 
+    /** @return the {@code SmsUrl} value, or {@code null} when unset */
+    public String getSmsUrl() {
+        return smsUrl;
+    }
+
+    /** @return the {@code SmsMethod} value, or {@code null} when unset */
+    public String getSmsMethod() {
+        return smsMethod;
+    }
+
+    /** @return the {@code SmsFallbackUrl} value, or {@code null} when unset */
+    public String getSmsFallbackUrl() {
+        return smsFallbackUrl;
+    }
+
+    /** @return the {@code SmsFallbackMethod} value, or {@code null} when unset */
+    public String getSmsFallbackMethod() {
+        return smsFallbackMethod;
+    }
+
+    /** @return the {@code PublicApplicationConnectEnabled} value, or {@code null} when unset */
+    public Boolean getPublicApplicationConnectEnabled() {
+        return publicApplicationConnectEnabled;
+    }
+
     /** @return a new builder */
     public static Builder builder() {
         return new Builder();
@@ -122,6 +162,11 @@ public final class ApplicationBody {
         private String statusCallbackEvent;
         private String messageStatusCallback;
         private String smsStatusCallback;
+        private String smsUrl;
+        private String smsMethod;
+        private String smsFallbackUrl;
+        private String smsFallbackMethod;
+        private Boolean publicApplicationConnectEnabled;
 
         /** Create an empty builder; prefer {@link ApplicationBody#builder()}. */
         public Builder() {
@@ -224,6 +269,52 @@ public final class ApplicationBody {
          */
         public Builder smsStatusCallback(String v) {
             this.smsStatusCallback = v;
+            return this;
+        }
+
+        /**
+         * @param v {@code SmsUrl}: inbound-SMS webhook URL for the Application
+         * @return this builder
+         */
+        public Builder smsUrl(String v) {
+            this.smsUrl = v;
+            return this;
+        }
+
+        /**
+         * @param v {@code SmsMethod}: one of {@code GET}, {@code POST}
+         * @return this builder
+         */
+        public Builder smsMethod(String v) {
+            this.smsMethod = v;
+            return this;
+        }
+
+        /**
+         * @param v {@code SmsFallbackUrl}: called when requesting or executing the TwiML at
+         *     {@code SmsUrl} fails
+         * @return this builder
+         */
+        public Builder smsFallbackUrl(String v) {
+            this.smsFallbackUrl = v;
+            return this;
+        }
+
+        /**
+         * @param v {@code SmsFallbackMethod}: one of {@code GET}, {@code POST}
+         * @return this builder
+         */
+        public Builder smsFallbackMethod(String v) {
+            this.smsFallbackMethod = v;
+            return this;
+        }
+
+        /**
+         * @param v {@code PublicApplicationConnectEnabled}
+         * @return this builder
+         */
+        public Builder publicApplicationConnectEnabled(Boolean v) {
+            this.publicApplicationConnectEnabled = v;
             return this;
         }
 

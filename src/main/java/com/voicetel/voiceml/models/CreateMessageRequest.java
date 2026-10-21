@@ -2,6 +2,8 @@ package com.voicetel.voiceml.models;
 
 import com.voicetel.voiceml.exceptions.ValidationException;
 
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +25,8 @@ public final class CreateMessageRequest {
     private final Integer validityPeriod;
     private final String statusCallback;
     private final String statusCallbackMethod;
+    private final String sendAt;
+    private final String scheduleType;
 
     private CreateMessageRequest(Builder b) {
         this.to = b.to;
@@ -33,6 +37,8 @@ public final class CreateMessageRequest {
         this.validityPeriod = b.validityPeriod;
         this.statusCallback = b.statusCallback;
         this.statusCallbackMethod = b.statusCallbackMethod;
+        this.sendAt = b.sendAt;
+        this.scheduleType = b.scheduleType;
     }
 
     /** @return the form fields, keyed by wire name; unset values are omitted */
@@ -46,6 +52,8 @@ public final class CreateMessageRequest {
         if (validityPeriod != null) m.put("ValidityPeriod", validityPeriod);
         if (statusCallback != null) m.put("StatusCallback", statusCallback);
         if (statusCallbackMethod != null) m.put("StatusCallbackMethod", statusCallbackMethod);
+        if (sendAt != null) m.put("SendAt", sendAt);
+        if (scheduleType != null) m.put("ScheduleType", scheduleType);
         return m;
     }
 
@@ -89,6 +97,16 @@ public final class CreateMessageRequest {
         return statusCallbackMethod;
     }
 
+    /** @return the {@code SendAt} value (ISO-8601), or {@code null} when unset */
+    public String getSendAt() {
+        return sendAt;
+    }
+
+    /** @return the {@code ScheduleType} value, or {@code null} when unset */
+    public String getScheduleType() {
+        return scheduleType;
+    }
+
     /** @return a new builder */
     public static Builder builder() {
         return new Builder();
@@ -104,6 +122,8 @@ public final class CreateMessageRequest {
         private Integer validityPeriod;
         private String statusCallback;
         private String statusCallbackMethod;
+        private String sendAt;
+        private String scheduleType;
 
         /** Create an empty builder; prefer {@link CreateMessageRequest#builder()}. */
         public Builder() {
@@ -179,6 +199,35 @@ public final class CreateMessageRequest {
          */
         public Builder statusCallbackMethod(String v) {
             this.statusCallbackMethod = v;
+            return this;
+        }
+
+        /**
+         * @param v {@code SendAt}: schedule the message for a future UTC time; requires
+         *     {@code ScheduleType} and {@code MessagingServiceSid}
+         * @return this builder
+         */
+        public Builder sendAt(String v) {
+            this.sendAt = v;
+            return this;
+        }
+
+        /**
+         * @param v {@code SendAt} as an instant (ISO-8601 UTC on the wire)
+         * @return this builder
+         */
+        public Builder sendAt(Instant v) {
+            this.sendAt = v == null ? null : DateTimeFormatter.ISO_INSTANT.format(v);
+            return this;
+        }
+
+        /**
+         * @param v {@code ScheduleType}: {@code fixed} is the only supported value; requires
+         *     {@code SendAt} and {@code MessagingServiceSid}
+         * @return this builder
+         */
+        public Builder scheduleType(String v) {
+            this.scheduleType = v;
             return this;
         }
 

@@ -16,6 +16,9 @@ public final class CreateParticipantRequest {
     private final String statusCallback;
     private final String statusCallbackMethod;
     private final String statusCallbackEvent;
+    private final String conferenceStatusCallback;
+    private final String conferenceStatusCallbackMethod;
+    private final String conferenceStatusCallbackEvent;
 
     private CreateParticipantRequest(Builder b) {
         this.from = b.from;
@@ -28,6 +31,9 @@ public final class CreateParticipantRequest {
         this.statusCallback = b.statusCallback;
         this.statusCallbackMethod = b.statusCallbackMethod;
         this.statusCallbackEvent = b.statusCallbackEvent;
+        this.conferenceStatusCallback = b.conferenceStatusCallback;
+        this.conferenceStatusCallbackMethod = b.conferenceStatusCallbackMethod;
+        this.conferenceStatusCallbackEvent = b.conferenceStatusCallbackEvent;
     }
 
     public Map<String, Object> toForm() {
@@ -42,6 +48,9 @@ public final class CreateParticipantRequest {
         if (statusCallback != null) form.put("StatusCallback", statusCallback);
         if (statusCallbackMethod != null) form.put("StatusCallbackMethod", statusCallbackMethod);
         if (statusCallbackEvent != null) form.put("StatusCallbackEvent", statusCallbackEvent);
+        if (conferenceStatusCallback != null) form.put("ConferenceStatusCallback", conferenceStatusCallback);
+        if (conferenceStatusCallbackMethod != null) form.put("ConferenceStatusCallbackMethod", conferenceStatusCallbackMethod);
+        if (conferenceStatusCallbackEvent != null) form.put("ConferenceStatusCallbackEvent", conferenceStatusCallbackEvent);
         return form;
     }
 
@@ -60,6 +69,9 @@ public final class CreateParticipantRequest {
         private String statusCallback;
         private String statusCallbackMethod;
         private String statusCallbackEvent;
+        private String conferenceStatusCallback;
+        private String conferenceStatusCallbackMethod;
+        private String conferenceStatusCallbackEvent;
 
         public Builder from(String v) { this.from = v; return this; }
         public Builder to(String v) { this.to = v; return this; }
@@ -71,6 +83,12 @@ public final class CreateParticipantRequest {
         public Builder statusCallback(String v) { this.statusCallback = v; return this; }
         public Builder statusCallbackMethod(String v) { this.statusCallbackMethod = v; return this; }
         public Builder statusCallbackEvent(String v) { this.statusCallbackEvent = v; return this; }
+        /** {@code ConferenceStatusCallback}: the participant's conference lifecycle webhook */
+        public Builder conferenceStatusCallback(String v) { this.conferenceStatusCallback = v; return this; }
+        /** {@code ConferenceStatusCallbackMethod}: one of {@code GET}, {@code POST} */
+        public Builder conferenceStatusCallbackMethod(String v) { this.conferenceStatusCallbackMethod = v; return this; }
+        /** {@code ConferenceStatusCallbackEvent}: space- or comma-separated conference event filter */
+        public Builder conferenceStatusCallbackEvent(String v) { this.conferenceStatusCallbackEvent = v; return this; }
 
         public CreateParticipantRequest build() {
             return new CreateParticipantRequest(this);

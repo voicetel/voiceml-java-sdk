@@ -13,7 +13,10 @@ public final class StartTranscriptionRequest {
     private final Boolean profanityFilter;
     private final Boolean partialResults;
     private final String hints;
-    private final String statusCallback;
+    private final String speechModel;
+    private final Boolean enableAutomaticPunctuation;
+    private final String intelligenceService;
+    private final String statusCallbackUrl;
     private final String statusCallbackMethod;
     private final String statusCallbackEvents;
 
@@ -25,7 +28,10 @@ public final class StartTranscriptionRequest {
         this.profanityFilter = b.profanityFilter;
         this.partialResults = b.partialResults;
         this.hints = b.hints;
-        this.statusCallback = b.statusCallback;
+        this.speechModel = b.speechModel;
+        this.enableAutomaticPunctuation = b.enableAutomaticPunctuation;
+        this.intelligenceService = b.intelligenceService;
+        this.statusCallbackUrl = b.statusCallbackUrl;
         this.statusCallbackMethod = b.statusCallbackMethod;
         this.statusCallbackEvents = b.statusCallbackEvents;
     }
@@ -39,7 +45,10 @@ public final class StartTranscriptionRequest {
         if (profanityFilter != null) form.put("ProfanityFilter", profanityFilter);
         if (partialResults != null) form.put("PartialResults", partialResults);
         if (hints != null) form.put("Hints", hints);
-        if (statusCallback != null) form.put("StatusCallback", statusCallback);
+        if (speechModel != null) form.put("SpeechModel", speechModel);
+        if (enableAutomaticPunctuation != null) form.put("EnableAutomaticPunctuation", enableAutomaticPunctuation);
+        if (intelligenceService != null) form.put("IntelligenceService", intelligenceService);
+        if (statusCallbackUrl != null) form.put("StatusCallbackUrl", statusCallbackUrl);
         if (statusCallbackMethod != null) form.put("StatusCallbackMethod", statusCallbackMethod);
         if (statusCallbackEvents != null) form.put("StatusCallbackEvents", statusCallbackEvents);
         return form;
@@ -57,7 +66,10 @@ public final class StartTranscriptionRequest {
         private Boolean profanityFilter;
         private Boolean partialResults;
         private String hints;
-        private String statusCallback;
+        private String speechModel;
+        private Boolean enableAutomaticPunctuation;
+        private String intelligenceService;
+        private String statusCallbackUrl;
         private String statusCallbackMethod;
         private String statusCallbackEvents;
 
@@ -68,7 +80,14 @@ public final class StartTranscriptionRequest {
         public Builder profanityFilter(Boolean v) { this.profanityFilter = v; return this; }
         public Builder partialResults(Boolean v) { this.partialResults = v; return this; }
         public Builder hints(String s) { this.hints = s; return this; }
-        public Builder statusCallback(String s) { this.statusCallback = s; return this; }
+        /** {@code SpeechModel}: engine-specific model hint (e.g. Deepgram's {@code nova-3}) */
+        public Builder speechModel(String s) { this.speechModel = s; return this; }
+        /** {@code EnableAutomaticPunctuation} */
+        public Builder enableAutomaticPunctuation(Boolean v) { this.enableAutomaticPunctuation = v; return this; }
+        /** {@code IntelligenceService}: accepted for compatibility; transcription proceeds unchanged */
+        public Builder intelligenceService(String s) { this.intelligenceService = s; return this; }
+        /** {@code StatusCallbackUrl}: transcription lifecycle webhook */
+        public Builder statusCallbackUrl(String s) { this.statusCallbackUrl = s; return this; }
         public Builder statusCallbackMethod(String s) { this.statusCallbackMethod = s; return this; }
         public Builder statusCallbackEvents(String s) { this.statusCallbackEvents = s; return this; }
 

@@ -53,6 +53,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.ArrayDeque;
 import java.util.Base64;
 import java.util.Deque;
@@ -193,6 +194,7 @@ class SmokeTest {
                         .from("+14155550101")
                         .url("https://example.com/twiml")
                         .machineDetection("DetectMessageEnd")
+                        .timeLimit(3600)
                         .build());
 
         assertThat(call.getSid()).isEqualTo("CA1");
@@ -202,7 +204,7 @@ class SmokeTest {
         assertThat(r.method).isEqualTo("POST");
         assertThat(r.path).isEqualTo("/2010-04-01/Accounts/ACtest/Calls.json");
         assertThat(r.contentType).isEqualTo("application/x-www-form-urlencoded");
-        WireAssert.exactPairs(r.body, "To=%2B14155550100", "From=%2B14155550101", "Url=https%3A%2F%2Fexample.com%2Ftwiml", "MachineDetection=DetectMessageEnd");
+        WireAssert.exactPairs(r.body, "To=%2B14155550100", "From=%2B14155550101", "Url=https%3A%2F%2Fexample.com%2Ftwiml", "MachineDetection=DetectMessageEnd", "TimeLimit=3600");
 
         String expectedAuth =
                 "Basic " + Base64.getEncoder().encodeToString("ACtest:secret".getBytes(StandardCharsets.UTF_8));
@@ -782,11 +784,16 @@ class SmokeTest {
                 CreateParticipantRequest.builder()
                         .from("+14155550101")
                         .to("+14155550100")
+                        .conferenceStatusCallback("https://example.com/conf")
+                        .conferenceStatusCallbackMethod("POST")
+                        .conferenceStatusCallbackEvent("start end")
                         .build());
 
         RecordedRequest r = recorded.removeFirst();
         assertThat(r.method).isEqualTo("POST");
-        WireAssert.exactPairs(r.body, "From=%2B14155550101", "To=%2B14155550100");
+        WireAssert.exactPairs(r.body, "From=%2B14155550101", "To=%2B14155550100",
+                "ConferenceStatusCallback=https%3A%2F%2Fexample.com%2Fconf",
+                "ConferenceStatusCallbackMethod=POST", "ConferenceStatusCallbackEvent=start+end");
     }
 
     @Test
@@ -1013,6 +1020,8 @@ class SmokeTest {
                         .from("+14155550101")
                         .body("hi")
                         .statusCallback("https://example.com/sms-status")
+                        .sendAt(Instant.parse("2026-10-22T12:00:00Z"))
+                        .scheduleType("fixed")
                         .build());
 
         assertThat(msg.getSid()).isEqualTo("SM0123456789abcdef0123456789abcdef");
@@ -1025,7 +1034,7 @@ class SmokeTest {
         assertThat(r.method).isEqualTo("POST");
         assertThat(r.path).isEqualTo("/2010-04-01/Accounts/ACtest/Messages.json");
         assertThat(r.contentType).isEqualTo("application/x-www-form-urlencoded");
-        WireAssert.exactPairs(r.body, "To=%2B14155550100", "From=%2B14155550101", "Body=hi", "StatusCallback=https%3A%2F%2Fexample.com%2Fsms-status");
+        WireAssert.exactPairs(r.body, "To=%2B14155550100", "From=%2B14155550101", "Body=hi", "StatusCallback=https%3A%2F%2Fexample.com%2Fsms-status", "SendAt=2026-10-22T12%3A00%3A00Z", "ScheduleType=fixed");
     }
 
     @Test

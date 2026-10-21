@@ -41,6 +41,7 @@ public final class CreateCallRequest {
     private final String recordingTrack;
     private final String trim;
     private final Integer timeout;
+    private final Integer timeLimit;
     private final String sendDigits;
     private final String callerId;
     private final String callReason;
@@ -77,6 +78,7 @@ public final class CreateCallRequest {
         this.recordingTrack = b.recordingTrack;
         this.trim = b.trim;
         this.timeout = b.timeout;
+        this.timeLimit = b.timeLimit;
         this.sendDigits = b.sendDigits;
         this.callerId = b.callerId;
         this.callReason = b.callReason;
@@ -119,6 +121,7 @@ public final class CreateCallRequest {
         if (recordingTrack != null) form.put("RecordingTrack", recordingTrack);
         if (trim != null) form.put("Trim", trim);
         if (timeout != null) form.put("Timeout", timeout);
+        if (timeLimit != null) form.put("TimeLimit", timeLimit);
         if (sendDigits != null) form.put("SendDigits", sendDigits);
         if (callerId != null) form.put("CallerId", callerId);
         if (callReason != null) form.put("CallReason", callReason);
@@ -161,6 +164,7 @@ public final class CreateCallRequest {
         private String recordingTrack;
         private String trim;
         private Integer timeout;
+        private Integer timeLimit;
         private String sendDigits;
         private String callerId;
         private String callReason;
@@ -196,6 +200,8 @@ public final class CreateCallRequest {
         public Builder recordingTrack(String s) { this.recordingTrack = s; return this; }
         public Builder trim(String s) { this.trim = s; return this; }
         public Builder timeout(Integer v) { this.timeout = v; return this; }
+        /** {@code TimeLimit}: max call duration in seconds; a negative value disables the limit */
+        public Builder timeLimit(Integer v) { this.timeLimit = v; return this; }
         public Builder sendDigits(String s) { this.sendDigits = s; return this; }
         public Builder callerId(String s) { this.callerId = s; return this; }
         public Builder callReason(String s) { this.callReason = s; return this; }

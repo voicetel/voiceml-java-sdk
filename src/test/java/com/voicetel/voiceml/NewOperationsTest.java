@@ -21,8 +21,10 @@ import com.voicetel.voiceml.models.MonitorV1Alert;
 import com.voicetel.voiceml.models.Notification;
 import com.voicetel.voiceml.models.StartConferenceRecordingRequest;
 import com.voicetel.voiceml.models.StartRecordingRequest;
+import com.voicetel.voiceml.models.StartTranscriptionRequest;
 import com.voicetel.voiceml.models.UpdateAccountRequest;
 import com.voicetel.voiceml.models.UpdateOutgoingCallerIdRequest;
+import com.voicetel.voiceml.models.UpdateRecordingRequest;
 import com.voicetel.voiceml.models.UsageRecordList;
 import com.voicetel.voiceml.models.ValidationRequest;
 import org.junit.jupiter.api.Test;
@@ -50,7 +52,9 @@ class NewOperationsTest {
             mock.client(0).messages().create(CreateMessageRequest.builder()
                     .to("+14155550100").from("+14155550101")
                     .mediaUrl(List.of("https://example.com/a.png", "https://example.com/b.png"))
+                    .messagingServiceSid("MG0123456789abcdef0123456789abcdef")
                     .validityPeriod(600).statusCallback("https://example.com/dlr").statusCallbackMethod("POST")
+                    .sendAt(Instant.parse("2026-10-22T12:00:00Z")).scheduleType("fixed")
                     .build());
             MockHttp.Req r = mock.only();
             assertThat(r.method).isEqualTo("POST");
@@ -58,7 +62,9 @@ class NewOperationsTest {
             assertThat(r.header("Content-Type")).isEqualTo("application/x-www-form-urlencoded");
             assertThat(r.body).isEqualTo("To=%2B14155550100&From=%2B14155550101"
                     + "&MediaUrl=https%3A%2F%2Fexample.com%2Fa.png&MediaUrl=https%3A%2F%2Fexample.com%2Fb.png"
-                    + "&ValidityPeriod=600&StatusCallback=https%3A%2F%2Fexample.com%2Fdlr&StatusCallbackMethod=POST");
+                    + "&MessagingServiceSid=MG0123456789abcdef0123456789abcdef"
+                    + "&ValidityPeriod=600&StatusCallback=https%3A%2F%2Fexample.com%2Fdlr&StatusCallbackMethod=POST"
+                    + "&SendAt=2026-10-22T12%3A00%3A00Z&ScheduleType=fixed");
         }
     }
 
@@ -105,17 +111,46 @@ class NewOperationsTest {
             mock.respond(201, "{\"sid\":\"AP1\",\"message_status_callback\":\"https://example.com/m\"}");
             VoicemlClient c = mock.client(0);
             assertThat(c.applications().create(ApplicationBody.builder().friendlyName("app")
-                    .messageStatusCallback("https://example.com/m").smsStatusCallback("https://example.com/s").build())
+                    .messageStatusCallback("https://example.com/m").smsStatusCallback("https://example.com/s")
+                    .smsUrl("https://example.com/sms").smsMethod("POST")
+                    .smsFallbackUrl("https://example.com/smsfb").smsFallbackMethod("GET")
+                    .publicApplicationConnectEnabled(true).build())
                     .getMessageStatusCallback()).isEqualTo("https://example.com/m");
             c.calls().startRecording("CA1", StartRecordingRequest.builder().recordingTrack("inbound").playBeep(false).build());
             c.conferences().startRecording("CF1", StartConferenceRecordingRequest.builder()
                     .recordingStatusCallback("https://example.com/r").recordingStatusCallbackEvent("completed").build());
+            c.conferences().updateRecording("CF1", "RE1", new UpdateRecordingRequest("paused", "skip"));
             assertThat(mock.requests.get(0).body).isEqualTo(
-                    "FriendlyName=app&MessageStatusCallback=https%3A%2F%2Fexample.com%2Fm&SmsStatusCallback=https%3A%2F%2Fexample.com%2Fs");
+                    "FriendlyName=app&MessageStatusCallback=https%3A%2F%2Fexample.com%2Fm&SmsStatusCallback=https%3A%2F%2Fexample.com%2Fs"
+                    + "&SmsUrl=https%3A%2F%2Fexample.com%2Fsms&SmsMethod=POST"
+                    + "&SmsFallbackUrl=https%3A%2F%2Fexample.com%2Fsmsfb&SmsFallbackMethod=GET"
+                    + "&PublicApplicationConnectEnabled=true");
             assertThat(mock.requests.get(1).body).isEqualTo("RecordingTrack=inbound&PlayBeep=false");
             assertThat(mock.requests.get(2).rawPath).isEqualTo(A + "/Conferences/CF1/Recordings.json");
             assertThat(mock.requests.get(2).body).isEqualTo(
                     "RecordingStatusCallback=https%3A%2F%2Fexample.com%2Fr&RecordingStatusCallbackEvent=completed");
+            assertThat(mock.requests.get(3).rawPath).isEqualTo(A + "/Conferences/CF1/Recordings/RE1.json");
+            assertThat(mock.requests.get(3).body).isEqualTo("Status=paused&PauseBehavior=skip");
+        }
+    }
+
+    @Test
+    void transcriptionStartSendsRenamedAndNewFields() throws IOException {
+        try (MockHttp mock = new MockHttp()) {
+            mock.respond(200, "{\"sid\":\"GT1\",\"status\":\"in-progress\"}");
+            MockHttp.Req r;
+            mock.client(0).calls().startTranscription("CA1", StartTranscriptionRequest.builder()
+                    .name("t1").speechModel("nova-3").enableAutomaticPunctuation(true)
+                    .intelligenceService("CI0123456789abcdef0123456789abcdef")
+                    .statusCallbackUrl("https://example.com/tc").statusCallbackMethod("POST")
+                    .statusCallbackEvents("in-progress completed").build());
+            r = mock.only();
+            assertThat(r.method).isEqualTo("POST");
+            assertThat(r.rawPath).isEqualTo(A + "/Calls/CA1/Transcriptions.json");
+            assertThat(r.body).isEqualTo("Name=t1&SpeechModel=nova-3&EnableAutomaticPunctuation=true"
+                    + "&IntelligenceService=CI0123456789abcdef0123456789abcdef"
+                    + "&StatusCallbackUrl=https%3A%2F%2Fexample.com%2Ftc"
+                    + "&StatusCallbackMethod=POST&StatusCallbackEvents=in-progress+completed");
         }
     }
 
