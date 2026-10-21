@@ -5,6 +5,29 @@ format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); version
 [Semantic Versioning](https://semver.org/). Earlier releases are described on the
 [GitHub Releases](https://github.com/voicetel/voiceml-java-sdk/releases) page.
 
+## [0.9.5] - 2026-10-21
+
+### Added
+
+- Calls create (`CreateCallRequest`): `TimeLimit` — max call duration in seconds. An explicit `0`
+  or a value above `14400` is rejected server-side; a negative value disables the limit.
+- Conference participants create (`CreateParticipantRequest`): `ConferenceStatusCallback`,
+  `ConferenceStatusCallbackMethod`, `ConferenceStatusCallbackEvent`.
+- Conference recordings update (`UpdateRecordingRequest`): `PauseBehavior`, via the new
+  `UpdateRecordingRequest(String status, String pauseBehavior)` constructor.
+- Applications create + update (`ApplicationBody`): `SmsUrl`, `SmsMethod`, `SmsFallbackUrl`,
+  `SmsFallbackMethod`, `PublicApplicationConnectEnabled`.
+- Messages create (`CreateMessageRequest`): `SendAt` (`sendAt(String)` / `sendAt(Instant)`) and
+  `ScheduleType` (`fixed` is the only supported value) for scheduled sends.
+- Call transcriptions start (`StartTranscriptionRequest`): `SpeechModel`,
+  `EnableAutomaticPunctuation`, `IntelligenceService`.
+
+### Changed
+
+- Call transcriptions start: `StatusCallback` is renamed to `StatusCallbackUrl`
+  (`StartTranscriptionRequest.Builder.statusCallback` → `statusCallbackUrl`). The old wire name was
+  never applied server-side, so no behaviour changes.
+
 ## [0.9.4] - 2026-10-21
 
 ### Added
